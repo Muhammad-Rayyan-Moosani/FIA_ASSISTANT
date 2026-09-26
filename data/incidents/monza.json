@@ -1,0 +1,453 @@
+[
+ {
+  "incident_id": "monza-2024-R-0001",
+  "circuit": "monza",
+  "season": 2024,
+  "session_type": "Race",
+  "session_key": 9590,
+  "lap": 3,
+  "occurred_at": "2024-09-01T13:07:52+00:00",
+  "raw_message": "TURN 8 INCIDENT INVOLVING CARS 3 (RIC) AND 27 (HUL) NOTED - CAUSING A COLLISION",
+  "car_numbers": [
+   3,
+   27
+  ],
+  "turn_number": 8,
+  "incident_type": "collision",
+  "severity_score": 0.8,
+  "loss_relevant": true,
+  "x": 0.1918,
+  "y": 0.5612,
+  "lap_frac": 0.675,
+  "zone_id": "monza-z10",
+  "geo_method": "driver_location",
+  "geo_confidence": "low",
+  "entry_speed_kph": 319,
+  "kinetic_energy_kj": 3132.9,
+  "extraction": {
+   "method": "regex"
+  }
+ },
+ {
+  "incident_id": "monza-2024-R-0002",
+  "circuit": "monza",
+  "season": 2024,
+  "session_type": "Race",
+  "session_key": 9590,
+  "lap": 6,
+  "occurred_at": "2024-09-01T13:11:21+00:00",
+  "raw_message": "TURN 1 INCIDENT INVOLVING CARS 27 (HUL) AND 22 (TSU) NOTED - CAUSING A COLLISION",
+  "car_numbers": [
+   27,
+   22
+  ],
+  "turn_number": 1,
+  "incident_type": "collision",
+  "severity_score": 0.8,
+  "loss_relevant": true,
+  "x": 0.0339,
+  "y": 0.5619,
+  "lap_frac": 0.1223,
+  "zone_id": "monza-z02",
+  "geo_method": "driver_location",
+  "geo_confidence": "low",
+  "entry_speed_kph": 331,
+  "kinetic_energy_kj": 3373.1,
+  "extraction": {
+   "method": "regex"
+  }
+ },
+ {
+  "incident_id": "monza-2024-R-0003",
+  "circuit": "monza",
+  "season": 2024,
+  "session_type": "Race",
+  "session_key": 9590,
+  "lap": 6,
+  "occurred_at": "2024-09-01T13:12:02+00:00",
+  "raw_message": "CAR 22 (TSU) TIME 1:32.241 DELETED - TRACK LIMITS AT TURN 2 LAP 5 15:09:44",
+  "car_numbers": [
+   22
+  ],
+  "turn_number": 2,
+  "incident_type": "track_limits",
+  "severity_score": 0.1,
+  "loss_relevant": false,
+  "x": 0.0611,
+  "y": 0.6555,
+  "lap_frac": 0.162,
+  "zone_id": "monza-z02",
+  "geo_method": "turn_number",
+  "geo_confidence": "high",
+  "entry_speed_kph": 331,
+  "kinetic_energy_kj": 3373.1,
+  "extraction": {
+   "method": "regex"
+  }
+ },
+ {
+  "incident_id": "monza-2024-R-0004",
+  "circuit": "monza",
+  "season": 2024,
+  "session_type": "Race",
+  "session_key": 9590,
+  "lap": 9,
+  "occurred_at": "2024-09-01T13:15:12+00:00",
+  "raw_message": "CAR 22 (TSU) LAP DELETED - TRACK LIMITS AT TURN 2 LAP 7 15:12:44 (PIT)",
+  "car_numbers": [
+   22
+  ],
+  "turn_number": 2,
+  "incident_type": "track_limits",
+  "severity_score": 0.1,
+  "loss_relevant": false,
+  "x": 0.0611,
+  "y": 0.6555,
+  "lap_frac": 0.162,
+  "zone_id": "monza-z02",
+  "geo_method": "turn_number",
+  "geo_confidence": "high",
+  "entry_speed_kph": 331,
+  "kinetic_energy_kj": 3373.1,
+  "extraction": {
+   "method": "regex"
+  }
+ },
+ {
+  "incident_id": "monza-2024-R-0005",
+  "circuit": "monza",
+  "season": 2024,
+  "session_type": "Race",
+  "session_key": 9590,
+  "lap": 11,
+  "occurred_at": "2024-09-01T13:18:09+00:00",
+  "raw_message": "CAR 3 (RIC) TIME 1:26.111 DELETED - TRACK LIMITS AT TURN 2 LAP 10 15:16:50",
+  "car_numbers": [
+   3
+  ],
+  "turn_number": 2,
+  "incident_type": "track_limits",
+  "severity_score": 0.1,
+  "loss_relevant": false,
+  "x": 0.0611,
+  "y": 0.6555,
+  "lap_frac": 0.162,
+  "zone_id": "monza-z02",
+  "geo_method": "turn_number",
+  "geo_confidence": "high",
+  "entry_speed_kph": 331,
+  "kinetic_energy_kj": 3373.1,
+  "extraction": {
+   "method": "regex"
+  }
+ },
+ {
+  "incident_id": "monza-2024-R-0006",
+  "circuit": "monza",
+  "season": 2024,
+  "session_type": "Race",
+  "session_key": 9590,
+  "lap": 14,
+  "occurred_at": "2024-09-01T13:22:08+00:00",
+  "raw_message": "CAR 55 (SAI) TIME 1:25.423 DELETED - TRACK LIMITS AT TURN 2 LAP 13 15:20:51",
+  "car_numbers": [
+   55
+  ],
+  "turn_number": 2,
+  "incident_type": "track_limits",
+  "severity_score": 0.1,
+  "loss_relevant": false,
+  "x": 0.0611,
+  "y": 0.6555,
+  "lap_frac": 0.162,
+  "zone_id": "monza-z02",
+  "geo_method": "turn_number",
+  "geo_confidence": "high",
+  "entry_speed_kph": 331,
+  "kinetic_energy_kj": 3373.1,
+  "extraction": {
+   "method": "regex"
+  }
+ },
+ {
+  "incident_id": "monza-2024-R-0007",
+  "circuit": "monza",
+  "season": 2024,
+  "session_type": "Race",
+  "session_key": 9590,
+  "lap": 19,
+  "occurred_at": "2024-09-01T13:30:30+00:00",
+  "raw_message": "TURN 4 INCIDENT INVOLVING CARS 20 (MAG) AND 10 (GAS) NOTED - CAUSING A COLLISION",
+  "car_numbers": [
+   20,
+   10
+  ],
+  "turn_number": 4,
+  "incident_type": "collision",
+  "severity_score": 0.8,
+  "loss_relevant": true,
+  "x": 0.3339,
+  "y": 0.9355,
+  "lap_frac": 0.3464,
+  "zone_id": "monza-z04",
+  "geo_method": "driver_location",
+  "geo_confidence": "high",
+  "entry_speed_kph": 315,
+  "kinetic_energy_kj": 3054.8,
+  "extraction": {
+   "method": "regex"
+  }
+ },
+ {
+  "incident_id": "monza-2024-R-0008",
+  "circuit": "monza",
+  "season": 2024,
+  "session_type": "Race",
+  "session_key": 9590,
+  "lap": 20,
+  "occurred_at": "2024-09-01T13:31:45+00:00",
+  "raw_message": "CAR 14 (ALO) TIME 1:24.882 DELETED - TRACK LIMITS AT TURN 4 LAP 18 15:28:55",
+  "car_numbers": [
+   14
+  ],
+  "turn_number": 4,
+  "incident_type": "track_limits",
+  "severity_score": 0.1,
+  "loss_relevant": false,
+  "x": 0.3887,
+  "y": 0.9501,
+  "lap_frac": 0.369,
+  "zone_id": "monza-z04",
+  "geo_method": "turn_number",
+  "geo_confidence": "high",
+  "entry_speed_kph": 315,
+  "kinetic_energy_kj": 3054.8,
+  "extraction": {
+   "method": "regex"
+  }
+ },
+ {
+  "incident_id": "monza-2024-R-0009",
+  "circuit": "monza",
+  "season": 2024,
+  "session_type": "Race",
+  "session_key": 9590,
+  "lap": 20,
+  "occurred_at": "2024-09-01T13:31:48+00:00",
+  "raw_message": "CAR 20 (MAG) TIME 1:26.533 DELETED - TRACK LIMITS AT TURN 5 LAP 18 15:29:03",
+  "car_numbers": [
+   20
+  ],
+  "turn_number": 5,
+  "incident_type": "track_limits",
+  "severity_score": 0.1,
+  "loss_relevant": false,
+  "x": 0.3952,
+  "y": 0.9582,
+  "lap_frac": 0.373,
+  "zone_id": "monza-z04",
+  "geo_method": "turn_number",
+  "geo_confidence": "high",
+  "entry_speed_kph": 315,
+  "kinetic_energy_kj": 3054.8,
+  "extraction": {
+   "method": "regex"
+  }
+ },
+ {
+  "incident_id": "monza-2024-R-0010",
+  "circuit": "monza",
+  "season": 2024,
+  "session_type": "Race",
+  "session_key": 9590,
+  "lap": 20,
+  "occurred_at": "2024-09-01T13:31:52+00:00",
+  "raw_message": "CAR 10 (GAS) TIME 1:26.182 DELETED - TRACK LIMITS AT TURN 5 LAP 18 15:29:03",
+  "car_numbers": [
+   10
+  ],
+  "turn_number": 5,
+  "incident_type": "track_limits",
+  "severity_score": 0.1,
+  "loss_relevant": false,
+  "x": 0.3952,
+  "y": 0.9582,
+  "lap_frac": 0.373,
+  "zone_id": "monza-z04",
+  "geo_method": "turn_number",
+  "geo_confidence": "high",
+  "entry_speed_kph": 315,
+  "kinetic_energy_kj": 3054.8,
+  "extraction": {
+   "method": "regex"
+  }
+ },
+ {
+  "incident_id": "monza-2024-R-0011",
+  "circuit": "monza",
+  "season": 2024,
+  "session_type": "Race",
+  "session_key": 9590,
+  "lap": 28,
+  "occurred_at": "2024-09-01T13:42:50+00:00",
+  "raw_message": "CAR 10 (GAS) TIME 1:27.191 DELETED - TRACK LIMITS AT TURN 4 LAP 27 15:41:52",
+  "car_numbers": [
+   10
+  ],
+  "turn_number": 4,
+  "incident_type": "track_limits",
+  "severity_score": 0.1,
+  "loss_relevant": false,
+  "x": 0.3887,
+  "y": 0.9501,
+  "lap_frac": 0.369,
+  "zone_id": "monza-z04",
+  "geo_method": "turn_number",
+  "geo_confidence": "high",
+  "entry_speed_kph": 315,
+  "kinetic_energy_kj": 3054.8,
+  "extraction": {
+   "method": "regex"
+  }
+ },
+ {
+  "incident_id": "monza-2024-R-0012",
+  "circuit": "monza",
+  "season": 2024,
+  "session_type": "Race",
+  "session_key": 9590,
+  "lap": 32,
+  "occurred_at": "2024-09-01T13:47:56+00:00",
+  "raw_message": "CAR 4 (NOR) TIME 1:24.940 DELETED - TRACK LIMITS AT TURN 4 LAP 31 15:46:43",
+  "car_numbers": [
+   4
+  ],
+  "turn_number": 4,
+  "incident_type": "track_limits",
+  "severity_score": 0.1,
+  "loss_relevant": false,
+  "x": 0.3887,
+  "y": 0.9501,
+  "lap_frac": 0.369,
+  "zone_id": "monza-z04",
+  "geo_method": "turn_number",
+  "geo_confidence": "high",
+  "entry_speed_kph": 315,
+  "kinetic_energy_kj": 3054.8,
+  "extraction": {
+   "method": "regex"
+  }
+ },
+ {
+  "incident_id": "monza-2024-R-0013",
+  "circuit": "monza",
+  "season": 2024,
+  "session_type": "Race",
+  "session_key": 9590,
+  "lap": 32,
+  "occurred_at": "2024-09-01T13:48:10+00:00",
+  "raw_message": "CAR 63 (RUS) TIME 1:25.331 DELETED - TRACK LIMITS AT TURN 2 LAP 31 15:46:51",
+  "car_numbers": [
+   63
+  ],
+  "turn_number": 2,
+  "incident_type": "track_limits",
+  "severity_score": 0.1,
+  "loss_relevant": false,
+  "x": 0.0611,
+  "y": 0.6555,
+  "lap_frac": 0.162,
+  "zone_id": "monza-z02",
+  "geo_method": "turn_number",
+  "geo_confidence": "high",
+  "entry_speed_kph": 331,
+  "kinetic_energy_kj": 3373.1,
+  "extraction": {
+   "method": "regex"
+  }
+ },
+ {
+  "incident_id": "monza-2024-R-0014",
+  "circuit": "monza",
+  "season": 2024,
+  "session_type": "Race",
+  "session_key": 9590,
+  "lap": 36,
+  "occurred_at": "2024-09-01T13:53:21+00:00",
+  "raw_message": "CAR 23 (ALB) TIME 1:26.282 DELETED - TRACK LIMITS AT TURN 2 LAP 33 15:49:58",
+  "car_numbers": [
+   23
+  ],
+  "turn_number": 2,
+  "incident_type": "track_limits",
+  "severity_score": 0.1,
+  "loss_relevant": false,
+  "x": 0.0611,
+  "y": 0.6555,
+  "lap_frac": 0.162,
+  "zone_id": "monza-z02",
+  "geo_method": "turn_number",
+  "geo_confidence": "high",
+  "entry_speed_kph": 331,
+  "kinetic_energy_kj": 3373.1,
+  "extraction": {
+   "method": "regex"
+  }
+ },
+ {
+  "incident_id": "monza-2024-R-0015",
+  "circuit": "monza",
+  "season": 2024,
+  "session_type": "Race",
+  "session_key": 9590,
+  "lap": 38,
+  "occurred_at": "2024-09-01T13:56:58+00:00",
+  "raw_message": "CAR 23 (ALB) TIME 1:25.882 DELETED - TRACK LIMITS AT TURN 2 LAP 37 15:55:40",
+  "car_numbers": [
+   23
+  ],
+  "turn_number": 2,
+  "incident_type": "track_limits",
+  "severity_score": 0.1,
+  "loss_relevant": false,
+  "x": 0.0611,
+  "y": 0.6555,
+  "lap_frac": 0.162,
+  "zone_id": "monza-z02",
+  "geo_method": "turn_number",
+  "geo_confidence": "high",
+  "entry_speed_kph": 331,
+  "kinetic_energy_kj": 3373.1,
+  "extraction": {
+   "method": "regex"
+  }
+ },
+ {
+  "incident_id": "monza-2024-R-0016",
+  "circuit": "monza",
+  "season": 2024,
+  "session_type": "Race",
+  "session_key": 9590,
+  "lap": 42,
+  "occurred_at": "2024-09-01T14:01:42+00:00",
+  "raw_message": "CAR 18 (STR) TIME 1:25.777 DELETED - TRACK LIMITS AT TURN 2 LAP 40 16:00:24",
+  "car_numbers": [
+   18
+  ],
+  "turn_number": 2,
+  "incident_type": "track_limits",
+  "severity_score": 0.1,
+  "loss_relevant": false,
+  "x": 0.0611,
+  "y": 0.6555,
+  "lap_frac": 0.162,
+  "zone_id": "monza-z02",
+  "geo_method": "turn_number",
+  "geo_confidence": "high",
+  "entry_speed_kph": 331,
+  "kinetic_energy_kj": 3373.1,
+  "extraction": {
+   "method": "regex"
+  }
+ }
+]
