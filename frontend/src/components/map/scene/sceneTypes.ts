@@ -17,7 +17,7 @@ export interface SceneData {
   maxPremium: number;
 }
 
-/** Per-zone flash level (0..1), written by effects on a fence breach, read by the zone visuals. */
+/** Per-zone flash level (0..1), written by effects on a severe crash, read by the zone visuals. */
 export type FlashMap = Map<string, number>;
 export type FlashRef = { readonly current: FlashMap };
 

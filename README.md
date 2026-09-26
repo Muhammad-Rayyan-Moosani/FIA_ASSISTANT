@@ -130,8 +130,8 @@ cp .env.example .env        # add your ANTHROPIC_API_KEY
 cd backend
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-python -m scripts.fetch_openf1      # download OpenF1 reference laps into data/openf1/
-uvicorn main:app --reload --port 8000
+python -m pytest -q                  # Step 1 + API contract tests
+uvicorn main:app --reload --port 8000   # → http://localhost:8000/docs
 ```
 
 **Frontend** (details in [frontend/README.md](frontend/README.md))
@@ -163,11 +163,11 @@ npm run dev                          # → http://localhost:3000
 **🛡️ Insurance module (building first — see [ARCHITECTURE.md](ARCHITECTURE.md))**
 - [x] Repo, structure & docs
 - [x] OpenF1 client + fetch script (`python -m scripts.fetch_openf1`)
-- [ ] Incident ingestion + geolocation + zones
-- [ ] Actuarial engine (Poisson-Gamma · severity · Monte Carlo · pricing)
-- [ ] Insurance API (risk map · simulate · what-if · report)
+- [x] Incident ingestion + geolocation + zones (Monza)
+- [x] Actuarial engine (Poisson-Gamma · severity · Monte Carlo · pricing)
+- [x] Insurance API (risk map · simulate · what-if · report), wired to the frontend
 - [x] Frontend app: 3D digital twin, panels, API + streaming service layer
-- [ ] Underwriter report (LLM + PDF)
+- [x] Underwriter report (template + PDF) · [ ] Claude-written narrative
 
 **🟡 Race Control module (next)**
 - [ ] Replay engine + anomaly detector

@@ -45,7 +45,7 @@ export function DataIngestionPanel({ circuit, state, isActive, onStart, onCancel
       <div className="grid grid-cols-3 gap-2.5">
         <Stat size="sm" label="Seasons" value={c ? seasonRange(c.seasons) : "–"} />
         <Stat size="sm" label="Sessions" value={c ? formatNumber(c.sessions) : "–"} />
-        <Stat size="sm" label="Incidents" value={c ? formatNumber(c.incidents) : "–"} />
+        <Stat size="sm" label="Incidents" value={c ? formatNumber(c.incidents) : "–"} hint={c ? `${formatNumber(c.loss_relevant)} loss-relevant` : undefined} />
       </div>
       <p className="text-[11.5px] text-faint">Last updated {formatDateTime(c?.last_ingested_at ?? null)}</p>
 

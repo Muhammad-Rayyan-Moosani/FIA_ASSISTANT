@@ -26,7 +26,7 @@ const CLICK_TOLERANCE_PX = 5;
 const COLUMN_GEOMETRY = new CylinderGeometry(0.9, 0.9, 1, 28, 1, true).translate(0, 0.5, 0);
 const HALO_GEOMETRY = new CylinderGeometry(1.9, 1.9, 1, 28, 1, true).translate(0, 0.5, 0);
 
-/** One zone: tinted track overlay, glowing barrier, loss column and grandstand. Colours and heights tween. */
+/** One zone: tinted track overlay, glowing barrier, loss column and grandstand (flashes on a severe crash). Colours and heights tween. */
 export function ZoneVisual({ frame, placed, maxPremium, selected, flash, reducedMotion, onSelect, onHover }: ZoneVisualProps) {
   const { view, range, mid, side } = placed;
   const { zone, risk } = view;
@@ -86,7 +86,7 @@ export function ZoneVisual({ frame, placed, maxPremium, selected, flash, reduced
     haloMesh.current?.scale.set(1, c.height, 1);
     capMesh.current?.position.setY(c.height);
     const f = flash.current.get(zone.zone_id) ?? 0;
-    const glowLevel = Math.min(0.9, (risk?.breach_prob ?? 0) * 25) + f * 1.5;
+    const glowLevel = f * 1.5;
     for (const m of standMats.current) if (m) m.emissiveIntensity = glowLevel;
     if (f > 0) flash.current.set(zone.zone_id, Math.max(0, f - dt * 1.5));
   });

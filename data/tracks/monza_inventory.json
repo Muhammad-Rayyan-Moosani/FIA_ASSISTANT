@@ -1,0 +1,36 @@
+{
+ "circuit": "monza",
+ "note": "Hand-authored safety inventory, merged into data/tracks/monza.json by services/zones.py. Every value says where it comes from.",
+ "grandstands": {
+  "source": "Official list, Autodromo Nazionale Monza: https://www.monzanet.it/en/circuit/ (names as published). Mapping name -> corner is ours; stands whose name gives no corner are left unmapped.",
+  "assumed_distance_m": 40,
+  "assumed_seats_per_stand": 2500,
+  "stands": [
+   {"name": "Central Grandstand n° 1", "where": "main_straight"},
+   {"name": "Bleachers Finish line n. 2, 3", "where": "main_straight"},
+   {"name": "Left Side Stand n° 4", "where": "main_straight"},
+   {"name": "Right Side Stand ABC n° 26", "where": "main_straight"},
+   {"name": "Bleachers Finish line n. 27–30", "where": "main_straight"},
+   {"name": "External Grandstand First Variant AB n° 8", "turns": [1, 2]},
+   {"name": "Second Variant Grandstand n° 9", "turns": [4, 5]},
+   {"name": "Roggia grandstand n° 10", "turns": [4, 5]},
+   {"name": "Ascari Tre grandstand n° 12", "turns": [8, 9, 10]},
+   {"name": "Ascari Due grandstand n° 13", "turns": [8, 9, 10]},
+   {"name": "Ascari Uno grandstand n° 15", "turns": [8, 9, 10]},
+   {"name": "Ascari grandstand n° 16", "turns": [8, 9, 10]},
+   {"name": "Ascari exit grandstands n° 18, 19, 20", "turns": [10]},
+   {"name": "Parabolic Side Grandstand ABCDE n° 21", "turns": [11]},
+   {"name": "Parabolic grandstand n° 22", "turns": [11]},
+   {"name": "Parabolic Grandstand AB n° 23", "turns": [11]}
+  ],
+  "unmapped": ["Swimming pool grandstand n° 5", "ABC High Speed Grandstand n° 6",
+               "Tribune of the Friends of the racetrack and park Association n° 14", "Vedano stand n° 24",
+               "Grandstand for the disabled n. 25"]
+ },
+ "defaults_by_zone_type": {
+  "source": "ASSUMED placeholder by zone type, not surveyed. Replace per zone when real inventory is available.",
+  "braking":    {"barrier_type": "tyre_wall", "runoff_type": "gravel",  "runoff_depth_m": 60, "fence_height_m": 4.0, "asset_value_eur": 1000000},
+  "high_speed": {"barrier_type": "guardrail", "runoff_type": "asphalt", "runoff_depth_m": 30, "fence_height_m": 4.0, "asset_value_eur": 600000},
+  "straight":   {"barrier_type": "concrete",  "runoff_type": "grass",   "runoff_depth_m": 15, "fence_height_m": 3.0, "asset_value_eur": 400000}
+ }
+}

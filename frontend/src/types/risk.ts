@@ -25,7 +25,7 @@ export interface RiskTotals {
   tail_risk_margin_eur: number;
 }
 
-/** Crashes per race weekend: posterior mean and 90% credible interval. */
+/** Crashes per race weekend: posterior mean and 90% credible interval; exposure = race weekends observed. */
 export interface CrashRate {
   mean: number;
   lo90: number;
@@ -41,7 +41,7 @@ export interface ZoneRisk {
   crash_rate: CrashRate;
   crash_prob_season: number;
   energy_kj_mean: number;
-  breach_prob: number;
+  mean_cost_per_crash_eur: number;
   eal_eur: number;
   var99_eur: number;
   share_of_loss_pct: number;
@@ -72,15 +72,17 @@ export type RiskSourceKey =
   | "limit"
   | "score"
   | "what_if"
-  | "upgrade_costs"
   | "simulation"
   | "report";
 
-/** Safety changes for one zone. Omitted fields keep the zone's current value. */
+/**
+ * Safety changes for one zone, using the Step 2 model's own levers. Omitted fields keep the current value.
+ * speed_factor: impact speed × factor (e.g. 0.9 after deeper run-off); frequency_multiplier: crash rate × factor.
+ */
 export interface ZoneChanges {
   barrier_type?: BarrierType;
-  runoff_depth_m?: number;
-  fence_height_m?: number;
+  speed_factor?: number;
+  frequency_multiplier?: number;
 }
 
 /** Active what-if upgrades for a circuit, keyed by zone_id. */
@@ -130,8 +132,6 @@ export interface WhatIfResponse {
   after: ZoneRiskSnapshot;
   circuit_premium_before_eur: number;
   circuit_premium_after_eur: number;
-  upgrade_cost_eur: number;
-  payback_seasons: number | null;
   /** The full circuit repriced with every upgrade, including this one. */
   risk_map: RiskMap;
 }
@@ -156,7 +156,8 @@ export type SimulationStreamEvent =
       lap_frac: number;
       energy_kj: number;
       loss_eur: number;
-      breach: boolean;
+      /** Among the costliest 5% of all simulated crashes. */
+      severe: boolean;
     }
   | { type: "progress"; seasons_done: number; seasons_total: number; running_eal_eur: number; se_eur: number }
   | { type: "done"; n_seasons: number; eal_eur: number; var99_eur: number }
@@ -182,8 +183,6 @@ export interface Recommendation {
   action: string;
   rationale: string;
   est_saving_eur: number | null;
-  cost_eur: number | null;
-  payback_seasons: number | null;
 }
 
 /** GET /api/insurance/report/export?format=json (ARCHITECTURE.md §6.2) */

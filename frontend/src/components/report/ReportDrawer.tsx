@@ -170,13 +170,7 @@ function RecommendationList({ title, items, zoneName }: { title: string; items: 
         {items.map((x) => (
           <li key={`${x.zone_id}-${x.action}`} className="list-disc">
             <b>{zoneName(x.zone_id)}:</b> {x.action}. <span className="text-muted">{x.rationale}</span>
-            {(x.cost_eur !== null || x.est_saving_eur !== null) && (
-              <span className="num block text-xs text-muted">
-                {x.cost_eur !== null && `cost ${formatEur(x.cost_eur)}`}
-                {x.est_saving_eur !== null && ` · saves ${formatEur(x.est_saving_eur)} per weekend`}
-                {x.payback_seasons !== null && ` · pays back in ${x.payback_seasons.toFixed(1)} seasons`}
-              </span>
-            )}
+            {x.est_saving_eur !== null && <span className="num block text-xs text-muted">saves {formatEur(x.est_saving_eur)} per weekend</span>}
           </li>
         ))}
       </ul>

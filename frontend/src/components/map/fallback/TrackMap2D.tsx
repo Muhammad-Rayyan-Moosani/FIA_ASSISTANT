@@ -31,14 +31,14 @@ export function TrackMap2D({ outline, zones, selectedZoneId, onSelectZone, reduc
         if (!g) return;
         const x = effect.kind === "crash" ? effect.crash.x : effect.incident.x;
         const y = effect.kind === "crash" ? effect.crash.y : effect.incident.y;
-        const breach = effect.kind === "crash" && effect.crash.breach;
+        const severe = effect.kind === "crash" && effect.crash.severe;
         const dot = document.createElementNS(SVG_NS, "circle");
         dot.setAttribute("cx", String(x));
         dot.setAttribute("cy", String(-y));
         dot.setAttribute("r", "0.006");
-        dot.setAttribute("fill", effect.kind === "incident" ? "#4fd1c5" : breach ? "#e5484d" : "#ffffff");
+        dot.setAttribute("fill", effect.kind === "incident" ? "#4fd1c5" : severe ? "#e5484d" : "#ffffff");
         g.appendChild(dot);
-        const anim = dot.animate([{ r: "0.006", opacity: 1 }, { r: breach ? "0.05" : "0.03", opacity: 0 }], {
+        const anim = dot.animate([{ r: "0.006", opacity: 1 }, { r: severe ? "0.05" : "0.03", opacity: 0 }], {
           duration: reducedMotion ? 1 : effect.kind === "incident" ? 2400 : 1200,
         });
         anim.onfinish = () => dot.remove();

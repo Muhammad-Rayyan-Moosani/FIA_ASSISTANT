@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { DeltaChip } from "@/components/ui/charts";
 import { Panel } from "@/components/ui/Panel";
-import { SourceBadge } from "@/components/ui/SourceBadge";
 import { scenarioKey, useWhatIf } from "@/hooks/insurance/useWhatIf";
 import { useDebouncedCallback } from "@/hooks/ui/useDebouncedCallback";
 import { formatEur } from "@/lib/format";
@@ -16,15 +15,18 @@ import type { Series } from "@/types/api";
 import type { RiskMap, UpgradeSet } from "@/types/risk";
 import type { BarrierType, TrackZone } from "@/types/track";
 
-const DEPTH = { min: 10, max: 150, step: 5 } as const;
-const FENCE = { min: 3, max: 6, step: 0.5 } as const;
+/** Slider ranges for the model's levers (factor 1 = today). */
+const SPEED = { min: 0.6, max: 1, step: 0.05 } as const;
+const FREQUENCY = { min: 0.4, max: 1, step: 0.05 } as const;
 const DEBOUNCE_MS = 250;
 
 interface Draft {
   barrier_type: BarrierType;
-  runoff_depth_m: number;
-  fence_height_m: number;
+  speed_factor: number;
+  frequency_multiplier: number;
 }
+
+const reduction = (factor: number) => (factor >= 1 ? "no change" : `−${Math.round((1 - factor) * 100)}%`);
 
 interface WhatIfPanelProps {
   circuitId: string;
@@ -42,8 +44,8 @@ export function WhatIfPanel({ circuitId, series, zone, upgrades, riskMap }: What
   const active = upgrades[zone.zone_id];
   const [draft, setDraft] = useState<Draft>(() => ({
     barrier_type: active?.barrier_type ?? zone.barrier_type,
-    runoff_depth_m: active?.runoff_depth_m ?? zone.runoff_depth_m,
-    fence_height_m: active?.fence_height_m ?? zone.fence_height_m,
+    speed_factor: active?.speed_factor ?? 1,
+    frequency_multiplier: active?.frequency_multiplier ?? 1,
   }));
 
   const submit = useDebouncedCallback((next: Draft) => {
@@ -73,7 +75,7 @@ export function WhatIfPanel({ circuitId, series, zone, upgrades, riskMap }: What
 
   const reset = () => {
     whatIf.invalidate();
-    setDraft({ barrier_type: zone.barrier_type, runoff_depth_m: zone.runoff_depth_m, fence_height_m: zone.fence_height_m });
+    setDraft({ barrier_type: zone.barrier_type, speed_factor: 1, frequency_multiplier: 1 });
     clearUpgrade(circuitId, zone.zone_id);
   };
 
@@ -81,7 +83,7 @@ export function WhatIfPanel({ circuitId, series, zone, upgrades, riskMap }: What
   const s = riskMap?.sources ?? {};
 
   return (
-    <Panel title="Safety what-if" source={s.what_if} description={`${zone.short_name}: change the safety equipment and see the new price.`}>
+    <Panel title="Safety what-if" source={s.what_if} description={`${zone.short_name}: change the barrier, or cut impact speed or crash frequency (for example with deeper run-off or better kerbs), and see the new price.`}>
       <div className="grid gap-3">
         <label className="grid gap-1.5 text-xs text-muted">
           Barrier
@@ -100,15 +102,15 @@ export function WhatIfPanel({ circuitId, series, zone, upgrades, riskMap }: What
         </label>
         <label className="grid gap-1.5 text-xs text-muted">
           <span className="flex justify-between">
-            Run-off depth <span className="num text-ink">{draft.runoff_depth_m} m</span>
+            Impact speed <span className="num text-ink">{reduction(draft.speed_factor)}</span>
           </span>
-          <input type="range" min={DEPTH.min} max={DEPTH.max} step={DEPTH.step} value={draft.runoff_depth_m} onChange={(e) => update({ runoff_depth_m: Number(e.target.value) })} />
+          <input type="range" min={SPEED.min} max={SPEED.max} step={SPEED.step} value={draft.speed_factor} onChange={(e) => update({ speed_factor: Number(e.target.value) })} />
         </label>
         <label className="grid gap-1.5 text-xs text-muted">
           <span className="flex justify-between">
-            Debris fence height <span className="num text-ink">{draft.fence_height_m.toFixed(1)} m</span>
+            Crash frequency <span className="num text-ink">{reduction(draft.frequency_multiplier)}</span>
           </span>
-          <input type="range" min={FENCE.min} max={FENCE.max} step={FENCE.step} value={draft.fence_height_m} onChange={(e) => update({ fence_height_m: Number(e.target.value) })} />
+          <input type="range" min={FREQUENCY.min} max={FREQUENCY.max} step={FREQUENCY.step} value={draft.frequency_multiplier} onChange={(e) => update({ frequency_multiplier: Number(e.target.value) })} />
         </label>
       </div>
 
@@ -129,15 +131,13 @@ export function WhatIfPanel({ circuitId, series, zone, upgrades, riskMap }: What
 
       {result && (
         <p className="text-[13px]">
-          Upgrade cost <b className="num">{formatEur(result.upgrade_cost_eur)}</b>
-          {result.payback_seasons !== null ? (
+          {result.circuit_premium_before_eur > result.circuit_premium_after_eur ? (
             <>
-              {" "}· pays back in <b className="display text-xl">{result.payback_seasons.toFixed(1)}</b> seasons on premium savings
+              Premium saving <b className="display text-xl">{formatEur(result.circuit_premium_before_eur - result.circuit_premium_after_eur)}</b> per race weekend
             </>
           ) : (
-            " · no premium saving at this setting"
+            "No premium saving at this setting."
           )}
-          <SourceBadge source={s.upgrade_costs} />
         </p>
       )}
 

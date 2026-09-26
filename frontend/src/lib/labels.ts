@@ -16,6 +16,7 @@ export const BARRIER_LABEL: Record<BarrierType, string> = {
   guardrail: "Guardrail",
   tecpro: "TecPro",
   concrete: "Concrete",
+  safer: "SAFER barrier",
 };
 
 export const RUNOFF_LABEL: Record<RunoffType, string> = { gravel: "Gravel", asphalt: "Asphalt", grass: "Grass" };
@@ -34,12 +35,12 @@ export const PROVENANCE_LABEL: Record<Provenance, string> = {
 };
 
 export const INGEST_STAGE_LABEL: Record<IngestStage, string> = {
-  sessions: "Find sessions",
-  race_control: "Download race control",
+  fetch: "Download from OpenF1",
+  load: "Read race control",
+  zones: "Build zones",
   extract: "Extract incidents",
   geolocate: "Place on track",
-  zones: "Assign zones",
   write: "Save",
 };
 
-export const INGEST_STAGES: readonly IngestStage[] = ["sessions", "race_control", "extract", "geolocate", "zones", "write"];
+export const INGEST_STAGES: readonly IngestStage[] = ["fetch", "load", "zones", "extract", "geolocate", "write"];

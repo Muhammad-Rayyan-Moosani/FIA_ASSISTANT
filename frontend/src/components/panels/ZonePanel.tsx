@@ -62,12 +62,14 @@ export function ZonePanel({ circuitId, view, track, riskMap, upgrade }: ZonePane
                     </small>
                   </>
                 }
-                hint={`${risk.crash_rate.n_incidents} incidents over ${formatNumber(risk.crash_rate.exposure, 1)} session-equivalents`}
+                hint={`${risk.crash_rate.n_incidents} loss-relevant incidents over ${formatNumber(risk.crash_rate.exposure)} race weekends`}
               />
               <RangeBar lo={risk.crash_rate.lo90} hi={risk.crash_rate.hi90} mean={risk.crash_rate.mean} max={maxHi} color={riskHex(risk.risk_score)} />
             </div>
             <Stat label="Chance of a crash this weekend" value={formatFraction(risk.crash_prob_season, 1)} source={rs.crash_prob} />
-            <Stat label="Mean impact energy" value={<>{Math.round(risk.energy_kj_mean)} <small className="text-[11.5px] text-muted">kJ at barrier</small></>} source={rs.energy} />
+            <Stat label="Mean impact energy" value={<>{formatNumber(risk.energy_kj_mean)} <small className="text-[11.5px] text-muted">kJ</small></>} source={rs.energy} />
+            <Stat label="Average cost per crash" value={formatEur(risk.mean_cost_per_crash_eur)} source={rs.energy} />
+            <Stat label="Recorded incidents" value={formatNumber(zone.n_incidents)} hint={`${zone.n_loss_relevant} loss-relevant`} source={track.sources.incidents} />
             <Stat label="Expected loss (EAL)" value={formatEur(risk.eal_eur)} source={rs.eal} />
             <Stat label="1-in-100 worst case" value={formatEur(risk.var99_eur)} source={rs.var99} />
             <Stat label="Zone premium" value={formatEur(risk.premium_eur)} source={rs.zone_premium} />

@@ -12,7 +12,7 @@ export function MapOverlay({ track }: { track: TrackGeometry }) {
         {track.country} · {formatNumber(track.length_m)} m · {track.zones.length} zones · reference lap: {r.season} {r.event_name}, car #{r.driver_number}
         {r.driver_name ? ` (${r.driver_name})` : ""}, lap {r.lap_number}, {formatLapTime(r.lap_duration_s)}
       </p>
-      <div className="pointer-events-auto mt-2.5 flex flex-wrap gap-1.5">
+      <div className="pointer-events-auto mt-2.5 flex flex-wrap gap-1.5 max-sm:hidden">
         <SourceBadge label="Track shape" source={track.sources.outline} />
         <SourceBadge label="Corner speeds" source={track.sources.speeds} />
         <SourceBadge label="Zones" source={track.sources.zones} />

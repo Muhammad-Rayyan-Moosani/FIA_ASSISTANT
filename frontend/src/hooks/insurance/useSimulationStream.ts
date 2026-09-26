@@ -25,12 +25,26 @@ export interface SimulationState {
   /** Running EAL after each progress event, for the convergence chart. */
   convergence: number[];
   crashes: number;
-  breaches: number;
+  /** Crashes among the costliest 5% of all simulated crashes. */
+  severe: number;
   final: { ealEur: number; var99Eur: number; nSeasons: number } | null;
   error: string | null;
 }
 
-type Action = { type: "start" } | { type: "event"; event: SimulationStreamEvent } | { type: "fail"; message: string } | { type: "reset" };
+interface CrashBatch {
+  crashes: number;
+  severe: number;
+  lossEur: number;
+}
+
+type Action =
+  | { type: "start" }
+  | { type: "event"; event: Exclude<SimulationStreamEvent, { type: "crash" }> }
+  | { type: "crashes"; batch: CrashBatch }
+  | { type: "fail"; message: string }
+  | { type: "reset" };
+
+const emptyBatch = (): CrashBatch => ({ crashes: 0, severe: 0, lossEur: 0 });
 
 const initialState: SimulationState = {
   status: "idle",
@@ -43,7 +57,7 @@ const initialState: SimulationState = {
   runningEalEur: null,
   convergence: [],
   crashes: 0,
-  breaches: 0,
+  severe: 0,
   final: null,
   error: null,
 };
@@ -56,19 +70,19 @@ function reducer(state: SimulationState, action: Action): SimulationState {
       return { ...state, status: "failed", error: action.message };
     case "reset":
       return initialState;
+    case "crashes":
+      return {
+        ...state,
+        crashes: state.crashes + action.batch.crashes,
+        severe: state.severe + action.batch.severe,
+        seasonLossEur: state.seasonLossEur + action.batch.lossEur,
+        seasonCrashes: state.seasonCrashes + action.batch.crashes,
+      };
     case "event": {
       const e = action.event;
       switch (e.type) {
         case "season_start":
           return { ...state, currentSeason: e.season, seasonsShown: state.seasonsShown + 1, seasonLossEur: 0, seasonCrashes: 0 };
-        case "crash":
-          return {
-            ...state,
-            crashes: state.crashes + 1,
-            breaches: state.breaches + (e.breach ? 1 : 0),
-            seasonLossEur: state.seasonLossEur + e.loss_eur,
-            seasonCrashes: state.seasonCrashes + 1,
-          };
         case "progress":
           return {
             ...state,
@@ -88,11 +102,20 @@ function reducer(state: SimulationState, action: Action): SimulationState {
 
 /**
  * Step 3 streaming hook: follows the season simulation and drops each crash onto the map.
+ * Crashes go to the map immediately but are counted in a buffer that is flushed into React state once
+ * per season (a busy F3 season streams ~60 crashes), so the panels re-render per season, not per crash.
  * Changing circuit, series or scenario stops the run.
  */
 export function useSimulationStream(circuitId: string | null, series: Series, upgrades: UpgradeSet) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const subscription = useRef<StreamSubscription | null>(null);
+  const pending = useRef<CrashBatch>(emptyBatch());
+
+  const flush = useCallback(() => {
+    if (pending.current.crashes === 0) return;
+    dispatch({ type: "crashes", batch: pending.current });
+    pending.current = emptyBatch();
+  }, []);
 
   const stop = useCallback(() => {
     subscription.current?.close();
@@ -107,18 +130,29 @@ export function useSimulationStream(circuitId: string | null, series: Series, up
   const start = useCallback(() => {
     if (!circuitId) return;
     stop();
+    pending.current = emptyBatch();
     dispatch({ type: "start" });
     subscription.current = insuranceService.streamSimulation(
       { circuit: circuitId, series, seasons: SAMPLE_SEASONS, upgrades },
       {
         onEvent: (event) => {
+          if (event.type === "crash") {
+            mapEffects.emit({ kind: "crash", crash: event });
+            pending.current.crashes += 1;
+            pending.current.severe += event.severe ? 1 : 0;
+            pending.current.lossEur += event.loss_eur;
+            return;
+          }
+          flush();
           dispatch({ type: "event", event });
-          if (event.type === "crash") mapEffects.emit({ kind: "crash", crash: event });
         },
-        onError: (err) => dispatch({ type: "fail", message: describeError(err) }),
+        onError: (err) => {
+          flush();
+          dispatch({ type: "fail", message: describeError(err) });
+        },
       },
     );
-  }, [circuitId, series, upgrades, stop]);
+  }, [circuitId, series, upgrades, stop, flush]);
 
   const cancel = useCallback(() => {
     stop();

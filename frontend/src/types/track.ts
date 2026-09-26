@@ -5,13 +5,14 @@
 import type { SourceMap } from "./api";
 
 export type ZoneType = "braking" | "high_speed" | "straight" | "pit_lane";
-export type BarrierType = "tyre_wall" | "guardrail" | "tecpro" | "concrete";
+export type BarrierType = "tyre_wall" | "guardrail" | "tecpro" | "concrete" | "safer";
 export type RunoffType = "gravel" | "asphalt" | "grass";
 
 export interface DataCoverage {
   seasons: number[];
   sessions: number;
   incidents: number;
+  loss_relevant: number;
   last_ingested_at: string | null;
 }
 
@@ -31,6 +32,8 @@ export interface SafetyInventory {
   runoff_type: RunoffType;
   runoff_depth_m: number;
   fence_height_m: number;
+  /** Official grandstand names next to the zone. */
+  grandstands: string[];
   grandstand_capacity: number;
   distance_to_stand_m: number | null;
   marshal_posts: number;
@@ -43,12 +46,17 @@ export interface TrackZone extends SafetyInventory {
   name: string;
   short_name: string;
   zone_type: ZoneType;
+  /** Official turn numbers inside the zone; turn_number is the first of them. */
+  turns: number[];
   turn_number: number | null;
   /** Lap-distance fractions in [0, 1]. */
   start_frac: number;
   end_frac: number;
+  length_m: number;
   v_entry_kph: number;
   v_apex_kph: number;
+  n_incidents: number;
+  n_loss_relevant: number;
 }
 
 /** The OpenF1 lap the outline and speed profile were taken from. */
@@ -89,7 +97,7 @@ export type IncidentType =
   | "flag_only"
   | "administrative";
 
-export type GeoMethod = "driver_location" | "inferred_slowest_car" | "marshal_sector";
+export type GeoMethod = "turn_in_message" | "driver_location" | "inferred_slowest_car" | "marshal_sector";
 export type GeoConfidence = "high" | "medium" | "low";
 
 /** GET /api/insurance/incidents — one processed race-control incident (ARCHITECTURE.md §4.4). */
@@ -113,9 +121,11 @@ export interface Incident {
   zone_id: string | null;
   geo_method: GeoMethod;
   geo_confidence: GeoConfidence;
+  /** Marshal sector for yellow-flag incidents placed by sector. */
+  marshal_sector: number | null;
   entry_speed_kph: number | null;
   kinetic_energy_kj: number | null;
-  extraction: { method: "regex" | "llm"; model: string | null };
+  extraction: { method: "regex" | "llm"; rule: string | null; model: string | null };
 }
 
 export interface IncidentQuery {
@@ -127,8 +137,8 @@ export interface IncidentQuery {
 /** POST /api/insurance/incidents/ingest */
 export interface IngestRequest {
   circuit: string;
-  seasons?: number[];
-  use_llm?: boolean;
+  /** Re-download race control and track points instead of using the cache. */
+  refresh?: boolean;
 }
 
 export type IngestStatus = "queued" | "running" | "succeeded" | "failed";
@@ -140,7 +150,8 @@ export interface IngestJob {
   created_at: string;
 }
 
-export type IngestStage = "sessions" | "race_control" | "extract" | "geolocate" | "zones" | "write";
+/** Pipeline stages in the order scripts/ingest.py runs them. */
+export type IngestStage = "fetch" | "load" | "zones" | "extract" | "geolocate" | "write";
 
 /** Events on GET /api/insurance/incidents/ingest/{job_id}/stream (SSE). `type` is the SSE event name. */
 export type IngestStreamEvent =

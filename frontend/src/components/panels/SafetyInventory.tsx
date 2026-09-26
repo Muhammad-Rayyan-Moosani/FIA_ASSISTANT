@@ -10,8 +10,12 @@ export function SafetyInventory({ zone, upgrade, source }: { zone: TrackZone; up
     ["Barrier", BARRIER_LABEL[zone.barrier_type]],
     ["Run-off", `${RUNOFF_LABEL[zone.runoff_type]}, ${zone.runoff_depth_m} m deep`],
     ["Debris fence", `${zone.fence_height_m.toFixed(1)} m`],
-    ["Grandstand", zone.grandstand_capacity > 0 ? `${formatNumber(zone.grandstand_capacity)} seats, ${zone.distance_to_stand_m ?? "?"} m from track` : "None in line of fire"],
+    ["Grandstands", zone.grandstands.length > 0 ? zone.grandstands.join(", ") : "None next to this zone"],
+    ...(zone.grandstands.length > 0
+      ? [["Seats · distance", `${formatNumber(zone.grandstand_capacity)} · ${zone.distance_to_stand_m ?? "?"} m`] as [string, string]]
+      : []),
     ["Marshal posts", String(zone.marshal_posts)],
+    ["Length", `${formatNumber(zone.length_m)} m${zone.turns.length ? ` · turn ${zone.turns.join(", ")}` : ""}`],
     ["Insured assets", formatEur(zone.asset_value_eur)],
   ];
   return (

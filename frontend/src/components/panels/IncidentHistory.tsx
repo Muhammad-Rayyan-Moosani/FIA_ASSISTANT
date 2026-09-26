@@ -6,7 +6,10 @@ import { useIncidents } from "@/hooks/ingestion/useIncidents";
 import { describeError } from "@/services/http/errors";
 import type { SourceInfo } from "@/types/api";
 
-const SESSION_SHORT: Record<string, string> = { Qualifying: "Quali", "Sprint Qualifying": "SQ", Practice: "FP" };
+const SESSION_SHORT: Record<string, string> = {
+  "Practice 1": "FP1", "Practice 2": "FP2", "Practice 3": "FP3", Qualifying: "Quali",
+  "Sprint Qualifying": "SQ", "Sprint Shootout": "SQ", Sprint: "Sprint", Race: "Race",
+};
 
 export function IncidentHistory({ circuitId, zoneId, source }: { circuitId: string; zoneId: string; source: SourceInfo | undefined }) {
   const { data, isPending, error } = useIncidents(circuitId, zoneId);
@@ -28,7 +31,9 @@ export function IncidentHistory({ circuitId, zoneId, source }: { circuitId: stri
               {i.season} {SESSION_SHORT[i.session_type] ?? i.session_type}
               {i.lap !== null && ` L${i.lap}`}
             </span>
-            <span title={`Placed by ${i.geo_method.replaceAll("_", " ")} (${i.geo_confidence} confidence)`}>{i.raw_message}</span>
+            <span title={`${i.incident_type.replaceAll("_", " ")} · placed by ${i.geo_method.replaceAll("_", " ")} (${i.geo_confidence} confidence)`} className={i.loss_relevant ? "" : "text-muted"}>
+              {i.raw_message}
+            </span>
           </div>
         ))}
       </div>

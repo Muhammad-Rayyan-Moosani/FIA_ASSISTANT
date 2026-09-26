@@ -31,5 +31,5 @@ pnpm-debug.log*
 .vscode/
 *.swp
 
-# --- Generated data (fetched by backend/scripts/fetch_openf1.py; never committed) ---
-data/openf1/
+# --- OpenF1 response cache used by backend/openf1_extract.py ---
+.openf1_cache/

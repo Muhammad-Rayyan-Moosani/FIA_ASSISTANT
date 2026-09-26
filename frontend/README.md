@@ -4,9 +4,11 @@ The insurance module UI: a 3D digital twin of each circuit coloured by insurance
 
 **Stack:** Next.js 16 (App Router) · React 19 · TypeScript (strict) · Tailwind CSS 4 · React Three Fiber 9 + drei · TanStack Query 5 · Zustand 5 · Vitest
 
-Everything on screen comes from the backend API. There is no mock data in the app.
+Everything on screen comes from the FastAPI backend (`backend/main.py`), which serves real OpenF1-derived data for **Monza**. There is no mock data in the app.
 
 ## Run it
+
+Start the backend first (`cd backend && uvicorn main:app --port 8000`), then:
 
 ```bash
 npm install
@@ -62,7 +64,7 @@ The full spec is in [`ARCHITECTURE.md` §7](../ARCHITECTURE.md#7-api-specificati
 
 | Endpoint | Type | Used by |
 |---|---|---|
-| `GET /api/insurance/circuits` | `CircuitSummary[]` | circuit switcher, data coverage |
+| `GET /api/insurance/circuits` | `CircuitSummary[]` (Monza only) | circuit switcher, data coverage |
 | `GET /api/insurance/tracks/{circuit}` | `TrackGeometry` | 3D/2D map, zone names, safety inventory, reference lap |
 | `GET /api/insurance/incidents?circuit&zone_id` | `Incident[]` | zone incident history |
 | `POST /api/insurance/incidents/ingest` | `IngestJob` | "Refresh from OpenF1" |
@@ -75,7 +77,7 @@ When the stream sends `done`, the frontend refetches circuits, the track, incide
 | Endpoint | Type | Used by |
 |---|---|---|
 | `GET /api/insurance/risk-map?circuit&series&upgrades` | `RiskMap` | colours, strip, premium summary, zone panel |
-| `POST /api/insurance/what-if` | `WhatIfRequest` → `WhatIfResponse` | safety what-if (its `risk_map` is written straight into the cache) |
+| `POST /api/insurance/what-if` | `WhatIfRequest` → `WhatIfResponse` | safety what-if: barrier type, impact speed, crash frequency (its `risk_map` is written straight into the cache) |
 | `GET /api/insurance/simulate/stream?circuit&series&seasons&upgrades` | SSE `SimulationStreamEvent` | season simulation + crash animation |
 | `GET /api/insurance/report/export?…&format=json\|pdf` | `UnderwriterReport` / PDF | report drawer |
 
@@ -88,7 +90,7 @@ When the stream sends `done`, the frontend refetches circuits, the track, incide
 
 ### Other rules
 
-- **`upgrades`** is compact JSON keyed by `zone_id`, for example `{"monza-parabolica":{"barrier_type":"tecpro"}}`. It's omitted when empty. Every Step 3 endpoint must price that scenario.
+- **`upgrades`** is compact JSON keyed by `zone_id`, for example `{"monza-z10":{"barrier_type":"tecpro","speed_factor":0.9}}`. It's omitted when empty. Every Step 3 endpoint prices that scenario.
 - **`sources`** (`provenance: measured | assumed | modelled`) drives the Real / Assumed / Calculated tags. Set it honestly per field.
 - **Errors** use the envelope `{"error": {"code", "message", "detail"}}`. The `message` is shown to users.
 - **CORS** must allow the frontend origin for `GET`/`POST` with `Content-Type`.

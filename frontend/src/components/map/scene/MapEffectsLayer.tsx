@@ -9,7 +9,7 @@ import type { FlashMap, FlashRef, SceneData } from "./sceneTypes";
 
 const POOL_SIZE = 90;
 const DROP_HEIGHT = 16;
-const COLORS = { crash: new Color("#ffffff"), breach: new Color("#e5484d"), incident: new Color("#4fd1c5") };
+const COLORS = { crash: new Color("#ffffff"), severe: new Color("#e5484d"), incident: new Color("#4fd1c5") };
 
 interface Slot {
   sphere: Mesh;
@@ -19,7 +19,7 @@ interface Slot {
   start: number;
   active: boolean;
   landed: boolean;
-  breach: boolean;
+  severe: boolean;
   zoneId: string | null;
   life: number;
 }
@@ -29,7 +29,7 @@ export interface SpawnPoint {
   z: number;
   color: Color;
   scale: number;
-  breach: boolean;
+  severe: boolean;
   zoneId: string | null;
   life: number;
 }
@@ -49,7 +49,7 @@ class EffectsPool {
       ring.rotation.x = -Math.PI / 2;
       sphere.visible = ring.visible = false;
       group.add(sphere, ring);
-      this.slots.push({ sphere, ring, sphereMat, ringMat, start: 0, active: false, landed: false, breach: false, zoneId: null, life: 1.7 });
+      this.slots.push({ sphere, ring, sphereMat, ringMat, start: 0, active: false, landed: false, severe: false, zoneId: null, life: 1.7 });
     }
   }
 
@@ -62,7 +62,7 @@ class EffectsPool {
     s.sphere.position.set(p.x, DROP_HEIGHT, p.z);
     s.ring.position.set(p.x, 0.08, p.z);
     s.ring.scale.setScalar(1);
-    s.breach = p.breach;
+    s.severe = p.severe;
     s.zoneId = p.zoneId;
     s.life = p.life;
     s.landed = false;
@@ -84,12 +84,12 @@ class EffectsPool {
       const a = t - fallSeconds;
       if (!s.landed) {
         s.landed = true;
-        if (s.breach && s.zoneId) flash.set(s.zoneId, 1);
+        if (s.severe && s.zoneId) flash.set(s.zoneId, 1);
       }
       s.sphere.position.y = 0.5;
       s.sphereMat.opacity = Math.max(0, 1 - a / s.life);
       s.ring.visible = true;
-      s.ring.scale.setScalar(1 + a * (s.breach ? 9 : 5));
+      s.ring.scale.setScalar(1 + a * (s.severe ? 9 : 5));
       s.ringMat.opacity = Math.max(0, 1 - a);
       if (a > s.life) {
         s.active = false;
@@ -111,7 +111,7 @@ class EffectsPool {
 
 /**
  * Animates map effects from the event bus: simulated crashes fall onto the run-off and ring out
- * (red for a fence breach); freshly ingested incidents drop in as teal pins.
+ * (red for one of the costliest 5% of crashes); freshly ingested incidents drop in as teal pins.
  */
 export function MapEffectsLayer({ scene, flash, reducedMotion }: { scene: SceneData; flash: FlashRef; reducedMotion: boolean }) {
   const groupRef = useRef<Group>(null);
@@ -138,13 +138,13 @@ export function MapEffectsLayer({ scene, flash, reducedMotion }: { scene: SceneD
         const q = scene.frame.normals[i]!;
         const side = (src.zone_id && sideByZone.get(src.zone_id)) || 1;
         const off = TRACK_WIDTH / 2 + 0.7;
-        const breach = isCrash && effect.crash.breach;
+        const severe = isCrash && effect.crash.severe;
         poolRef.current?.spawn({
           x: p.x + q.x * side * off,
           z: p.z + q.z * side * off,
-          color: isCrash ? (breach ? COLORS.breach : COLORS.crash) : COLORS.incident,
+          color: isCrash ? (severe ? COLORS.severe : COLORS.crash) : COLORS.incident,
           scale: isCrash ? 1 : 0.7,
-          breach,
+          severe,
           zoneId: src.zone_id,
           life: isCrash ? 1.7 : 3,
         });

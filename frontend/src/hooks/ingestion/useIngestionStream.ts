@@ -34,7 +34,8 @@ export interface IngestionState {
 type Action =
   | { type: "start" }
   | { type: "job"; jobId: string }
-  | { type: "event"; event: IngestStreamEvent }
+  | { type: "event"; event: Exclude<IngestStreamEvent, { type: "incident" }> }
+  | { type: "incidents"; incidents: Incident[] }
   | { type: "fail"; message: string }
   | { type: "reset" };
 
@@ -59,6 +60,12 @@ function reducer(state: IngestionState, action: Action): IngestionState {
       return { ...state, status: "failed", error: action.message };
     case "reset":
       return initialState;
+    case "incidents":
+      return {
+        ...state,
+        feed: [...[...action.incidents].reverse(), ...state.feed].slice(0, FEED_LIMIT),
+        incidentCount: state.incidentCount + action.incidents.length,
+      };
     case "event": {
       const e = action.event;
       switch (e.type) {
@@ -67,12 +74,6 @@ function reducer(state: IngestionState, action: Action): IngestionState {
             ...state,
             currentStage: e.stage,
             stages: { ...state.stages, [e.stage]: { done: e.done, total: e.total, message: e.message } },
-          };
-        case "incident":
-          return {
-            ...state,
-            feed: [e.incident, ...state.feed].slice(0, FEED_LIMIT),
-            incidentCount: state.incidentCount + 1,
           };
         case "done":
           return {
@@ -90,19 +91,33 @@ function reducer(state: IngestionState, action: Action): IngestionState {
 
 /**
  * Step 1 streaming hook: starts an ingestion job for a circuit and follows its SSE stream.
- * Placed incidents are forwarded to the map; cached track, incident and risk data refresh when it finishes.
+ * Placed incidents go to the map immediately and into the feed once per animation frame (a run can
+ * stream hundreds in a burst). Cached track, incident and risk data refresh when it finishes.
  */
 export function useIngestionStream(circuitId: string | null) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const queryClient = useQueryClient();
   const subscription = useRef<StreamSubscription | null>(null);
   const abort = useRef<AbortController | null>(null);
+  const pending = useRef<Incident[]>([]);
+  const frame = useRef<number | null>(null);
+
+  const flush = useCallback(() => {
+    if (frame.current !== null) cancelAnimationFrame(frame.current);
+    frame.current = null;
+    if (pending.current.length === 0) return;
+    dispatch({ type: "incidents", incidents: pending.current });
+    pending.current = [];
+  }, []);
 
   const stopAll = useCallback(() => {
     abort.current?.abort();
     subscription.current?.close();
     abort.current = null;
     subscription.current = null;
+    if (frame.current !== null) cancelAnimationFrame(frame.current);
+    frame.current = null;
+    pending.current = [];
   }, []);
 
   // A new circuit starts from a clean slate; leaving the page closes the stream.
@@ -122,8 +137,14 @@ export function useIngestionStream(circuitId: string | null) {
       dispatch({ type: "job", jobId: job.job_id });
       subscription.current = ingestionService.streamIngestion(job.job_id, {
         onEvent: (event) => {
+          if (event.type === "incident") {
+            mapEffects.emit({ kind: "incident", incident: event.incident });
+            pending.current.push(event.incident);
+            frame.current ??= requestAnimationFrame(flush);
+            return;
+          }
+          flush();
           dispatch({ type: "event", event });
-          if (event.type === "incident") mapEffects.emit({ kind: "incident", incident: event.incident });
           if (event.type === "done") {
             void queryClient.invalidateQueries({ queryKey: queryKeys.circuits() });
             void queryClient.invalidateQueries({ queryKey: queryKeys.track(circuitId) });
@@ -131,12 +152,15 @@ export function useIngestionStream(circuitId: string | null) {
             void queryClient.invalidateQueries({ queryKey: queryKeys.riskMapsForCircuit(circuitId) });
           }
         },
-        onError: (err) => dispatch({ type: "fail", message: describeError(err) }),
+        onError: (err) => {
+          flush();
+          dispatch({ type: "fail", message: describeError(err) });
+        },
       });
     } catch (err) {
       if (!controller.signal.aborted) dispatch({ type: "fail", message: describeError(err) });
     }
-  }, [circuitId, queryClient, stopAll]);
+  }, [circuitId, queryClient, stopAll, flush]);
 
   const cancel = useCallback(() => {
     stopAll();

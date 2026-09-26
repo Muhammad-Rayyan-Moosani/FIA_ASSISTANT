@@ -38,7 +38,7 @@ export function SimulatePanel({ sim, isRunning, onStart, onStop, modelEal, nSeas
       </div>
       <div className="grid grid-cols-3 gap-2.5" aria-live="polite">
         <Stat size="sm" label="Crashes shown" value={formatNumber(sim.crashes)} />
-        <Stat size="sm" label="Fence breaches" value={formatNumber(sim.breaches)} valueClassName={sim.breaches > 0 ? "text-risk-crit" : undefined} />
+        <Stat size="sm" label="Severe crashes" hint="costliest 5%" value={formatNumber(sim.severe)} valueClassName={sim.severe > 0 ? "text-risk-crit" : undefined} />
         <Stat size="sm" label="Running EAL" value={sim.runningEalEur !== null ? formatEur(sim.runningEalEur) : "–"} />
       </div>
       <ConvergenceChart points={sim.convergence} reference={modelEal} capacity={SAMPLE_SEASONS} />

@@ -14,19 +14,19 @@ export function serializeUpgrades(upgrades: UpgradeSet | undefined): string | un
     const c = upgrades[id]!;
     ordered[id] = {
       ...(c.barrier_type !== undefined && { barrier_type: c.barrier_type }),
-      ...(c.runoff_depth_m !== undefined && { runoff_depth_m: c.runoff_depth_m }),
-      ...(c.fence_height_m !== undefined && { fence_height_m: c.fence_height_m }),
+      ...(c.speed_factor !== undefined && { speed_factor: c.speed_factor }),
+      ...(c.frequency_multiplier !== undefined && { frequency_multiplier: c.frequency_multiplier }),
     };
   }
   return JSON.stringify(ordered);
 }
 
-/** Keep only the fields that differ from the zone's current equipment. */
+/** Keep only the fields that change something: a different barrier, or a factor other than 1. */
 export function diffChanges(zone: TrackZone, changes: ZoneChanges): ZoneChanges {
   return {
     ...(changes.barrier_type !== undefined && changes.barrier_type !== zone.barrier_type && { barrier_type: changes.barrier_type }),
-    ...(changes.runoff_depth_m !== undefined && changes.runoff_depth_m !== zone.runoff_depth_m && { runoff_depth_m: changes.runoff_depth_m }),
-    ...(changes.fence_height_m !== undefined && changes.fence_height_m !== zone.fence_height_m && { fence_height_m: changes.fence_height_m }),
+    ...(changes.speed_factor !== undefined && changes.speed_factor !== 1 && { speed_factor: changes.speed_factor }),
+    ...(changes.frequency_multiplier !== undefined && changes.frequency_multiplier !== 1 && { frequency_multiplier: changes.frequency_multiplier }),
   };
 }
 
