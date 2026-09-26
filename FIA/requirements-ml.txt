@@ -1,0 +1,12 @@
+# Production ML backends. Each is optional: the service degrades to a documented
+# fallback (or returns 503) when a package is missing.
+-r requirements.txt
+opencv-python-headless>=4.9      # homography + video decoding (NumPy fallback for images)
+torch>=2.2
+ultralytics>=8.1                 # YOLOv8-seg (set UMAP_YOLO_WEIGHTS)
+faiss-cpu>=1.8
+sentence-transformers>=2.6
+pdfplumber>=0.11
+faster-whisper>=1.0
+pydub>=0.25                      # requires ffmpeg on PATH
+fastf1>=3.3                      # optional offline telemetry source
