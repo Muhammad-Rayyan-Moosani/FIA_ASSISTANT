@@ -1,0 +1,107 @@
+{
+  "track_id": "monza",
+  "name": "Autodromo Nazionale (synthetic)",
+  "laps": 53,
+  "grid_size": 20,
+  "races_per_season": 1,
+  "seasons_observed": 15,
+  "synthetic": true,
+  "zones": [
+    {
+      "zone_id": "monza-z01",
+      "name": "Zone 1",
+      "x": 0.9,
+      "y": 0.5,
+      "corner_speed_kph": 75,
+      "barrier_type": "Tire wall"
+    },
+    {
+      "zone_id": "monza-z02",
+      "name": "Zone 2",
+      "x": 0.8464,
+      "y": 0.65,
+      "corner_speed_kph": 190,
+      "barrier_type": "Concrete"
+    },
+    {
+      "zone_id": "monza-z03",
+      "name": "Zone 3",
+      "x": 0.7,
+      "y": 0.7598,
+      "corner_speed_kph": 285,
+      "barrier_type": "Concrete"
+    },
+    {
+      "zone_id": "monza-z04",
+      "name": "Zone 4",
+      "x": 0.5,
+      "y": 0.8,
+      "corner_speed_kph": 140,
+      "barrier_type": "Tire wall"
+    },
+    {
+      "zone_id": "monza-z05",
+      "name": "Zone 5",
+      "x": 0.3,
+      "y": 0.7598,
+      "corner_speed_kph": 310,
+      "barrier_type": "Concrete"
+    },
+    {
+      "zone_id": "monza-z06",
+      "name": "Zone 6",
+      "x": 0.1536,
+      "y": 0.65,
+      "corner_speed_kph": 230,
+      "barrier_type": "Tire wall"
+    },
+    {
+      "zone_id": "monza-z07",
+      "name": "Zone 7",
+      "x": 0.1,
+      "y": 0.5,
+      "corner_speed_kph": 180,
+      "barrier_type": "Tire wall"
+    },
+    {
+      "zone_id": "monza-z08",
+      "name": "Zone 8",
+      "x": 0.1536,
+      "y": 0.35,
+      "corner_speed_kph": 245,
+      "barrier_type": "TecPro"
+    },
+    {
+      "zone_id": "monza-z09",
+      "name": "Zone 9",
+      "x": 0.3,
+      "y": 0.2402,
+      "corner_speed_kph": 300,
+      "barrier_type": "TecPro"
+    },
+    {
+      "zone_id": "monza-z10",
+      "name": "Zone 10",
+      "x": 0.5,
+      "y": 0.2,
+      "corner_speed_kph": 120,
+      "barrier_type": "SAFER barrier"
+    },
+    {
+      "zone_id": "monza-z11",
+      "name": "Zone 11",
+      "x": 0.7,
+      "y": 0.2402,
+      "corner_speed_kph": 265,
+      "barrier_type": "SAFER barrier"
+    },
+    {
+      "zone_id": "monza-z12",
+      "name": "Zone 12",
+      "x": 0.8464,
+      "y": 0.35,
+      "corner_speed_kph": 210,
+      "barrier_type": "Tire wall"
+    }
+  ]
+}

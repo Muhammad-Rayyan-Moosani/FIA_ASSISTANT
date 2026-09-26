@@ -1,0 +1,246 @@
+{
+  "incidents": [
+    {
+      "incident_id": "monza-0001",
+      "track_id": "monza",
+      "zone_id": "monza-z01",
+      "season": 2020,
+      "corner_speed_kph": 75,
+      "impact_speed_kph": 57.1,
+      "barrier_type": "Tire wall",
+      "x": 0.8936,
+      "y": 0.4908
+    },
+    {
+      "incident_id": "monza-0002",
+      "track_id": "monza",
+      "zone_id": "monza-z03",
+      "season": 2011,
+      "corner_speed_kph": 285,
+      "impact_speed_kph": 234.0,
+      "barrier_type": "Concrete",
+      "x": 0.6923,
+      "y": 0.7641
+    },
+    {
+      "incident_id": "monza-0003",
+      "track_id": "monza",
+      "zone_id": "monza-z03",
+      "season": 2013,
+      "corner_speed_kph": 285,
+      "impact_speed_kph": 213.5,
+      "barrier_type": "Concrete",
+      "x": 0.694,
+      "y": 0.7602
+    },
+    {
+      "incident_id": "monza-0004",
+      "track_id": "monza",
+      "zone_id": "monza-z03",
+      "season": 2016,
+      "corner_speed_kph": 285,
+      "impact_speed_kph": 267.7,
+      "barrier_type": "Concrete",
+      "x": 0.7072,
+      "y": 0.7564
+    },
+    {
+      "incident_id": "monza-0005",
+      "track_id": "monza",
+      "zone_id": "monza-z03",
+      "season": 2024,
+      "corner_speed_kph": 285,
+      "impact_speed_kph": 224.0,
+      "barrier_type": "Concrete",
+      "x": 0.7032,
+      "y": 0.7498
+    },
+    {
+      "incident_id": "monza-0006",
+      "track_id": "monza",
+      "zone_id": "monza-z04",
+      "season": 2012,
+      "corner_speed_kph": 140,
+      "impact_speed_kph": 102.9,
+      "barrier_type": "Tire wall",
+      "x": 0.4987,
+      "y": 0.8076
+    },
+    {
+      "incident_id": "monza-0007",
+      "track_id": "monza",
+      "zone_id": "monza-z04",
+      "season": 2013,
+      "corner_speed_kph": 140,
+      "impact_speed_kph": 75.6,
+      "barrier_type": "Tire wall",
+      "x": 0.4994,
+      "y": 0.799
+    },
+    {
+      "incident_id": "monza-0008",
+      "track_id": "monza",
+      "zone_id": "monza-z05",
+      "season": 2012,
+      "corner_speed_kph": 310,
+      "impact_speed_kph": 205.9,
+      "barrier_type": "Concrete",
+      "x": 0.3008,
+      "y": 0.771
+    },
+    {
+      "incident_id": "monza-0009",
+      "track_id": "monza",
+      "zone_id": "monza-z05",
+      "season": 2018,
+      "corner_speed_kph": 310,
+      "impact_speed_kph": 162.9,
+      "barrier_type": "Concrete",
+      "x": 0.2948,
+      "y": 0.7594
+    },
+    {
+      "incident_id": "monza-0010",
+      "track_id": "monza",
+      "zone_id": "monza-z05",
+      "season": 2019,
+      "corner_speed_kph": 310,
+      "impact_speed_kph": 160.7,
+      "barrier_type": "Concrete",
+      "x": 0.2957,
+      "y": 0.7647
+    },
+    {
+      "incident_id": "monza-0011",
+      "track_id": "monza",
+      "zone_id": "monza-z05",
+      "season": 2022,
+      "corner_speed_kph": 310,
+      "impact_speed_kph": 252.0,
+      "barrier_type": "Concrete",
+      "x": 0.2943,
+      "y": 0.7616
+    },
+    {
+      "incident_id": "monza-0012",
+      "track_id": "monza",
+      "zone_id": "monza-z06",
+      "season": 2014,
+      "corner_speed_kph": 230,
+      "impact_speed_kph": 216.2,
+      "barrier_type": "Tire wall",
+      "x": 0.1533,
+      "y": 0.6486
+    },
+    {
+      "incident_id": "monza-0013",
+      "track_id": "monza",
+      "zone_id": "monza-z06",
+      "season": 2015,
+      "corner_speed_kph": 230,
+      "impact_speed_kph": 170.3,
+      "barrier_type": "Tire wall",
+      "x": 0.1509,
+      "y": 0.6497
+    },
+    {
+      "incident_id": "monza-0014",
+      "track_id": "monza",
+      "zone_id": "monza-z06",
+      "season": 2017,
+      "corner_speed_kph": 230,
+      "impact_speed_kph": 152.9,
+      "barrier_type": "Tire wall",
+      "x": 0.1528,
+      "y": 0.6548
+    },
+    {
+      "incident_id": "monza-0015",
+      "track_id": "monza",
+      "zone_id": "monza-z06",
+      "season": 2019,
+      "corner_speed_kph": 230,
+      "impact_speed_kph": 186.0,
+      "barrier_type": "Tire wall",
+      "x": 0.1536,
+      "y": 0.6481
+    },
+    {
+      "incident_id": "monza-0016",
+      "track_id": "monza",
+      "zone_id": "monza-z06",
+      "season": 2024,
+      "corner_speed_kph": 230,
+      "impact_speed_kph": 116.4,
+      "barrier_type": "Tire wall",
+      "x": 0.1498,
+      "y": 0.657
+    },
+    {
+      "incident_id": "monza-0017",
+      "track_id": "monza",
+      "zone_id": "monza-z07",
+      "season": 2012,
+      "corner_speed_kph": 180,
+      "impact_speed_kph": 137.5,
+      "barrier_type": "Tire wall",
+      "x": 0.1004,
+      "y": 0.4962
+    },
+    {
+      "incident_id": "monza-0018",
+      "track_id": "monza",
+      "zone_id": "monza-z07",
+      "season": 2019,
+      "corner_speed_kph": 180,
+      "impact_speed_kph": 160.0,
+      "barrier_type": "Tire wall",
+      "x": 0.0978,
+      "y": 0.4975
+    },
+    {
+      "incident_id": "monza-0019",
+      "track_id": "monza",
+      "zone_id": "monza-z08",
+      "season": 2017,
+      "corner_speed_kph": 245,
+      "impact_speed_kph": 209.7,
+      "barrier_type": "TecPro",
+      "x": 0.1513,
+      "y": 0.3576
+    },
+    {
+      "incident_id": "monza-0020",
+      "track_id": "monza",
+      "zone_id": "monza-z08",
+      "season": 2021,
+      "corner_speed_kph": 245,
+      "impact_speed_kph": 214.9,
+      "barrier_type": "TecPro",
+      "x": 0.1479,
+      "y": 0.3416
+    },
+    {
+      "incident_id": "monza-0021",
+      "track_id": "monza",
+      "zone_id": "monza-z12",
+      "season": 2013,
+      "corner_speed_kph": 210,
+      "impact_speed_kph": 126.7,
+      "barrier_type": "Tire wall",
+      "x": 0.849,
+      "y": 0.3466
+    },
+    {
+      "incident_id": "monza-0022",
+      "track_id": "monza",
+      "zone_id": "monza-z12",
+      "season": 2016,
+      "corner_speed_kph": 210,
+      "impact_speed_kph": 169.1,
+      "barrier_type": "Tire wall",
+      "x": 0.855,
+      "y": 0.3573
+    }
+  ]
+}

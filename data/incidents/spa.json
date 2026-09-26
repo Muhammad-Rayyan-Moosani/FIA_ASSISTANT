@@ -1,0 +1,323 @@
+{
+  "incidents": [
+    {
+      "incident_id": "spa-0001",
+      "track_id": "spa",
+      "zone_id": "spa-z01",
+      "season": 2012,
+      "corner_speed_kph": 70,
+      "impact_speed_kph": 61.0,
+      "barrier_type": "Concrete",
+      "x": 0.9033,
+      "y": 0.5006
+    },
+    {
+      "incident_id": "spa-0002",
+      "track_id": "spa",
+      "zone_id": "spa-z02",
+      "season": 2013,
+      "corner_speed_kph": 305,
+      "impact_speed_kph": 158.3,
+      "barrier_type": "Concrete",
+      "x": 0.8469,
+      "y": 0.642
+    },
+    {
+      "incident_id": "spa-0003",
+      "track_id": "spa",
+      "zone_id": "spa-z02",
+      "season": 2017,
+      "corner_speed_kph": 305,
+      "impact_speed_kph": 151.3,
+      "barrier_type": "Concrete",
+      "x": 0.854,
+      "y": 0.6484
+    },
+    {
+      "incident_id": "spa-0004",
+      "track_id": "spa",
+      "zone_id": "spa-z02",
+      "season": 2022,
+      "corner_speed_kph": 305,
+      "impact_speed_kph": 254.5,
+      "barrier_type": "Concrete",
+      "x": 0.8454,
+      "y": 0.6448
+    },
+    {
+      "incident_id": "spa-0005",
+      "track_id": "spa",
+      "zone_id": "spa-z03",
+      "season": 2013,
+      "corner_speed_kph": 240,
+      "impact_speed_kph": 155.3,
+      "barrier_type": "TecPro",
+      "x": 0.697,
+      "y": 0.753
+    },
+    {
+      "incident_id": "spa-0006",
+      "track_id": "spa",
+      "zone_id": "spa-z03",
+      "season": 2013,
+      "corner_speed_kph": 240,
+      "impact_speed_kph": 168.4,
+      "barrier_type": "TecPro",
+      "x": 0.7074,
+      "y": 0.7646
+    },
+    {
+      "incident_id": "spa-0007",
+      "track_id": "spa",
+      "zone_id": "spa-z03",
+      "season": 2013,
+      "corner_speed_kph": 240,
+      "impact_speed_kph": 211.3,
+      "barrier_type": "TecPro",
+      "x": 0.6957,
+      "y": 0.7573
+    },
+    {
+      "incident_id": "spa-0008",
+      "track_id": "spa",
+      "zone_id": "spa-z03",
+      "season": 2022,
+      "corner_speed_kph": 240,
+      "impact_speed_kph": 129.5,
+      "barrier_type": "TecPro",
+      "x": 0.7003,
+      "y": 0.7514
+    },
+    {
+      "incident_id": "spa-0009",
+      "track_id": "spa",
+      "zone_id": "spa-z03",
+      "season": 2023,
+      "corner_speed_kph": 240,
+      "impact_speed_kph": 224.4,
+      "barrier_type": "TecPro",
+      "x": 0.7035,
+      "y": 0.7591
+    },
+    {
+      "incident_id": "spa-0010",
+      "track_id": "spa",
+      "zone_id": "spa-z03",
+      "season": 2023,
+      "corner_speed_kph": 240,
+      "impact_speed_kph": 167.7,
+      "barrier_type": "TecPro",
+      "x": 0.6981,
+      "y": 0.7564
+    },
+    {
+      "incident_id": "spa-0011",
+      "track_id": "spa",
+      "zone_id": "spa-z04",
+      "season": 2025,
+      "corner_speed_kph": 190,
+      "impact_speed_kph": 116.8,
+      "barrier_type": "Concrete",
+      "x": 0.504,
+      "y": 0.799
+    },
+    {
+      "incident_id": "spa-0012",
+      "track_id": "spa",
+      "zone_id": "spa-z05",
+      "season": 2012,
+      "corner_speed_kph": 130,
+      "impact_speed_kph": 110.7,
+      "barrier_type": "Concrete",
+      "x": 0.302,
+      "y": 0.7579
+    },
+    {
+      "incident_id": "spa-0013",
+      "track_id": "spa",
+      "zone_id": "spa-z05",
+      "season": 2015,
+      "corner_speed_kph": 130,
+      "impact_speed_kph": 85.5,
+      "barrier_type": "Concrete",
+      "x": 0.3023,
+      "y": 0.7503
+    },
+    {
+      "incident_id": "spa-0014",
+      "track_id": "spa",
+      "zone_id": "spa-z05",
+      "season": 2024,
+      "corner_speed_kph": 130,
+      "impact_speed_kph": 85.1,
+      "barrier_type": "Concrete",
+      "x": 0.2916,
+      "y": 0.7579
+    },
+    {
+      "incident_id": "spa-0015",
+      "track_id": "spa",
+      "zone_id": "spa-z06",
+      "season": 2013,
+      "corner_speed_kph": 260,
+      "impact_speed_kph": 175.9,
+      "barrier_type": "Tire wall",
+      "x": 0.1534,
+      "y": 0.6473
+    },
+    {
+      "incident_id": "spa-0016",
+      "track_id": "spa",
+      "zone_id": "spa-z07",
+      "season": 2011,
+      "corner_speed_kph": 320,
+      "impact_speed_kph": 246.7,
+      "barrier_type": "Concrete",
+      "x": 0.0962,
+      "y": 0.5029
+    },
+    {
+      "incident_id": "spa-0017",
+      "track_id": "spa",
+      "zone_id": "spa-z07",
+      "season": 2013,
+      "corner_speed_kph": 320,
+      "impact_speed_kph": 218.7,
+      "barrier_type": "Concrete",
+      "x": 0.0995,
+      "y": 0.5003
+    },
+    {
+      "incident_id": "spa-0018",
+      "track_id": "spa",
+      "zone_id": "spa-z07",
+      "season": 2015,
+      "corner_speed_kph": 320,
+      "impact_speed_kph": 279.2,
+      "barrier_type": "Concrete",
+      "x": 0.1033,
+      "y": 0.4946
+    },
+    {
+      "incident_id": "spa-0019",
+      "track_id": "spa",
+      "zone_id": "spa-z07",
+      "season": 2016,
+      "corner_speed_kph": 320,
+      "impact_speed_kph": 206.4,
+      "barrier_type": "Concrete",
+      "x": 0.1055,
+      "y": 0.4924
+    },
+    {
+      "incident_id": "spa-0020",
+      "track_id": "spa",
+      "zone_id": "spa-z07",
+      "season": 2018,
+      "corner_speed_kph": 320,
+      "impact_speed_kph": 237.4,
+      "barrier_type": "Concrete",
+      "x": 0.096,
+      "y": 0.4964
+    },
+    {
+      "incident_id": "spa-0021",
+      "track_id": "spa",
+      "zone_id": "spa-z07",
+      "season": 2022,
+      "corner_speed_kph": 320,
+      "impact_speed_kph": 215.6,
+      "barrier_type": "Concrete",
+      "x": 0.0908,
+      "y": 0.5093
+    },
+    {
+      "incident_id": "spa-0022",
+      "track_id": "spa",
+      "zone_id": "spa-z07",
+      "season": 2023,
+      "corner_speed_kph": 320,
+      "impact_speed_kph": 186.7,
+      "barrier_type": "Concrete",
+      "x": 0.1002,
+      "y": 0.5095
+    },
+    {
+      "incident_id": "spa-0023",
+      "track_id": "spa",
+      "zone_id": "spa-z07",
+      "season": 2023,
+      "corner_speed_kph": 320,
+      "impact_speed_kph": 253.7,
+      "barrier_type": "Concrete",
+      "x": 0.0922,
+      "y": 0.4949
+    },
+    {
+      "incident_id": "spa-0024",
+      "track_id": "spa",
+      "zone_id": "spa-z09",
+      "season": 2020,
+      "corner_speed_kph": 215,
+      "impact_speed_kph": 129.6,
+      "barrier_type": "Tire wall",
+      "x": 0.2997,
+      "y": 0.2372
+    },
+    {
+      "incident_id": "spa-0025",
+      "track_id": "spa",
+      "zone_id": "spa-z10",
+      "season": 2013,
+      "corner_speed_kph": 280,
+      "impact_speed_kph": 212.9,
+      "barrier_type": "TecPro",
+      "x": 0.5012,
+      "y": 0.2
+    },
+    {
+      "incident_id": "spa-0026",
+      "track_id": "spa",
+      "zone_id": "spa-z10",
+      "season": 2025,
+      "corner_speed_kph": 280,
+      "impact_speed_kph": 151.7,
+      "barrier_type": "TecPro",
+      "x": 0.5005,
+      "y": 0.194
+    },
+    {
+      "incident_id": "spa-0027",
+      "track_id": "spa",
+      "zone_id": "spa-z12",
+      "season": 2013,
+      "corner_speed_kph": 245,
+      "impact_speed_kph": 124.3,
+      "barrier_type": "Tire wall",
+      "x": 0.8511,
+      "y": 0.3493
+    },
+    {
+      "incident_id": "spa-0028",
+      "track_id": "spa",
+      "zone_id": "spa-z12",
+      "season": 2016,
+      "corner_speed_kph": 245,
+      "impact_speed_kph": 191.8,
+      "barrier_type": "Tire wall",
+      "x": 0.8528,
+      "y": 0.3481
+    },
+    {
+      "incident_id": "spa-0029",
+      "track_id": "spa",
+      "zone_id": "spa-z12",
+      "season": 2017,
+      "corner_speed_kph": 245,
+      "impact_speed_kph": 151.4,
+      "barrier_type": "Tire wall",
+      "x": 0.8459,
+      "y": 0.3488
+    }
+  ]
+}
