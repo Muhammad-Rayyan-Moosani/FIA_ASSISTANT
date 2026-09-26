@@ -675,12 +675,21 @@ def main() -> None:
     ap.add_argument("--data-dir", type=Path, default=DATA_DIR)
     ap.add_argument("--seasons", type=int, default=10_000)
     ap.add_argument("--seed", type=int, default=42)
+    ap.add_argument("--mock", action="store_true",
+                    help="use SYNTHETIC demo data (written to <data-dir>/mock) instead of real Step 1 output")
     args = ap.parse_args()
 
-    tdir, idir = args.data_dir / "tracks", args.data_dir / "incidents"
+    if args.mock:
+        base = args.data_dir / "mock"
+        print(f"--mock: generating SYNTHETIC data in {base}. These are NOT real F1 figures.")
+        generate_mock_data(base)
+    else:
+        base = args.data_dir
+    tdir, idir = base / "tracks", base / "incidents"
     if not (list(tdir.glob("*.json")) and list(idir.glob("*.json"))):
-        print(f"No input JSON in {args.data_dir} -> generating SYNTHETIC mock data.")
-        generate_mock_data(args.data_dir)
+        raise SystemExit(f"No Step 1 JSON in {base}.\n"
+                         "Run the OpenF1 extractor first:  python backend/openf1_extract.py\n"
+                         "or try the synthetic demo:       python backend/insurance_model.py --mock")
 
     res = simulate(idir, tdir, num_seasons=args.seasons, seed=args.seed)
     pr = price(res)
