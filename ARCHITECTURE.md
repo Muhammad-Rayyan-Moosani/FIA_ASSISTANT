@@ -63,38 +63,49 @@
 
 ## 3. System Overview
 
-```mermaid
-flowchart TB
-    subgraph Offline["① Offline pipeline · python -m scripts.ingest · run once"]
-        direction LR
-        OF1["OpenF1 API<br/>race_control · location · car_data"] --> DL["data_loader.py<br/>fetch · cache · geolocate"]
-        DL --> ZB["zones.py<br/>outline → zones"]
-        DL --> EX["underwriter.py<br/>LLM incident extraction"]
-    end
+**The whole system on one page.** Each box is one person's job, and the arrows show what they hand to the next person.
 
-    subgraph Data["② /data · JSON cache"]
-        direction LR
-        TRK[("tracks/*.json<br/>outline · zones · safety inventory")]
-        INC[("incidents/*.json")]
-        PAR[("actuarial_params.yaml")]
-    end
-
-    subgraph API["③ FastAPI backend · online"]
-        direction LR
-        R["api/insurance.py<br/>REST + SSE routes"] --> ACT["actuarial.py<br/>Poisson-Gamma · severity<br/>Monte Carlo · pricing"]
-        ACT --> CACHE[("LRU cache<br/>circuit · series · params hash")]
-        ACT --> REP["underwriter.py<br/>report narrative + PDF"]
-    end
-
-    subgraph UI["④ Next.js frontend"]
-        direction LR
-        MAP["InsuranceMap.tsx<br/>3D twin · 2D fallback"]
-        PAN["Control panels<br/>series · zone · what-if · simulate · report"]
-    end
-
-    Offline -- "writes" --> Data
-    Data -- "loaded at startup" --> API
-    API <-- "REST JSON + SSE crash stream" --> UI
+```text
+┌─ STEP 1 · GET THE DATA  (offline, run once) ───────────────────── [R1] Data ─┐
+│                                                                              │
+│ OpenF1 API  ──►  race_control messages  (flags, SC/VSC, "INCIDENT CAR 16")   │
+│             ──►  location  (GPS x,y of every car)                            │
+│             ──►  car_data  (speed traces)                                    │
+│                                                                              │
+│ Place every incident on the track  ──►  split the track into ~12 zones       │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+                                        │
+                                        │  saves  data/tracks/*.json  +  data/incidents/*.json
+                                        ▼
+┌─ STEP 2 · DO THE MATHS  (pure Python, no internet) ───────────── [R2] Maths ─┐
+│                                                                              │
+│ HOW OFTEN?  crash rate per zone, with a low/high range                       │
+│ HOW BAD?    corner speed → crash energy → € damage (depends on barrier)      │
+│ SIMULATE    10,000 seasons → expected loss (EAL) + worst case (VaR99)        │
+│ PRICE       premium per zone  vs  one flat blanket premium  →  € saved       │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+                                        │
+                                        │  Python functions:  simulate()  price()  what_if()
+                                        ▼
+┌─ STEP 3 · SERVE IT  (FastAPI) ──────────────────────────────────── [R3] API ─┐
+│                                                                              │
+│ GET  /risk-map     POST /simulate     POST /what-if     GET /report/export   │
+│ Claude turns the numbers into a plain-English underwriter report (PDF/JSON)  │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+                                        │
+                                        │  JSON over HTTP  (fake JSON in data/mocks/ until Step 3 is ready)
+                                        ▼
+┌─ STEP 4 · SHOW IT  (Next.js) ──────────────┬─────────────────────────────────┐
+│ 3D track (React Three Fiber)               │ Side panels                     │
+│ · barriers glow green → red                │ · F1 / F2 / F3 toggle           │
+│ · grandstand blocks                        │ · click a zone → its numbers    │
+│ · loss columns + falling crashes           │ · what-if: upgrade a barrier    │
+│ · 2D fallback map                          │ · simulate season · report      │
+│                                    [R4] 3D │                     [R3] Panels │
+└────────────────────────────────────────────┴─────────────────────────────────┘
 ```
 
 **Two planes:**
@@ -109,26 +120,43 @@ Owner: **R1** · Files: `backend/services/data_loader.py`, `backend/services/zon
 
 ### 4.1 Pipeline
 
-```mermaid
-flowchart TB
-    S["1 · Sessions 2023+<br/>Race · Sprint · Qualifying"]
-    RC["2 · race_control per session"]
-    F["3 · Filter loss-relevant messages<br/>flags · SC/VSC · incidents · track limits"]
-    P["4 · Parse<br/>regex fast path → LLM for unmatched text"]
-    D{"5 · Driver known?"}
-    L1["6a · location for that driver at t ± 2 s"]
-    L2["6b · all drivers at t ± 5 s<br/>pick slowest / stopped car"]
-    L3["6c · marshal sector → lap fraction<br/>low confidence"]
-    SNAP["7 · Snap x,y to outline → lap fraction"]
-    Z["8 · Assign zone_id by s"]
-    E["9 · Entry speed from car_data → E_k"]
-    OUT[("incidents/*.json")]
+```text
+  race_control message:  "YELLOW IN TRACK SECTOR 15"   at 13:41:07
+                          │
+                          ▼
+  ┌──────────────────────────────────────┐
+  │ 1. WHICH CAR?                        │
+  │    named in message?  → use that car │
+  │    not named?         → the slowest  │
+  │                         car on track │
+  │                         at 13:41:07  │
+  └──────────────────────────────────────┘
+                          │
+                          ▼
+  ┌──────────────────────────────────────┐
+  │ 2. WHERE WAS IT?                     │
+  │    OpenF1 location → GPS (x, y)      │
+  │    at exactly 13:41:07               │
+  └──────────────────────────────────────┘
+                          │
+                          ▼
+  ┌──────────────────────────────────────┐
+  │ 3. WHICH ZONE?                       │
+  │    snap (x, y) onto the track line   │
+  │    → e.g. "Parabolica"               │
+  └──────────────────────────────────────┘
+                          │
+                          ▼
+  ┌──────────────────────────────────────┐
+  │ 4. HOW FAST?                         │
+  │    car_data speed into the corner    │
+  │    → energy  E = ½ · m · v²          │
+  └──────────────────────────────────────┘
+                          │
+                          ▼
+          saved to  data/incidents/monza.json
 
-    S --> RC --> F --> P --> D
-    D -- yes --> L1 --> SNAP
-    D -- no --> L2 --> SNAP
-    L2 -. no clear car .-> L3 --> SNAP
-    SNAP --> Z --> E --> OUT
+  Fallback: no car found → rough spot from the marshal sector ("low confidence")
 ```
 
 ### 4.2 Coordinate mapping (critical)
@@ -227,17 +255,18 @@ Owner: **R2** · File: `backend/services/actuarial.py` (pure NumPy/SciPy, no I/O
 
 ### 5.1 Pipeline
 
-```mermaid
-flowchart LR
-    INC["Incidents per zone<br/>n_z, exposure T_z"] --> FREQ
-    PRIOR["Empirical-Bayes prior<br/>pooled by zone_type"] --> FREQ
-    FREQ["Frequency<br/>λ_z ~ Gamma(α₀+n_z, β₀+T_z)"] --> MC
-    ZONE["Zone physics<br/>v_entry · run-off · barrier · fence · stands"] --> SEV
-    SEV["Severity<br/>impact energy → damage + liability"] --> MC
-    SER["Series factors"] --> FREQ
-    SER --> SEV
-    MC["Monte Carlo<br/>10,000 seasons"] --> MET["EAL · VaR99 · TVaR99<br/>per zone + circuit"]
-    MET --> PRICE["Pricing<br/>zone premium · blanket · cost delta"]
+```text
+  incidents per zone ──────────► HOW OFTEN? ──┐
+                                 crash rate λ │
+                                 (low / high) │
+                                              ├──► SIMULATE ──► EAL + VaR99 ──► PREMIUM
+  speed · barrier · run-off ───► HOW BAD?   ──┘    10,000                       per zone
+  fence · grandstands            € per crash       seasons                         │
+                                                                                   ▼
+                                                          blanket premium − Σ zone premiums
+                                                          = € SAVED
+
+  F2 / F3: multiply HOW OFTEN by grid × error, and HOW BAD by energy (see §4.5)
 ```
 
 ### 5.2 Frequency: Bayesian Poisson-Gamma (conjugate)
@@ -653,6 +682,30 @@ FIA_ASSISTANT/
 ---
 
 ## 10. Team Delegation Matrix
+
+### 10.0 Who hands what to whom
+
+```text
+   HOUR 0 → everyone starts at once. Nobody waits: each person uses FAKE data first.
+
+   [R1] Data ──── data/*.json ────► [R2] Maths ──── functions ────► [R3] API
+                                       ▲                               │
+                                       │                               │ JSON
+                          until R1 is ready:                           ▼
+                          fake incidents in tests/        [R4] 3D  +  [R3] Panels
+                                                                       ▲
+                                                          until R3 is ready:
+                                                          fake JSON in data/mocks/
+
+   HOUR 16 → swap fakes for real data (Monza).    HOUR 36 → all 3 circuits done.
+```
+
+| Person | Your job in one sentence | You hand over |
+|---|---|---|
+| **R1 · Data** | Turn OpenF1 messages into incidents placed on the right spot of each track, and split each track into zones | `data/tracks/*.json`, `data/incidents/*.json` |
+| **R2 · Maths** | Turn incidents + zone physics into crash rates, simulated losses and premiums | `simulate()`, `price()`, `what_if()` in `services/actuarial.py` |
+| **R3 · API & Panels** | Wrap the maths in FastAPI routes, write the report, build the side panels | REST/SSE endpoints, fake JSON in `data/mocks/`, panels |
+| **R4 · 3D** | Draw the track in 3D with glowing risk, grandstands, loss columns and falling crashes | `InsuranceMap.tsx` + 3D scene + 2D fallback |
 
 ### 10.1 Ground rules
 

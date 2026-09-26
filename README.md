@@ -57,37 +57,23 @@ Two products, one platform: **faster safety decisions today, and cheaper, smarte
 
 > 📐 Insurance module deep-dive (data pipeline, actuarial maths, API contracts, 3D twin, 4-person team split): **[ARCHITECTURE.md](ARCHITECTURE.md)**
 
-```mermaid
-flowchart LR
-    subgraph SRC["📡 Data Sources"]
-        OF1[OpenF1 API]
-        FF1[FastF1]
-        DUMP[("/data<br/>offline replays")]
-    end
+```text
+┌─ MODULE 1 · RACE CONTROL ────────────────────────────────────────────────────┐
+│                                                                              │
+│ OpenF1 telemetry ──► spot anomaly ──► match FIA rule ──► Claude ──► card     │
+│ (replay / live)      (hard braking,    (instant,           (< 2 s)   on the  │
+│                       stopped car,      always works)                steward │
+│                       flags, pit speed)                              screen  │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
 
-    subgraph BE["⚙️ Backend · FastAPI"]
-        RE[Replay Engine]
-        AD[Anomaly Detector<br/><i>decel Δ · stops · flags · pit speed</i>]
-        RULES[FIA Rule Evaluator<br/><i>deterministic, instant</i>]
-        LLM[Steward Agent<br/><i>Claude · structured output</i>]
-        RISK[Actuarial Engine<br/><i>Poisson-Gamma · Monte Carlo · pricing</i>]
-    end
-
-    subgraph FE["🖥️ Frontend · Next.js + Tailwind"]
-        SP[Steward Portal<br/><i>live replay + advisory cards</i>]
-        IM[Insurance Risk Map<br/><i>3D digital twin + what-if</i>]
-    end
-
-    OF1 --> RE
-    FF1 --> RE
-    DUMP --> RE
-    RE -->|frames| AD
-    AD -->|anomaly events| RULES
-    RULES -->|matched regulations| LLM
-    LLM -->|advisory card < 2s| SP
-    RULES -.->|fallback card| SP
-    DUMP -->|historical incidents| RISK
-    RISK -->|zone scores + premiums| IM
+┌─ MODULE 2 · INSURANCE ───────────────────────────────────────────────────────┐
+│                                                                              │
+│ Past incidents ──► risk per zone ──► simulate 10,000 ──► premium ──► 3D map  │
+│ + GPS position     (how often?       seasons             per zone    what-if │
+│ + corner speed      how bad?)        (EAL, VaR99)        vs blanket  report  │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### API at a glance
