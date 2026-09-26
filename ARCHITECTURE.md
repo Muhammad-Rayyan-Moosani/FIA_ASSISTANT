@@ -167,7 +167,17 @@ Race-control `TRACK SECTOR n` values are **marshal sectors**, not the 3 timing s
 2. Query `location?session_key&driver_number&date>t₀−2s&date<t₀+2s`, and take the sample nearest `t₀`.
 3. If no driver is named (e.g. `YELLOW IN TRACK SECTOR 15`), query all drivers over `t₀ ± 5 s` together with `car_data`, and select the car with the lowest speed (or speed < 30 km/h outside the pit lane).
 4. Snap `(x, y)` to the nearest point of the circuit outline (KD-tree or brute force over ~400 points) → lap fraction `s`.
-5. Store `geo_method ∈ {driver_location, inferred_slowest_car, marshal_sector}` and `geo_confidence ∈ {high, medium, low}`.
+5. Store `geo_method ∈ {turn_in_message, driver_location, inferred_slowest_car, marshal_sector}` and `geo_confidence ∈ {high, medium, low}`.
+
+**As built (R1, Monza):** regex fast path first, then car positions for two-car incidents.
+- `turn_in_message` (high): the turn named in the text (`TURN 8 INCIDENT …`, `TRACK LIMITS AT TURN 2`, `OFF TRACK AND CONTINUED AT TURN 10`). Steward notes are posted a minute or more after the event, so a car's position *at the message time* would be wrong; the named turn is right.
+- `driver_location` (high): for loss-relevant two-car incidents, `services/geolocate.py` finds where the two cars were closest in the 240 s before the note (within 3 m). If that point is within 5% of a lap of the named turn, the incident gets that exact spot; otherwise the named turn is kept. Monza: 15 candidates, contact found for 11, 6 agree and are upgraded. Lookups are cached in `data/openf1/{circuit}_contacts.json`.
+- `marshal_sector` (medium): yellow flags → the turn nearest that marshal post along the lap, using real marshal-post positions from the MultiViewer circuit API. Checked against race control's own `MARSHALS / RECOVERY VEHICLE … AT TURN n` messages: Monza 2/3 in the right zone, Montreal 3/6 exact and 5/6 within one corner.
+- Turn positions: MultiViewer, cross-checked against `scripts/build_turn_map.py` (turn positions from car locations at track-limits infractions): T2, T4, T5 agree within 5–25 m.
+- At Monza every loss-relevant message is placed (0 unplaced); only administrative messages (pit lane, impeding, deltas…) have no location, and they are counted in `data_coverage.not_placed`. `inferred_slowest_car` remains a fallback for circuits where that is not true.
+- Yellow flags: repeats in the same sector within 5 min are one event, and the warning yellow shown one sector early is dropped. `DOUBLE YELLOW` → `stopped`, `YELLOW` → `flag_only`, both `loss_relevant`.
+- Hazards on straights are placed at the nearest corner, so straight zones have few or no incidents; the pooled prior (§5.2) keeps their rate above zero.
+- Run: `cd backend && python -m scripts.ingest monza` (`--offline` = cache only, `--refresh` = re-download).
 
 ### 4.3 Zone construction (`services/zones.py`)
 
@@ -178,6 +188,14 @@ Zones are derived from the **real reference lap** already cached in `data/openf1
 3. The segments between braking zones become `straight` / `high_speed` zones. Target ~10–16 zones per circuit.
 4. **Entry speed** `v_entry` = the speed at the braking point, from the reference trace.
 5. Merge with the **hand-authored safety inventory** in `data/tracks/{circuit}.json` (names, barrier, run-off, fences, stands, asset values). See §13 A2.
+
+**As built (R1, Monza → 11 zones `monza-z01`…`monza-z11`: 6 braking, 1 high-speed, 4 straight):**
+- Distances are calibrated to the official lap length (Monza 5,793 m).
+- A braking zone starts at the braking point (last sample at ≥ 97% of the speed peak before the corner) and ends when speed is back halfway to the entry speed. Chicane minima within 300 m are one zone, from the first minimum to the last.
+- Stretches under 150 m join the zone before. Zones never wrap past the line: the main straight is two zones (`…-01-main`, `…-NN-main`).
+- `v_entry_kph` = speed at the braking point (braking zones) or the zone's top speed (others).
+- Zones are named after the official turns inside them and list them in `turns`. `marshal_posts` = real MultiViewer marshal sectors inside the zone.
+- The hand-authored input is `data/tracks/{circuit}_inventory.json` (grandstands from the official circuit list; barrier / run-off / fence / asset defaults by zone type, labelled assumed). The output `data/tracks/{circuit}.json` also carries `turns`, `rotation_deg`, `data_coverage` (sessions for exposure, counts, what was not placed) and `sources`.
 
 `data/tracks/{circuit}.json`:
 
