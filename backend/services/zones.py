@@ -107,6 +107,8 @@ def build_zones(circuit: str) -> list[dict]:
     for s, e, a, kind in spans:
         if s - cursor >= 2:
             segments.append((cursor, s, None, None))      # gap before this braking zone
+        else:
+            s = cursor                                    # tiny gap: absorb it so zones stay contiguous
         segments.append((s, e, a, kind))
         cursor = e
     if n - 1 - cursor >= 2:
