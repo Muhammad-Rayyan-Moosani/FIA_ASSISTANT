@@ -1,0 +1,30 @@
+{
+ "circuit": "montreal",
+ "note": "Hand-authored safety inventory, merged into data/tracks/montreal.json by services/zones.py. Every value says where it comes from.",
+ "grandstands": {
+  "source": "Official list, Grand Prix du Canada: https://gpcanada.ca/en/type-de-billet/grandstands/ (which corners each grandstand overlooks, as published).",
+  "assumed_distance_m": 40,
+  "assumed_seats_per_stand": 2500,
+  "stands": [
+   {"name": "Grandstand 1", "where": "main_straight", "official": "Located directly opposite the F1 team garages and pit lane"},
+   {"name": "Platinum Grandstand", "where": "main_straight", "official": "Alongside the straight leading from the starting grid to the Senna Curve"},
+   {"name": "Grandstand 11", "turns": [1, 2], "official": "Facing the Senna Curve, overlooks Turns 1 and 2"},
+   {"name": "Grandstand 10", "turns": [1, 2], "official": "Just after the Senna Curve, view of Turns 1 and 2"},
+   {"name": "Grandstand 33", "turns": [6, 7], "official": "Direct view of Turns 6 and 7"},
+   {"name": "Grandstand 31", "turns": [8, 9], "official": "Overlooks the sequence through Turns 8 and 9"},
+   {"name": "Grandstand 21", "turns": [10], "official": "View of the entry to Turn 10"},
+   {"name": "Grandstand 15", "turns": [10], "official": "Overlooks the Hairpin (Turn 10)"},
+   {"name": "Grandstand 24", "turns": [10], "official": "Overlooks the Hairpin (Turn 10)"},
+   {"name": "Grandstand 34", "turns": [10], "official": "View of the Hairpin"},
+   {"name": "Grandstand 46", "turns": [11], "official": "Outside of the eastern section, beginning of Casino Straight"},
+   {"name": "Grandstand 47", "turns": [11], "official": "Inside of the eastern section, overlooks the opening of Casino Straight"}
+  ],
+  "unmapped": []
+ },
+ "defaults_by_zone_type": {
+  "source": "ASSUMED placeholder by zone type, not surveyed. Replace per zone when real inventory is available.",
+  "braking":    {"barrier_type": "tyre_wall", "runoff_type": "asphalt", "runoff_depth_m": 30, "fence_height_m": 4.0, "asset_value_eur": 1000000},
+  "high_speed": {"barrier_type": "concrete",  "runoff_type": "asphalt", "runoff_depth_m": 15, "fence_height_m": 4.0, "asset_value_eur": 600000},
+  "straight":   {"barrier_type": "concrete",  "runoff_type": "grass",   "runoff_depth_m": 10, "fence_height_m": 3.0, "asset_value_eur": 400000}
+ }
+}

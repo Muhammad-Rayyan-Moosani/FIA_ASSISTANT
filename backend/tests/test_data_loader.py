@@ -205,3 +205,14 @@ def test_build_turn_map_helpers_still_work():
     xy, frac = load_outline("monza")
     f, d = snap(xy, frac, xy[100, 0], xy[100, 1])
     assert f == pytest.approx(frac[100]) and d == 0
+
+
+@pytest.mark.parametrize("circuit", ["monza", "montreal"])
+def test_every_circuit_builds_valid_zones(circuit):
+    cfg = CIRCUITS[circuit]
+    sessions, points, lap = load_raw(cfg)
+    inventory = json.loads((ROOT_DIR / "tracks" / f"{circuit}_inventory.json").read_text(encoding="utf-8"))
+    zones = build_zones(cfg, lap_geometry(lap, cfg.length_m), points["turns"], points["marshal_sectors"], inventory)
+    assert 10 <= len(zones) <= 16
+    assert sorted(t for z in zones for t in z["turns"]) == [t["number"] for t in points["turns"]]
+    assert len(sessions) == 20
