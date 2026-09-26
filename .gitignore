@@ -30,3 +30,6 @@ pnpm-debug.log*
 .idea/
 .vscode/
 *.swp
+
+# --- Generated data (fetched by backend/scripts/fetch_openf1.py; never committed) ---
+data/openf1/

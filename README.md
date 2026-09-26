@@ -100,16 +100,12 @@ FIA_ASSISTANT/
 │   ├── tests/
 │   ├── requirements.txt
 │   └── requirements-fastf1.txt   # optional heavier FastF1 install
-├── frontend/                # Next.js · TailwindCSS · React Three Fiber
-│   ├── app/steward/         # 🟡 Steward Portal
-│   ├── app/insurance/       # 🛡️ Insurance Risk Map (3D digital twin)
-│   ├── components/insurance/
-│   └── lib/
+├── frontend/                # Next.js 16 · React 19 · TypeScript · Tailwind · React Three Fiber
+│   └── src/                 # types (API contract) · services (Step 1 + Step 3) · hooks · components
 ├── data/
-│   ├── openf1/              # ✅ real 2024 reference laps + race-control logs (Monza, Silverstone, Spa)
+│   ├── openf1/              # raw OpenF1 cache, generated locally by scripts/fetch_openf1.py (not committed)
 │   ├── tracks/              # circuit outlines + zones + safety inventory
 │   ├── incidents/           # geolocated historical incidents for the risk model
-│   ├── mocks/               # API fixtures for frontend development
 │   └── replay/              # demo replay sessions (steward module)
 ├── docs/
 ├── .env.example
@@ -134,15 +130,16 @@ cp .env.example .env        # add your ANTHROPIC_API_KEY
 cd backend
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-python -m scripts.fetch_openf1      # optional: refresh real data from OpenF1
+python -m scripts.fetch_openf1      # download OpenF1 reference laps into data/openf1/
 uvicorn main:app --reload --port 8000
 ```
 
-**Frontend**
+**Frontend** (details in [frontend/README.md](frontend/README.md))
 
 ```bash
 cd frontend
 npm install
+cp .env.example .env.local           # points at the backend (default http://localhost:8000)
 npm run dev                          # → http://localhost:3000
 ```
 
@@ -165,11 +162,11 @@ npm run dev                          # → http://localhost:3000
 
 **🛡️ Insurance module (building first — see [ARCHITECTURE.md](ARCHITECTURE.md))**
 - [x] Repo, structure & docs
-- [x] OpenF1 client + real 2024 reference data (Monza, Silverstone, Spa)
+- [x] OpenF1 client + fetch script (`python -m scripts.fetch_openf1`)
 - [ ] Incident ingestion + geolocation + zones
 - [ ] Actuarial engine (Poisson-Gamma · severity · Monte Carlo · pricing)
 - [ ] Insurance API (risk map · simulate · what-if · report)
-- [ ] 3D digital twin + control panels
+- [x] Frontend app: 3D digital twin, panels, API + streaming service layer
 - [ ] Underwriter report (LLM + PDF)
 
 **🟡 Race Control module (next)**
