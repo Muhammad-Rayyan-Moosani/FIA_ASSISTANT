@@ -72,6 +72,7 @@ CIRCUITS = {
                     6: "Turns 6–7", 7: "Turns 6–7", 8: "Turns 8–9", 9: "Turns 8–9", 10: "Hairpin",
                     11: "Turn 11 (Casino Straight)", 12: "Turn 12",
                     13: "Final chicane (Wall of Champions)", 14: "Final chicane (Wall of Champions)"},
+        short_name="Montreal", country="Canada", event_name="Canadian Grand Prix", race_laps=70, grid_size=20,
     ),
 }
 

@@ -13,6 +13,11 @@ interface UiState {
   /** What-if upgrades per circuit, keyed by zone_id. Physical changes, so they persist across series. */
   upgradesByCircuit: Record<string, UpgradeSet>;
   reportOpen: boolean;
+  /** Tint the 3D twin by risk (on) or show it as-built only (off). */
+  riskOverlay: boolean;
+  /** Cars lapping at the real reference-lap speed. */
+  showTraffic: boolean;
+  selectedAssetId: string | null;
 
   setCircuit: (id: string) => void;
   setSeries: (series: Series) => void;
@@ -22,6 +27,9 @@ interface UiState {
   clearUpgrade: (circuitId: string, zoneId: string) => void;
   clearAllUpgrades: (circuitId: string) => void;
   setReportOpen: (open: boolean) => void;
+  setRiskOverlay: (on: boolean) => void;
+  setShowTraffic: (on: boolean) => void;
+  selectAsset: (assetId: string | null) => void;
 }
 
 export const useUiStore = create<UiState>()((set) => ({
@@ -31,8 +39,11 @@ export const useUiStore = create<UiState>()((set) => ({
   selectedZoneId: null,
   upgradesByCircuit: {},
   reportOpen: false,
+  riskOverlay: true,
+  showTraffic: true,
+  selectedAssetId: null,
 
-  setCircuit: (id) => set((s) => (s.circuitId === id ? s : { circuitId: id, selectedZoneId: null })),
+  setCircuit: (id) => set((s) => (s.circuitId === id ? s : { circuitId: id, selectedZoneId: null, selectedAssetId: null })),
   setSeries: (series) => set({ series }),
   setView: (view) => set({ view }),
   selectZone: (selectedZoneId) => set({ selectedZoneId }),
@@ -49,6 +60,9 @@ export const useUiStore = create<UiState>()((set) => ({
     })),
   clearAllUpgrades: (circuitId) => set((s) => ({ upgradesByCircuit: { ...s.upgradesByCircuit, [circuitId]: {} } })),
   setReportOpen: (reportOpen) => set({ reportOpen }),
+  setRiskOverlay: (riskOverlay) => set({ riskOverlay }),
+  setShowTraffic: (showTraffic) => set({ showTraffic }),
+  selectAsset: (selectedAssetId) => set({ selectedAssetId }),
 }));
 
 const EMPTY_UPGRADES: UpgradeSet = {};

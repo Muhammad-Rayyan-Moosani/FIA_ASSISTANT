@@ -7,7 +7,7 @@ numbers, and zone vs blanket pricing. This module only adapts inputs and outputs
   Step 1 zone / incident  →  model input
     zone.v_entry_kph      →  corner_speed_kph   (impact speed = corner speed × 0.75 prior; no measured impacts)
     zone.barrier_type     →  barrier_type       (tyre_wall→tirewall, guardrail→armco, …)
-    loss-relevant incidents per zone → n_crashes
+    counted crashes per zone (services/crash_filter.py) → n_crashes
     seasons in data_coverage          → seasons of exposure (one race weekend per season)
     race laps × grid                  → car-passes (only for the per-pass probability; not shown in the UI)
 
@@ -28,7 +28,7 @@ import pandas as pd
 from scipy import stats
 
 import insurance_model as im
-from services import repository
+from services import crash_filter, repository
 
 N_SEASONS = 10_000
 SEED = 42
@@ -73,7 +73,7 @@ def _model_inputs(circuit: str, version: float) -> tuple[list[dict], pd.DataFram
     rows = [{"incident_id": r["incident_id"], "track_id": circuit, "zone_id": r["zone_id"], "season": r["season"],
              "corner_speed_kph": speed[r["zone_id"]], "impact_speed_kph": np.nan,
              "barrier_type": barrier[r["zone_id"]], "x": r["x"], "y": r["y"]}
-            for r in d.incidents if r["loss_relevant"] and r["zone_id"] in speed]
+            for r in crash_filter.crash_events(d.incidents) if r["zone_id"] in speed]
     cols = ["incident_id", "track_id", "zone_id", "season", "corner_speed_kph", "impact_speed_kph", "barrier_type", "x", "y"]
     return [track], pd.DataFrame(rows, columns=cols)
 
@@ -220,7 +220,7 @@ def _risk_sources(circuit: str, r: Run) -> dict:
     d = repository.load(circuit)
     cov = d.track["data_coverage"]
     n_seasons = len(cov["seasons"])
-    model = ("Step 2 model (insurance_model.py): crash rate per zone from its loss-relevant incidents with a Jeffreys "
+    model = ("Step 2 model (insurance_model.py): crash rate per zone from its counted crashes with a Jeffreys "
              "Gamma posterior; impact speed → energy E = ½mv² → barrier repair + car damage cost; "
              f"{N_SEASONS:,} simulated race weekends.")
     placeholder = ("Barrier costs, car-damage cost and impact-speed share are placeholders, so the euro values show the "
@@ -240,9 +240,9 @@ def _risk_sources(circuit: str, r: Run) -> dict:
         "series_factors": {"provenance": "assumed", "title": "Series factors",
                            "detail": "F2 and F3 race at Monza but OpenF1 has no F2/F3 data. Their risk is F1's crash rate × "
                                      "grid × error factors, with impact energy × the energy factor (project brief defaults)."},
-        "crash_rate": src("Crashes per weekend", f"Loss-relevant incidents in this zone over {n_seasons} race weekends "
+        "crash_rate": src("Crashes per weekend", f"Counted crashes in this zone over {n_seasons} race weekends "
                                                  f"({cov['seasons'][0]}–{cov['seasons'][-1]}), Jeffreys Gamma posterior mean "
-                                                 "and 90% interval, times the series factor."),
+                                                 f"and 90% interval, times the series factor.\n\n{crash_filter.describe()}"),
         "crash_prob": src("Chance of a crash", "Share of simulated weekends with at least one crash in this zone."),
         "energy": src("Mean impact energy", "E = ½mv² at the simulated impact speed (75% of the real entry speed, lognormal spread)."),
         "zone_premium": src("Zone premium", "(expected loss + 8% × (VaR99 − expected loss)) ÷ 0.85."),
@@ -304,3 +304,46 @@ def simulation_events(circuit: str, series: str, upgrades: dict[str, dict] | Non
     return {"crashes": sorted(crashes, key=lambda c: c["season"]), "running_eal": running,
             "eal": float(total.mean()), "var99": float(np.quantile(total, 0.99)),
             "se": float(total.std(ddof=1) / math.sqrt(N_SEASONS))}
+
+
+# ----------------------------------------------------------------------------- insured structures
+EXPOSURE_REACH_M = 200.0      # assumed: beyond this distance from the track a crash cannot reach a structure
+
+
+def asset_map(circuit: str, series: str, upgrades: dict[str, dict] | None = None) -> dict:
+    """Real structures (OpenStreetMap) with an exposure score from the risk of the zone they face."""
+    data = repository.assets(circuit)
+    rm = risk_map(circuit, series, upgrades)
+    zone_score = {z["zone_id"]: z["risk_score"] for z in rm["zones"]}
+    out = []
+    for a in data["assets"]:
+        reach = max(0.0, 1.0 - a["distance_to_track_m"] / EXPOSURE_REACH_M)
+        score = int(round(zone_score.get(a["nearest_zone_id"], 0) * reach))
+        out.append({**a, "exposure_score": score, "exposure_tier": _tier(score)})
+    summary = []
+    for key, (label, description) in repository.COVERAGE_LINES.items():
+        items = [a for a in out if key in a["coverage"]]
+        count = len(items) + (data["marshal_posts"] if key == "participant_accident" else 0)
+        summary.append({"line": key, "label": label, "description": description, "count": count,
+                        "high_exposure": sum(a["exposure_tier"] in ("HIGH", "CRITICAL") for a in items)})
+    counts = data["counts"]
+    return {
+        "circuit": circuit, "series": series, "attribution": data["source"],
+        "alignment_error_m": data["alignment"]["median_error_m"], "extent_m": data["extent_m"],
+        "marshal_posts": data["marshal_posts"], "coverage": summary, "assets": out, "context": data["context"],
+        "sources": {
+            "structures": {"provenance": "measured", "title": "Structures",
+                           "detail": f"{sum(counts.values())} structures from OpenStreetMap ({data['source']}): "
+                                     + ", ".join(f"{v} {k.replace('_', ' ')}" for k, v in counts.items())
+                                     + f". Aligned to the OpenF1 track by matching OSM's raceway to the real lap "
+                                       f"(median error {data['alignment']['median_error_m']} m).\n\n"
+                                       "Heights come from OSM where mapped; otherwise a default by building type (labelled assumed)."},
+            "coverage": {"provenance": "assumed", "title": "Coverage lines",
+                         "detail": "Which insurance lines each structure type falls under follows common venue and event "
+                                   "programmes (property, spectator liability, business interruption, broadcast equipment, "
+                                   "participant accident, track infrastructure). Marshal posts are the real MultiViewer count."},
+            "exposure": {"provenance": "modelled", "title": "Exposure",
+                         "detail": f"Risk score of the zone the structure faces × (1 − distance ÷ {EXPOSURE_REACH_M:.0f} m). "
+                                   f"The {EXPOSURE_REACH_M:.0f} m reach is an assumption."},
+        },
+    }

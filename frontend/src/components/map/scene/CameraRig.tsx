@@ -5,6 +5,9 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useRef, type ComponentRef } from "react";
 import { Vector3 } from "three";
 
+/** Camera distance when flying to a selected zone: close enough to see barriers, run-off and grandstands. */
+const FOCUS_DISTANCE = 62;
+
 interface CameraRigProps {
   /** World-space point to ease towards (the selected zone), or null to stay put. */
   focus: Vector3 | null;
@@ -13,7 +16,7 @@ interface CameraRigProps {
   reducedMotion: boolean;
 }
 
-/** Orbit camera: slow auto-rotation until the user takes over, and a smooth glide to the selected zone. */
+/** Orbit camera: slow auto-rotation until the user takes over, and a smooth fly-in to the selected zone. */
 export function CameraRig({ focus, resetKey, reducedMotion }: CameraRigProps) {
   const controls = useRef<ComponentRef<typeof OrbitControls>>(null);
   const camera = useThree((s) => s.camera);
@@ -33,14 +36,19 @@ export function CameraRig({ focus, resetKey, reducedMotion }: CameraRigProps) {
   }, [resetKey, camera]);
 
   useEffect(() => {
-    goal.current = focus ? focus.clone().multiplyScalar(0.45) : null;
+    goal.current = focus ? focus.clone() : null;
   }, [focus]);
 
   useFrame(() => {
     const c = controls.current;
     if (!c || !goal.current) return;
-    c.target.lerp(goal.current, reducedMotion ? 1 : 0.06);
-    if (c.target.distanceTo(goal.current) < 0.05) goal.current = null;
+    const k = reducedMotion ? 1 : 0.06;
+    const offset = camera.position.clone().sub(c.target);
+    const dist = offset.length();
+    c.target.lerp(goal.current, k);
+    offset.setLength(dist + (FOCUS_DISTANCE - dist) * k);
+    camera.position.copy(c.target).add(offset);
+    if (c.target.distanceTo(goal.current) < 0.05 && Math.abs(dist - FOCUS_DISTANCE) < 0.5) goal.current = null;
     c.update();
   });
 
@@ -52,7 +60,7 @@ export function CameraRig({ focus, resetKey, reducedMotion }: CameraRigProps) {
       dampingFactor={0.08}
       autoRotate={!reducedMotion}
       autoRotateSpeed={0.35}
-      minDistance={45}
+      minDistance={8}
       maxDistance={320}
       minPolarAngle={0.28}
       maxPolarAngle={1.38}

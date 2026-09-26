@@ -19,11 +19,11 @@ from services.openf1_client import OpenF1Client
 
 DATA_DIR = Path(__file__).resolve().parents[2] / "data" / "openf1"
 
-# circuit id -> (OpenF1 filters for the 2024 race, reference driver, reference lap)
+# circuit id -> (OpenF1 filters for the race, reference driver, reference lap, output file in data/openf1)
 CIRCUITS = {
-    "monza": ({"year": 2024, "session_type": "Race", "circuit_short_name": "Monza"}, 16, 12),
-    "silverstone": ({"year": 2024, "session_type": "Race", "circuit_short_name": "Silverstone"}, 44, 8),
-    "spa": ({"year": 2024, "session_type": "Race", "circuit_short_name": "Spa-Francorchamps"}, 44, 30),
+    "monza": ({"year": 2024, "session_type": "Race", "circuit_short_name": "Monza"}, 16, 12, "monza_2024.json"),
+    # 2025: dry race (2024 was wet), same lap as data_loader.CIRCUITS["montreal"].reference_lap
+    "montreal": ({"year": 2025, "session_type": "Race", "circuit_short_name": "Montreal"}, 63, 63, "montreal_lap.json"),
 }
 
 
@@ -31,7 +31,7 @@ def _parse(ts: str) -> datetime:
     return datetime.fromisoformat(ts)
 
 
-def fetch_circuit(client: OpenF1Client, circuit: str, filters: dict, driver: int, lap_no: int) -> None:
+def fetch_circuit(client: OpenF1Client, circuit: str, filters: dict, driver: int, lap_no: int, filename: str) -> None:
     sessions = client.sessions(**filters)
     if not sessions:
         print(f"[{circuit}] no session found for {filters}")
@@ -69,15 +69,15 @@ def fetch_circuit(client: OpenF1Client, circuit: str, filters: dict, driver: int
         ],
     }
     DATA_DIR.mkdir(parents=True, exist_ok=True)
-    path = DATA_DIR / f"{circuit}_2024.json"
+    path = DATA_DIR / filename
     path.write_text(json.dumps(out, indent=1))
     print(f"[{circuit}] session {key}: {len(samples)} samples, {len(out['race_control'])} RC msgs -> {path.name}")
 
 
 def main() -> None:
     with OpenF1Client() as client:
-        for circuit, (filters, driver, lap_no) in CIRCUITS.items():
-            fetch_circuit(client, circuit, filters, driver, lap_no)
+        for circuit, (filters, driver, lap_no, filename) in CIRCUITS.items():
+            fetch_circuit(client, circuit, filters, driver, lap_no, filename)
 
 
 if __name__ == "__main__":

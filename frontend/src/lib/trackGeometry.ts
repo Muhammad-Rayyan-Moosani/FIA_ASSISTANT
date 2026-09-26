@@ -136,3 +136,87 @@ export function nearestIndex(outline: readonly (readonly [number, number])[], x:
   });
   return best;
 }
+
+// ----------------------------------------------------------------------------- real-scale helpers
+/** World units per metre for a circuit whose normalised unit spans `extentM` metres. */
+export const unitsPerMetre = (extentM: number, scale = WORLD_SCALE): number => scale / extentM;
+
+/**
+ * Ribbon with per-vertex colours alternating every `stripeM` metres (kerbs).
+ * Offsets are along the left normal × side; `unitsPerM` converts the stripe length.
+ */
+export function stripedStrip(
+  frame: TrackFrame,
+  a: number,
+  b: number,
+  side: 1 | -1,
+  offIn: number,
+  offOut: number,
+  y: number,
+  stripeUnits: number,
+  colors: readonly [readonly [number, number, number], readonly [number, number, number]],
+): MeshData & { colors: Float32Array } {
+  const pos: number[] = [];
+  const col: number[] = [];
+  const indices: number[] = [];
+  let stripe = 0;
+  for (let i = a; i < b; i++) {
+    const p0 = frame.points[i]!;
+    const p1 = frame.points[i + 1]!;
+    const n0 = frame.normals[i]!;
+    const n1 = frame.normals[i + 1]!;
+    const segLen = Math.hypot(p1.x - p0.x, p1.z - p0.z);
+    const steps = Math.max(1, Math.round(segLen / stripeUnits));
+    for (let k = 0; k < steps; k++) {
+      const t0 = k / steps;
+      const t1 = (k + 1) / steps;
+      const c = colors[stripe % 2]!;
+      const base = pos.length / 3;
+      for (const t of [t0, t1]) {
+        const px = p0.x + (p1.x - p0.x) * t;
+        const pz = p0.z + (p1.z - p0.z) * t;
+        const nx = n0.x + (n1.x - n0.x) * t;
+        const nz = n0.z + (n1.z - n0.z) * t;
+        pos.push(px + nx * side * offIn, y, pz + nz * side * offIn, px + nx * side * offOut, y, pz + nz * side * offOut);
+        col.push(...c, ...c);
+      }
+      indices.push(base, base + 1, base + 2, base + 1, base + 3, base + 2);
+      stripe++;
+    }
+  }
+  return { positions: new Float32Array(pos), indices, colors: new Float32Array(col) };
+}
+
+/** Even-odd point-in-polygon test in the XZ plane. */
+export function insidePolygon(x: number, z: number, poly: readonly Vec2[]): boolean {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const a = poly[i]!;
+    const b = poly[j]!;
+    if (a.z > z !== b.z > z && x < ((b.x - a.x) * (z - a.z)) / (b.z - a.z) + a.x) inside = !inside;
+  }
+  return inside;
+}
+
+/** Deterministic pseudo-random in [0, 1) from integer coordinates (stable tree placement). */
+export function hash01(i: number, j: number): number {
+  const s = Math.sin(i * 127.1 + j * 311.7) * 43758.5453;
+  return s - Math.floor(s);
+}
+
+/** Position and heading at a fractional outline index (wraps around the lap). */
+export function sampleAlong(frame: TrackFrame, f: number, lateral = 0): { x: number; z: number; heading: number } {
+  const n = frame.points.length;
+  const i = ((Math.floor(f) % n) + n) % n;
+  const j = (i + 1) % n;
+  const t = f - Math.floor(f);
+  const p = frame.points[i]!;
+  const q = frame.points[j]!;
+  const nm = frame.normals[i]!;
+  const tg = frame.tangents[i]!;
+  return {
+    x: p.x + (q.x - p.x) * t + nm.x * lateral,
+    z: p.z + (q.z - p.z) * t + nm.z * lateral,
+    heading: Math.atan2(tg.x, tg.z),
+  };
+}

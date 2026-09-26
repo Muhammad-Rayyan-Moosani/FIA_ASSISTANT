@@ -12,6 +12,8 @@ export const queryKeys = {
   riskMap: (circuit: string, series: Series, upgrades?: UpgradeSet) =>
     ["risk-map", circuit, series, serializeUpgrades(upgrades) ?? ""] as const,
   riskMapsForCircuit: (circuit: string) => ["risk-map", circuit] as const,
+  assets: (circuit: string, series: Series, upgrades?: UpgradeSet) =>
+    ["assets", circuit, series, serializeUpgrades(upgrades) ?? ""] as const,
   report: (circuit: string, series: Series, upgrades?: UpgradeSet) =>
     ["report", circuit, series, serializeUpgrades(upgrades) ?? ""] as const,
 };

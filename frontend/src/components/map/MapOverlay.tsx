@@ -6,6 +6,8 @@ import type { TrackGeometry } from "@/types/track";
 export function MapOverlay({ track }: { track: TrackGeometry }) {
   const r = track.reference;
   return (
+    <>
+    <div className="pointer-events-none absolute inset-x-0 top-0 h-44 bg-gradient-to-b from-bg/85 via-bg/45 to-transparent" aria-hidden="true" />
     <div className="pointer-events-none absolute left-4 top-3 max-w-[min(560px,80%)] lg:left-5 lg:top-4">
       <h1 className="display text-[clamp(26px,3.4vw,42px)] font-semibold leading-none">{track.name}</h1>
       <p className="mt-1.5 text-[12.5px] text-muted">
@@ -20,5 +22,6 @@ export function MapOverlay({ track }: { track: TrackGeometry }) {
         <SourceBadge label="Safety equipment" source={track.sources.safety_inventory} />
       </div>
     </div>
+    </>
   );
 }

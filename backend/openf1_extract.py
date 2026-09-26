@@ -606,7 +606,7 @@ def main() -> None:
     ap.add_argument("--years", type=int, nargs="+", default=list(range(2023, datetime.now().year + 1)))
     ap.add_argument("--out", type=Path, default=DATA_DIR / "telemetry_impacts",
                     help="output folder (kept separate from the Step 1 race-control pipeline in data/tracks)")
-    ap.add_argument("--circuits", nargs="+", help="filter by circuit/location name, e.g. monza spa")
+    ap.add_argument("--circuits", nargs="+", help="filter by circuit/location name, e.g. monza montreal")
     ap.add_argument("--max-races", type=int, help="only the N most recent race weekends (quick test)")
     ap.add_argument("--zones", type=int, default=12)
     ap.add_argument("--deep", action="store_true",

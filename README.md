@@ -163,10 +163,12 @@ npm run dev                          # → http://localhost:3000
 **🛡️ Insurance module (building first — see [ARCHITECTURE.md](ARCHITECTURE.md))**
 - [x] Repo, structure & docs
 - [x] OpenF1 client + fetch script (`python -m scripts.fetch_openf1`)
-- [x] Incident ingestion + geolocation + zones (Monza)
+- [x] Incident ingestion + geolocation + zones (Monza, Montreal)
 - [x] Actuarial engine (Poisson-Gamma · severity · Monte Carlo · pricing)
 - [x] Insurance API (risk map · simulate · what-if · report), wired to the frontend
 - [x] Frontend app: 3D digital twin, panels, API + streaming service layer
+- [x] Real structures from OpenStreetMap (grandstands, pit building, bridges, towers, barriers) mapped to insurance coverage lines
+- [x] Crash counting limited to physical events (double yellows, confirmed collisions)
 - [x] Underwriter report (template + PDF) · [ ] Claude-written narrative
 
 **🟡 Race Control module (next)**

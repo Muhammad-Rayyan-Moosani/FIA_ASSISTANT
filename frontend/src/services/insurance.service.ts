@@ -7,6 +7,7 @@
  * Contract types: src/types/risk.ts · Spec: ARCHITECTURE.md §5–§7.
  */
 import { serializeUpgrades } from "@/lib/upgrades";
+import type { AssetMap } from "@/types/assets";
 import type {
   ReportQuery,
   RiskMap,
@@ -22,6 +23,7 @@ import { openEventStream, type StreamHandlers, type StreamSubscription } from ".
 
 export const INSURANCE_ENDPOINTS = {
   riskMap: "/api/insurance/risk-map",
+  assets: (circuit: string) => `/api/insurance/assets/${encodeURIComponent(circuit)}`,
   whatIf: "/api/insurance/what-if",
   simulateStream: "/api/insurance/simulate/stream",
   report: "/api/insurance/report/export",
@@ -45,7 +47,16 @@ export const insuranceService = {
     });
   },
 
-  /** POST /api/insurance/what-if → before/after for one zone, payback, and the repriced risk map. */
+  /** GET /api/insurance/assets/{circuit}?series&upgrades → real structures, coverage lines and exposure. */
+  getAssets({ circuit, series, upgrades }: RiskMapQuery, signal?: AbortSignal): Promise<AssetMap> {
+    return apiClient.get<AssetMap>(INSURANCE_ENDPOINTS.assets(circuit), {
+      query: { series, upgrades: serializeUpgrades(upgrades) },
+      signal,
+      timeoutMs: MODEL_TIMEOUT_MS,
+    });
+  },
+
+  /** POST /api/insurance/what-if → before/after for one zone and the repriced risk map. */
   runWhatIf(request: WhatIfRequest, signal?: AbortSignal): Promise<WhatIfResponse> {
     return apiClient.post<WhatIfResponse>(INSURANCE_ENDPOINTS.whatIf, request, { signal, timeoutMs: MODEL_TIMEOUT_MS });
   },

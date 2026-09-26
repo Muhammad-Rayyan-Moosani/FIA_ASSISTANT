@@ -19,6 +19,7 @@ export function IncidentHistory({ circuitId, zoneId, source }: { circuitId: stri
     <details className="group">
       <summary className="cursor-pointer text-[12.5px] text-muted">
         Incident history{count !== undefined && ` · ${count}`}
+        {data && ` (${data.filter((i) => i.counts_as_crash).length} counted as crashes)`}
         <SourceBadge source={source} />
       </summary>
       <div className="mt-2.5 grid max-h-52 gap-1.5 overflow-y-auto scrollbar-thin">
@@ -31,7 +32,8 @@ export function IncidentHistory({ circuitId, zoneId, source }: { circuitId: stri
               {i.season} {SESSION_SHORT[i.session_type] ?? i.session_type}
               {i.lap !== null && ` L${i.lap}`}
             </span>
-            <span title={`${i.incident_type.replaceAll("_", " ")} · placed by ${i.geo_method.replaceAll("_", " ")} (${i.geo_confidence} confidence)`} className={i.loss_relevant ? "" : "text-muted"}>
+            <span title={`${i.incident_type.replaceAll("_", " ")} · placed by ${i.geo_method.replaceAll("_", " ")} (${i.geo_confidence} confidence)`} className={i.counts_as_crash ? "" : "text-muted"}>
+              {i.counts_as_crash && <span className="mr-1.5 rounded bg-risk-crit/15 px-1 py-px font-sans text-[10px] font-semibold uppercase tracking-wide text-risk-crit">Crash</span>}
               {i.raw_message}
             </span>
           </div>

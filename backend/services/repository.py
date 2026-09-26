@@ -1,6 +1,6 @@
 """R3 · Read Step 1 output (data/tracks, data/incidents, data/openf1) and shape it for the API contract.
 
-Scope: Monza only (SUPPORTED_CIRCUITS). Files are re-read automatically when the ingestion pipeline
+Scope: Monza and Montreal (SUPPORTED_CIRCUITS). Files are re-read automatically when the ingestion pipeline
 rewrites them (cache keyed on file modification time), so a finished ingestion run is live immediately.
 """
 
@@ -8,15 +8,18 @@ from __future__ import annotations
 
 import json
 import re
+
+import numpy as np
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from functools import lru_cache
 from pathlib import Path
 
+from services import crash_filter
 from services.data_loader import CIRCUITS, CircuitConfig
 
 DATA_DIR = Path(__file__).resolve().parents[2] / "data"
-SUPPORTED_CIRCUITS = ("monza",)
+SUPPORTED_CIRCUITS = ("monza", "montreal")
 
 
 class UnknownCircuit(KeyError):
@@ -78,10 +81,11 @@ def short_name(name: str) -> str:
         return "After " + short_name(name[len("Straight after "):])
     if name == "Start/finish straight":
         return "Start/finish"
+    name = name.split(" / ")[0]          # "Hairpin / Turn 11 (Casino Straight)" -> "Hairpin"
     m = re.search(r"\(([^)]+)\)", name)
     if m:
         return m.group(1)          # the corner's common name: "(Parabolica)", "(Curva Grande)"
-    return _PREFIXES.sub("", name.split(" / ")[0])
+    return _PREFIXES.sub("", name)
 
 
 def _iso(ts: float) -> str:
@@ -148,15 +152,31 @@ def _track_sources(d: CircuitData) -> dict:
     }
 
 
+def _speed_profile(d: CircuitData) -> tuple[list[float], float]:
+    """Real speed (km/h) at each outline point, and the metres spanned by one normalised unit."""
+    from services.zones import lap_geometry
+
+    geo = lap_geometry(d.reference["samples"], d.cfg.length_m)
+    n = len(d.track["outline"])
+    along = np.linspace(0, geo["dist"][-1], n, endpoint=False)
+    speed = np.interp(along, geo["dist"], geo["v"])
+    raw_m = np.hypot(np.diff(geo["x"]), np.diff(geo["y"])).sum() / 10          # OpenF1 units are 0.1 m
+    extent_m = max(np.ptp(geo["x"]), np.ptp(geo["y"])) / 10 * (d.cfg.length_m / raw_m)
+    return [round(float(v), 1) for v in speed], round(float(extent_m), 1)
+
+
 def track_geometry(circuit: str) -> dict:
     d = load(circuit)
     t, ref = d.track, d.reference
     centre = _centre(t["outline"])
+    speed, extent_m = _speed_profile(d)
     r, s = ref["reference"], ref["session"]
     drivers = {dr["driver_number"]: dr.get("full_name") for dr in ref.get("drivers", [])}
     return {
         "circuit": circuit, "name": t["name"], "country": d.cfg.country, "length_m": t["length_m"],
         "outline": [centre(x, y) for x, y in t["outline"]],
+        "speed_kph": speed,
+        "extent_m": extent_m,
         "zones": [_zone(z) for z in t["zones"]],
         "reference": {
             "season": s["year"], "event_name": d.cfg.event_name, "session_key": s["session_key"], "session_type": "Race",
@@ -170,13 +190,14 @@ def track_geometry(circuit: str) -> dict:
 def incidents(circuit: str, zone_id: str | None = None, season: int | None = None) -> list[dict]:
     d = load(circuit)
     centre = _centre(d.track["outline"])
+    counted = crash_filter.crash_ids(d.incidents)
     out = []
     for r in d.incidents:
         if (zone_id and r["zone_id"] != zone_id) or (season and r["season"] != season):
             continue
         x, y = centre(r["x"], r["y"])
         ex = r.get("extraction") or {}
-        out.append({**r, "x": x, "y": y, "marshal_sector": r.get("marshal_sector"),
+        out.append({**r, "x": x, "y": y, "marshal_sector": r.get("marshal_sector"), "counts_as_crash": r["incident_id"] in counted,
                     "extraction": {"method": ex.get("method", "regex"), "rule": ex.get("rule"), "model": ex.get("model")}})
     return sorted(out, key=lambda r: r["occurred_at"], reverse=True)
 
@@ -187,3 +208,40 @@ def outline_point(circuit: str, lap_frac: float) -> tuple[float, float]:
     pts = d.track["outline"]
     centre = _centre(pts)
     return centre(*pts[int(lap_frac * len(pts)) % len(pts)])
+
+
+# ----------------------------------------------------------------------------- insured structures (OSM)
+COVERAGE_LINES = {
+    "property": ("Property / material damage", "Buildings, grandstands, bridges and towers damaged by a crash, debris or fire."),
+    "spectator_liability": ("Spectator liability", "Injury to the public in grandstands, on bridges and in hospitality."),
+    "business_interruption": ("Business interruption", "Loss of the event if the pit building, paddock or race control is out of use."),
+    "broadcast_equipment": ("Broadcast and timing equipment", "TV and timing towers, masts and media facilities."),
+    "participant_accident": ("Participant and marshal accident", "Drivers, marshals at their posts and medical staff."),
+    "track_infrastructure": ("Track infrastructure", "Barriers, walls and fences along the track."),
+}
+
+
+def _assets_path(circuit: str) -> Path:
+    return DATA_DIR / "tracks" / f"{circuit}_assets.json"
+
+
+def assets(circuit: str) -> dict:
+    """Structures from data/tracks/{circuit}_assets.json (scripts/fetch_osm_assets.py), centred like the outline."""
+    d = load(circuit)
+    path = _assets_path(circuit)
+    if not path.exists():
+        raise UnknownCircuit(f"{circuit}: missing {path.name} (run `python -m scripts.fetch_osm_assets {circuit}`)")
+    raw = _load_assets(circuit, path.stat().st_mtime)
+    centre = _centre(d.track["outline"])
+    move = lambda pts: [centre(x, y) for x, y in pts]  # noqa: E731
+    return {
+        **raw,
+        "assets": [{**a, "points": move(a["points"])} for a in raw["assets"]],
+        "context": {k: [move(p) for p in v] for k, v in raw["context"].items()},
+        "marshal_posts": sum(z["marshal_posts"] for z in d.track["zones"]),
+    }
+
+
+@lru_cache(maxsize=4)
+def _load_assets(circuit: str, version: float) -> dict:
+    return json.loads(_assets_path(circuit).read_text(encoding="utf-8"))
