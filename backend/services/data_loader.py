@@ -59,6 +59,14 @@ CIRCUITS = {
                     8: "Variante Ascari", 9: "Variante Ascari", 10: "Variante Ascari",
                     11: "Curva Alboreto (Parabolica)"},
     ),
+    "montreal": CircuitConfig(
+        id="montreal", name="Circuit Gilles Villeneuve", openf1_name="Montreal", multiviewer_key=23,
+        reference_lap="montreal_lap.json", length_m=4361, reference_year=2025,   # 2025: dry race (2024 was wet)
+        turn_names={1: "Senna Curve", 2: "Senna Curve", 3: "Turns 3–4", 4: "Turns 3–4", 5: "Turn 5",
+                    6: "Turns 6–7", 7: "Turns 6–7", 8: "Turns 8–9", 9: "Turns 8–9", 10: "Hairpin",
+                    11: "Turn 11 (Casino Straight)", 12: "Turn 12",
+                    13: "Final chicane (Wall of Champions)", 14: "Final chicane (Wall of Champions)"},
+    ),
 }
 
 
