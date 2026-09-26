@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from collections.abc import Callable
 
 from services.data_loader import CIRCUITS, ROOT_DIR, coverage, extract_events, fetch_raw, load_raw, to_records
 from services.geolocate import refine_with_location
@@ -20,17 +21,28 @@ from services.openf1_client import OpenF1Client
 from services.zones import build_zones, lap_geometry, nearest_index, normaliser, outline
 
 
-def ingest(circuit: str, refresh: bool = False, offline: bool = False) -> tuple[dict, list[dict]]:
+Progress = Callable[[str, int, int, str | None], None]
+
+
+def ingest(circuit: str, refresh: bool = False, offline: bool = False,
+           progress: Progress | None = None) -> tuple[dict, list[dict]]:
+    """Run the pipeline. `progress(stage, done, total, message)` is called as each stage finishes
+    (stages: fetch, load, zones, extract, geolocate, write) so the API can stream it."""
+    report = progress or (lambda *_: None)
     cfg = CIRCUITS[circuit]
     if not offline:
         fetch_raw(cfg, refresh=refresh)
+    report("fetch", 1, 1, "cache only (offline)" if offline else None)
     sessions, points, lap = load_raw(cfg)
     inventory = json.loads((ROOT_DIR / "tracks" / f"{cfg.id}_inventory.json").read_text(encoding="utf-8"))
+    report("load", len(sessions), len(sessions), f"{sum(len(s['messages']) for s in sessions)} race-control messages")
 
     geo = lap_geometry(lap, cfg.length_m)
     norm = normaliser(geo)
     zones = build_zones(cfg, geo, points["turns"], points["marshal_sectors"], inventory)
+    report("zones", len(zones), len(zones), None)
     events, skipped = extract_events(sessions, len(points["marshal_sectors"]))
+    report("extract", len(events), len(events), None)
     records = to_records(cfg, events, zones, geo, norm, points["turns"], points["marshal_sectors"])
 
     # Two-car incidents: exact contact point from car positions where it agrees with the named turn.
@@ -39,6 +51,8 @@ def ingest(circuit: str, refresh: bool = False, offline: bool = False) -> tuple[
     else:
         with OpenF1Client() as client:
             location_stats = refine_with_location(records, cfg.id, geo, norm, zones, refresh=refresh, client=client)
+
+    report("geolocate", len(records), len(records), None)
 
     for z in zones:
         z["n_incidents"] = sum(r["zone_id"] == z["zone_id"] for r in records)
@@ -69,6 +83,7 @@ def ingest(circuit: str, refresh: bool = False, offline: bool = False) -> tuple[
         path = ROOT_DIR / folder / f"{cfg.id}.json"
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(payload, indent=1, ensure_ascii=False), encoding="utf-8")
+    report("write", 2, 2, None)
     return track, records
 
 

@@ -302,9 +302,13 @@ def _severity_moments(zm: ZoneModel, cfg: ModelConfig) -> tuple[float, float]:
 # --------------------------------------------------------------------------- #
 
 
-def _simulate_zone(zm: ZoneModel, n_seasons: int, cfg: ModelConfig, seed: np.random.SeedSequence) -> np.ndarray:
+def _simulate_zone(zm: ZoneModel, n_seasons: int, cfg: ModelConfig, seed: np.random.SeedSequence,
+                   detail: bool = False):
     """Annual loss (EUR) for one zone over n_seasons.  Uses inverse-CDF draws for the
-    frequency layer so a what-if run with the same seed uses common random numbers."""
+    frequency layer so a what-if run with the same seed uses common random numbers.
+
+    With detail=True also returns every simulated crash as (season index, impact speed kph,
+    energy MJ, cost EUR) arrays, drawn from exactly the same random numbers."""
     rng = np.random.default_rng(seed)
     u_rate, u_count = rng.random(n_seasons), rng.random(n_seasons)
     if cfg.parameter_uncertainty:      # Jeffreys posterior for the annual Poisson rate
@@ -315,7 +319,8 @@ def _simulate_zone(zm: ZoneModel, n_seasons: int, cfg: ModelConfig, seed: np.ran
     counts = stats.poisson.ppf(u_count, lam).astype(np.int64)
     n_total = int(counts.sum())
     if n_total == 0:
-        return np.zeros(n_seasons)
+        empty = np.zeros(0)
+        return (np.zeros(n_seasons), (empty.astype(np.int64), empty, empty, empty)) if detail else np.zeros(n_seasons)
 
     z = rng.standard_normal((n_total, 2))
     speed = np.minimum(np.exp(zm.speed_mu + zm.speed_sigma * z[:, 0]), cfg.max_impact_speed_kph)
@@ -324,7 +329,8 @@ def _simulate_zone(zm: ZoneModel, n_seasons: int, cfg: ModelConfig, seed: np.ran
     cost = np.minimum(crash_cost_eur(energy, zm.barrier, cfg, zm.repair_cost_multiplier) * noise,
                       cfg.max_loss_per_incident_eur)
     season_idx = np.repeat(np.arange(n_seasons), counts)
-    return np.bincount(season_idx, weights=cost, minlength=n_seasons)
+    annual = np.bincount(season_idx, weights=cost, minlength=n_seasons)
+    return (annual, (season_idx, speed, energy, cost)) if detail else annual
 
 
 @dataclass
@@ -419,15 +425,27 @@ def simulate(incidents_file: Any = DATA_DIR / "incidents", tracks_file: Any = DA
     or a list of those.  The result is also cached for `what_if`.
     """
     global _LAST
+    _LAST = simulate_inputs(load_tracks(tracks_file), load_incidents(incidents_file), num_seasons, config, seed)
+    return _LAST
+
+
+def simulate_inputs(tracks: list[dict], incidents: pd.DataFrame, num_seasons: int = 10_000,
+                    config: ModelConfig | None = None, seed: int | None = None,
+                    frequency_multiplier: float = 1.0) -> SimResults:
+    """Same as `simulate`, from tracks / incidents already in memory (used by the API).
+
+    `frequency_multiplier` scales every zone's crash rate (e.g. F2/F3 series factors).
+    Pure: does not touch the module-level cache used by `what_if`.
+    """
     cfg = dataclasses.replace(config or ModelConfig(), **({"seed": seed} if seed is not None else {}))
     if num_seasons < 100:
         raise ValueError("num_seasons should be >= 100 for a meaningful VaR99")
-    tracks, incidents = load_tracks(tracks_file), load_incidents(incidents_file)
     zones = build_zone_models(tracks, incidents, cfg)
+    for z in zones:
+        z.frequency_multiplier = frequency_multiplier
     seeds = np.random.SeedSequence(cfg.seed).spawn(len(zones))
     loss = np.column_stack([_simulate_zone(z, num_seasons, cfg, s) for z, s in zip(zones, seeds)])
-    _LAST = _assemble(zones, loss, cfg, seeds)
-    return _LAST
+    return _assemble(zones, loss, cfg, seeds)
 
 
 # --------------------------------------------------------------------------- #
@@ -581,52 +599,6 @@ def what_if(zone_id: str, param_changes: dict, sim_results: SimResults | None = 
 
 
 # --------------------------------------------------------------------------- #
-# Mock data (only for demo / development)
-# --------------------------------------------------------------------------- #
-
-_MOCK_TRACKS = {
-    "monza": ("Autodromo Nazionale (synthetic)", 53,
-              [75, 190, 285, 140, 310, 230, 180, 245, 300, 120, 265, 210]),
-    "spa":   ("Spa-Francorchamps (synthetic)", 44,
-              [70, 305, 240, 190, 130, 260, 320, 150, 215, 280, 100, 245]),
-}
-_MOCK_BARRIERS = ["TecPro", "SAFER barrier", "Concrete", "Tire wall"]
-
-
-def generate_mock_data(data_dir: Path = DATA_DIR, seed: int = 7, seasons: int = 15) -> None:
-    """Write synthetic Step-1 style JSON.  NOT real data."""
-    rng = np.random.default_rng(seed)
-    (data_dir / "tracks").mkdir(parents=True, exist_ok=True)
-    (data_dir / "incidents").mkdir(parents=True, exist_ok=True)
-    first_season = 2011
-    for tid, (name, laps, speeds) in _MOCK_TRACKS.items():
-        zones, incidents = [], []
-        for i, sp in enumerate(speeds, 1):
-            th = 2 * math.pi * (i - 1) / len(speeds)
-            zones.append({
-                "zone_id": f"{tid}-z{i:02d}", "name": f"Zone {i}",
-                "x": round(0.5 + 0.4 * math.cos(th), 4), "y": round(0.5 + 0.3 * math.sin(th), 4),
-                "corner_speed_kph": sp, "barrier_type": str(rng.choice(_MOCK_BARRIERS)),
-            })
-        json.dump({"track_id": tid, "name": name, "laps": laps, "grid_size": 20,
-                   "races_per_season": 1, "seasons_observed": seasons, "synthetic": True, "zones": zones},
-                  open(data_dir / "tracks" / f"{tid}.json", "w"), indent=2)
-        for z in zones:
-            p_pass = 1.3e-4 * (z["corner_speed_kph"] / 200) ** 1.5 * rng.lognormal(0, 0.5)
-            for s in range(seasons):
-                for _ in range(rng.poisson(p_pass * laps * 20)):
-                    impact = z["corner_speed_kph"] * rng.uniform(0.45, 0.95)
-                    incidents.append({
-                        "incident_id": f"{tid}-{len(incidents) + 1:04d}", "track_id": tid,
-                        "zone_id": z["zone_id"], "season": first_season + s,
-                        "corner_speed_kph": z["corner_speed_kph"], "impact_speed_kph": round(impact, 1),
-                        "barrier_type": z["barrier_type"],
-                        "x": round(z["x"] + rng.normal(0, 0.005), 4), "y": round(z["y"] + rng.normal(0, 0.005), 4),
-                    })
-        json.dump({"incidents": incidents}, open(data_dir / "incidents" / f"{tid}.json", "w"), indent=2)
-
-
-# --------------------------------------------------------------------------- #
 # CLI
 # --------------------------------------------------------------------------- #
 
@@ -671,27 +643,21 @@ def _print_summary(res: SimResults, pr: dict) -> None:
 
 
 def main() -> None:
+    """Run the model on the real Step 1 output for Monza (see services/actuarial.py for the mapping)."""
+    import sys
+
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from services.actuarial import load_model_inputs
+
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[1])
-    ap.add_argument("--data-dir", type=Path, default=DATA_DIR)
+    ap.add_argument("--circuit", default="monza")
     ap.add_argument("--seasons", type=int, default=10_000)
     ap.add_argument("--seed", type=int, default=42)
-    ap.add_argument("--mock", action="store_true",
-                    help="use SYNTHETIC demo data (written to <data-dir>/mock) instead of real Step 1 output")
     args = ap.parse_args()
 
-    if args.mock:
-        base = args.data_dir / "mock"
-        print(f"--mock: generating SYNTHETIC data in {base}. These are NOT real F1 figures.")
-        generate_mock_data(base)
-    else:
-        base = args.data_dir
-    tdir, idir = base / "tracks", base / "incidents"
-    if not (list(tdir.glob("*.json")) and list(idir.glob("*.json"))):
-        raise SystemExit(f"No Step 1 JSON in {base}.\n"
-                         "Run the OpenF1 extractor first:  python backend/openf1_extract.py\n"
-                         "or try the synthetic demo:       python backend/insurance_model.py --mock")
-
-    res = simulate(idir, tdir, num_seasons=args.seasons, seed=args.seed)
+    tracks, incidents = load_model_inputs(args.circuit)
+    global _LAST
+    res = _LAST = simulate_inputs(tracks, incidents, num_seasons=args.seasons, seed=args.seed)
     pr = price(res)
     _print_summary(res, pr)
 

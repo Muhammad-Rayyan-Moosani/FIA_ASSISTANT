@@ -17,7 +17,7 @@
 5. [Actuarial Engine](#5-actuarial-engine)
 6. [LLM Integration](#6-llm-integration)
 7. [API Specification](#7-api-specification)
-8. [Frontend: 3D Digital Twin](#8-frontend-3d-digital-twin)
+8. [Frontend](#8-frontend)
 9. [Repository Layout](#9-repository-layout)
 10. [Team Delegation Matrix](#10-team-delegation-matrix)
 11. [Running Locally](#11-running-locally)
@@ -96,7 +96,7 @@
 │                                                                              │
 └──────────────────────────────────────────────────────────────────────────────┘
                                         │
-                                        │  JSON over HTTP  (fake JSON in data/mocks/ until Step 3 is ready)
+                                        │  JSON over HTTP  (contract: frontend/src/types)
                                         ▼
 ┌─ STEP 4 · SHOW IT  (Next.js) ──────────────┬─────────────────────────────────┐
 │ 3D track (React Three Fiber)               │ Side panels                     │
@@ -181,7 +181,7 @@ Race-control `TRACK SECTOR n` values are **marshal sectors**, not the 3 timing s
 
 ### 4.3 Zone construction (`services/zones.py`)
 
-Zones are derived from the **real reference lap** already cached in `data/openf1/{circuit}_2024.json` (x, y, speed):
+Zones are derived from the **real reference lap** that `scripts/fetch_openf1.py` downloads to `data/openf1/{circuit}_2024.json` (x, y, speed; generated locally, not committed):
 
 1. Compute cumulative distance and normalise the outline to `[0, 1]²` (aspect preserved).
 2. Detect **braking zones** as speed local minima (window ±3 samples, v < 260 km/h, minima closer than 300 m merged). Each zone spans from the preceding speed maximum (braking point) to the corner exit.
@@ -268,6 +268,14 @@ $$\text{Risk}_{s} = \text{Risk}_{F1} \times \text{Grid}_s \times \text{Error}_s 
 ---
 
 ## 5. Actuarial Engine
+
+> **As built (integration, Monza):** Step 2 is `backend/insurance_model.py` (R2), run on real Step 1 data through the adapter `backend/services/actuarial.py`. The subsections below are the original design; where the built model differs:
+> - **Frequency:** Jeffreys Gamma posterior per zone (`n + 0.5`, exposure = race weekends observed), not the pooled empirical-Bayes prior. Crashes = Step 1 incidents with `loss_relevant = true`.
+> - **Severity:** impact speed = 75% of the zone's real entry speed (lognormal spread) → E = ½mv² → barrier repair + car damage (`DEFAULT_BARRIERS`, `car_damage_eur_per_mj`). No run-off physics, fence breach, spectator or marshal terms.
+> - **Pricing:** zone premium = (EAL + 8% × (VaR99 − EAL)) ÷ (1 − 15%); blanket = the 75th-percentile zone premium charged to every zone.
+> - **What-if levers:** `barrier_type`, `speed_factor`, `frequency_multiplier` (the model's own parameters). Upgrade costs and payback are not modelled.
+> - **Series factors:** frequency × grid × error; energy via car mass × energy factor.
+> - All euro parameters are placeholders and are labelled `assumed` in the API.
 
 Owner: **R2** · File: `backend/services/actuarial.py` (pure NumPy/SciPy, no I/O, no FastAPI imports) · Params: `backend/config/actuarial_params.yaml`
 
@@ -477,175 +485,168 @@ class UnderwriterReport(BaseModel):
 
 ## 7. API Specification
 
-Owner: **R3** · Files: `backend/main.py` (app factory, CORS, router mount), `backend/api/insurance.py` (routes), `backend/api/schemas.py` (Pydantic request/response models)
+Owner: **R3** · Files: `backend/main.py` (app factory, CORS, router mount), `backend/api/insurance.py` (routes), `backend/api/schemas.py` (Pydantic models)
 
-Conventions: `circuit ∈ {monza, silverstone, spa}`, `series ∈ {f1, f2, f3}` (lowercase), money in EUR (numbers), fractions in `[0, 1]`.
+**The TypeScript types are the contract.** `frontend/src/types/api.ts`, `track.ts` (Step 1) and `risk.ts` (Step 3) define every request, response and stream event. The backend Pydantic models must produce exactly these shapes (snake_case field names, same enums). A change to one side updates the other in the same PR.
 
-| Method | Path | Purpose | Target latency |
-|---|---|---|---|
-| GET | `/api/health` | `{status, data_loaded, llm_configured}` | < 10 ms |
-| GET | `/api/insurance/circuits` | Circuits + zone counts + data coverage | < 20 ms |
-| GET | `/api/insurance/risk-map?circuit&series` | Zones + risk metrics + totals + outline | < 300 ms cold / < 20 ms cached |
-| GET | `/api/insurance/zones/{zone_id}?series` | Zone detail + incident history + posterior | < 50 ms |
-| GET | `/api/insurance/incidents?circuit&zone_id` | Processed incident records | < 50 ms |
-| POST | `/api/insurance/incidents/ingest` | Trigger (re-)ingestion + LLM extraction for a circuit (admin / background task) | async (returns `job_id`) |
-| POST | `/api/insurance/simulate` | Full 10,000-season Monte Carlo summary + sampled crash events | < 500 ms |
-| GET | `/api/insurance/simulate/stream?circuit&series&seasons=50` | **SSE**: streams crash events for animation + running EAL convergence | streams over ~10–20 s |
-| POST | `/api/insurance/what-if` | Zone upgrade → recomputed zone + totals + payback | < 300 ms |
-| GET | `/api/insurance/report/export?circuit&series&format=json\|pdf` | Underwriter report | ≤ 8 s with LLM (cached after) |
+**Conventions**
+- **Scope: Monza only.** `GET /circuits` returns `monza`; any other circuit returns `404 UNKNOWN_CIRCUIT`. `circuit` is a circuit id from `GET /circuits`. `series ∈ {f1, f2, f3}` (lowercase). Money is EUR as plain numbers. Fractions are in `[0, 1]`, percentages are in `[0, 100]` and named `*_pct`.
+- **`upgrades` query parameter / body field:** the active what-if upgrades for the circuit, as compact JSON keyed by `zone_id`, e.g. `{"monza-z10":{"barrier_type":"tecpro","speed_factor":0.9}}`. Fields: `barrier_type` (`tyre_wall|guardrail|tecpro|concrete|safer`), `speed_factor` (impact speed × factor), `frequency_multiplier` (crash rate × factor). The frontend sorts keys and omits the parameter when there are none. Every Step 3 endpoint prices this scenario, so the map, summary, simulation and report always agree.
+- **`sources`:** track and risk responses carry a map of `SourceInfo = {provenance: "measured" | "assumed" | "modelled", title, detail}` keyed by field (see `TrackSourceKey` and `RiskSourceKey`). The UI renders these as the Real / Assumed / Calculated tags and their pop-ups, so labelling what is real stays the backend's job and stays honest as data improves.
+- **CORS:** allow the frontend origin (`CORS_ORIGINS`) for `GET`, `POST` and the `Content-Type` header.
 
-> `POST /api/insurance/simulate-season` is accepted as an alias of `/simulate`.
+### 7.1 Endpoints
 
-### 7.1 `GET /api/insurance/risk-map`
+| Step | Method | Path | Returns (type in `frontend/src/types`) | Frontend caller |
+|---|---|---|---|---|
+| – | GET | `/api/health` | `{status, data_loaded, llm_configured}` | – |
+| **1** | GET | `/api/insurance/circuits` | `CircuitSummary[]` (with data coverage) | `ingestionService.listCircuits` |
+| **1** | GET | `/api/insurance/tracks/{circuit}` | `TrackGeometry` (outline, zones, safety inventory, reference lap, sources) | `ingestionService.getTrack` |
+| **1** | GET | `/api/insurance/incidents?circuit&zone_id&season` | `Incident[]`, newest first | `ingestionService.listIncidents` |
+| **1** | POST | `/api/insurance/incidents/ingest` | body `IngestRequest` → `IngestJob` (202, returns immediately) | `ingestionService.startIngestion` |
+| **1** | GET | `/api/insurance/incidents/ingest/{job_id}/stream` | **SSE** `IngestStreamEvent` | `ingestionService.streamIngestion` |
+| **3** | GET | `/api/insurance/risk-map?circuit&series&upgrades` | `RiskMap` | `insuranceService.getRiskMap` |
+| **3** | POST | `/api/insurance/what-if` | body `WhatIfRequest` → `WhatIfResponse` | `insuranceService.runWhatIf` |
+| **3** | GET | `/api/insurance/simulate/stream?circuit&series&seasons&upgrades` | **SSE** `SimulationStreamEvent` | `insuranceService.streamSimulation` |
+| **3** | GET | `/api/insurance/report/export?circuit&series&upgrades&format=json` | `UnderwriterReport` | `insuranceService.getReport` |
+| **3** | GET | `/api/insurance/report/export?…&format=pdf` | `application/pdf` | `insuranceService.downloadReportPdf` |
+
+Latency (measured, Monza): risk map ≈ 0.2 s cold, cached after; what-if ≈ 0.4 s; report ≈ 1 s (template narrative, no LLM yet).
+
+### 7.2 `GET /api/insurance/risk-map`
+
+Zones reference `zone_id` only. Names, geometry and safety inventory come from `GET /tracks/{circuit}`, and the frontend joins the two. Real response excerpt (Monza, F1, no upgrades):
 
 ```jsonc
 {
-  "circuit": { "id": "monza", "name": "Autodromo Nazionale Monza", "outline": [[0.12, 0.40], …] },
-  "series": "f2",
-  "series_factors": { "grid": 1.1, "error": 1.3, "energy": 0.8 },
-  "params_hash": "a91f…", "n_seasons": 10000, "seed": 42,
+  "circuit": "monza", "series": "f1",
+  "series_factors": { "grid": 1.0, "error": 1.0, "energy": 1.0 },
+  "model_version": "step2-insurance-model", "params_hash": "…", "n_seasons": 10000, "seed": 42,
   "totals": {
-    "eal_eur": 1840000, "var99_eur": 6100000, "tvar99_eur": 7900000,
-    "blanket_premium_eur": 2950000, "segmented_premium_eur": 2210000,
-    "cost_delta_eur": 740000, "cost_delta_pct": 25.1,
-    "diversification_benefit_eur": 2300000
+    "eal_eur": 9754645, "var99_eur": 16280092, "tvar99_eur": 17474691,
+    "blanket_premium_eur": 21306463, "segmented_premium_eur": 13724169,
+    "cost_delta_eur": 7582294, "cost_delta_pct": 35.6,
+    "diversification_benefit_eur": 17360781, "tail_risk_margin_eur": 2248116
   },
   "zones": [
     {
-      "zone_id": "monza-parabolica", "name": "Curva Alboreto (Parabolica)", "zone_type": "braking",
-      "start_frac": 0.87, "end_frac": 0.93, "centroid": { "x": 0.81, "y": 0.22 },
-      "risk_score": 91, "risk_tier": "CRITICAL",
-      "crash_rate": { "mean": 0.42, "lo90": 0.21, "hi90": 0.71, "n_incidents": 9, "exposure": 7.6 },
-      "crash_prob_season": 0.58,
-      "energy_kj_mean": 2140,
-      "eal_eur": 410000, "var99_eur": 1650000, "share_of_loss_pct": 22.3,
-      "premium_eur": 505000, "tail_risk_margin_eur": 124000,
-      "recommended_limit_eur": 1650000,
-      "safety": { "barrier_type": "tyre_wall", "runoff_type": "gravel", "runoff_depth_m": 60,
-                  "fence_height_m": 4.0, "grandstand_capacity": 8000, "marshal_posts": 2 }
+      "zone_id": "monza-z02", "risk_score": 100, "risk_tier": "CRITICAL",
+      "crash_rate": { "mean": 4.88, "lo90": 3.21, "hi90": 6.82, "n_incidents": 19, "exposure": 4 },
+      "crash_prob_season": 0.987, "energy_kj_mean": 1800, "mean_cost_per_crash_eur": 488000,
+      "eal_eur": 2379299, "var99_eur": 6026907, "share_of_loss_pct": 24.4,
+      "premium_eur": 3142480, "tail_risk_margin_eur": 339000, "recommended_limit_eur": 6026907
     }
   ],
-  "assumptions": ["F2/F3 derived from F1 via series factors", "Safety inventory approximate", "…"]
+  "assumptions": [{ "key": "impact_speed", "label": "Impact speed", "value": "75% of the zone's entry speed…", "provenance": "assumed" }],
+  "sources": { "premium": { "provenance": "modelled", "title": "Zone-based premium", "detail": "…" } }
 }
 ```
 
-> All figures above are illustrative mock values.
-
-### 7.2 `POST /api/insurance/what-if`
+### 7.3 `POST /api/insurance/what-if`
 
 ```jsonc
-// request
-{ "circuit": "monza", "series": "f2", "zone_id": "monza-parabolica",
-  "changes": { "barrier_type": "tecpro", "runoff_depth_m": 80, "fence_height_m": 5.0 } }
+// request: price one zone's change on top of the upgrades already applied elsewhere
+{ "circuit": "monza", "series": "f1", "zone_id": "monza-z02",
+  "changes": { "barrier_type": "tecpro" }, "upgrades": {} }
 // response
-{ "zone_id": "monza-parabolica",
-  "before": { "eal_eur": 410000, "var99_eur": 1650000, "premium_eur": 505000, "risk_score": 91 },
-  "after":  { "eal_eur": 262000, "var99_eur": 980000,  "premium_eur": 318000, "risk_score": 74 },
-  "delta":  { "eal_eur": -148000, "premium_eur": -187000 },
-  "upgrade_cost_eur": 420000, "payback_years": 1.25,
-  "totals_after": { "segmented_premium_eur": 2023000, "cost_delta_pct": 31.4 } }
+{ "zone_id": "monza-z02",
+  "before": { "eal_eur": 2379299, "var99_eur": 6026907, "premium_eur": 3142480, "risk_score": 100 },
+  "after":  { "eal_eur": 2281694, "var99_eur": 5781202, "premium_eur": 3013711, "risk_score": 98 },
+  "circuit_premium_before_eur": 13724169, "circuit_premium_after_eur": 13595400,
+  "risk_map": { /* full RiskMap priced with upgrades + changes */ } }
 ```
 
-### 7.3 `GET /api/insurance/simulate/stream` (SSE)
+Other zones are re-simulated with the same random numbers, so their figures are unchanged and the delta is the upgrade alone. The frontend writes `risk_map` straight into its cache under the new scenario.
 
-Why SSE rather than WebSocket: this stream is one-way (server → client), works over plain HTTP, and needs no connection manager.
+### 7.4 Streams (Server-Sent Events)
 
-The 10,000-season run itself completes in < 500 ms. The stream **replays a sample of simulated seasons** at a watchable pace, with the full-run statistics converging alongside.
+SSE is used because both streams are one-way and finite. The SSE `event:` name is the event `type`, and `data:` is a JSON object with the remaining fields. The server **closes the stream after `done`**. Failures are sent as `event: stream_error` (never `error`, which browsers reserve for transport failures). The frontend does not auto-reconnect.
+
+**Simulation** (pace about 0.4 s per sampled season so crashes are watchable; the full 10,000-season run happens up front):
 
 ```
 event: season_start
 data: {"season": 7}
 
 event: crash
-data: {"season": 7, "zone_id": "monza-parabolica", "x": 0.812, "y": 0.221, "energy_kj": 1840, "loss_eur": 96000, "breach": false}
+data: {"season": 7, "zone_id": "monza-z10", "x": 0.081, "y": -0.214, "lap_frac": 0.89, "energy_kj": 1520, "loss_eur": 412000, "severe": false}
 
 event: progress
-data: {"seasons_done": 7, "running_eal_eur": 1795000, "se_eur": 88000}
+data: {"seasons_done": 2000, "seasons_total": 10000, "running_eal_eur": 97100, "se_eur": 4200}
 
 event: done
-data: {"n_seasons": 10000, "eal_eur": 1840000, "var99_eur": 6100000}
+data: {"n_seasons": 10000, "eal_eur": 97700, "var99_eur": 876000}
 ```
 
-### 7.4 Error envelope
+`severe` = among the costliest 5% of all simulated crashes. Crash positions are spread along the zone (the model prices zones, not points).
 
-`{"error": {"code": "UNKNOWN_CIRCUIT", "message": "…", "detail": {…}}}`, returned with 400/404/422/500.
+**Ingestion** (`POST` body `{circuit, refresh}`; `stage ∈ fetch, load, zones, extract, geolocate, write`, the order `scripts/ingest.py` runs them):
+
+```
+event: progress
+data: {"stage": "geolocate", "done": 268, "total": 268, "message": null}
+
+event: incident
+data: {"incident": { /* Incident */ }}
+
+event: done
+data: {"job_id": "3f9c…", "incidents_written": 268, "duration_s": 0.1}
+```
+
+### 7.5 Error envelope
+
+`{"error": {"code": "UNKNOWN_CIRCUIT", "message": "No circuit called imola", "detail": {…}}}`, returned with 400/404/422/500. The frontend shows `message` to the user, so write it for people.
 
 ---
 
-## 8. Frontend: 3D Digital Twin
+## 8. Frontend
 
-Owners: **R4** (3D scene + 2D fallback) · **R3** (panels + data hooks) · Route: `frontend/app/insurance/page.tsx`
+Location: `frontend/` · Stack: **Next.js 16 (App Router) · React 19 · TypeScript (strict) · Tailwind CSS 4 · React Three Fiber 9 + drei · TanStack Query 5 · Zustand 5 · Vitest**. Run instructions and the integration guide are in [`frontend/README.md`](frontend/README.md).
 
-### 8.1 Component tree
+### 8.1 Layers
 
+```text
+ types/            the API contract (Step 1: track.ts · Step 3: risk.ts · shared: api.ts)
+   │
+ services/         the only code that talks to the backend
+   ├─ http/apiClient.ts      typed fetch, timeouts, ApiError from the error envelope
+   ├─ http/eventStream.ts    typed, finite SSE (no auto-reconnect)
+   ├─ ingestion.service.ts   STEP 1 endpoints
+   ├─ insurance.service.ts   STEP 3 endpoints
+   └─ queryKeys.ts           cache keys (scenario = circuit + series + upgrades)
+   │
+ hooks/            data + streaming state for components
+   ├─ ingestion/   useCircuits · useTrack · useIncidents · useIngestionStream
+   ├─ insurance/   useRiskMap · useWhatIf · useSimulationStream · useReport
+   └─ ui/          useWebGLSupport · useMediaQuery · useDebouncedCallback
+   │
+ components/       presentational; receive plain props
+   ├─ workspace/InsuranceWorkspace.tsx   page orchestration (the only component that calls data hooks broadly)
+   ├─ map/         InsuranceMap · scene/* (3D) · fallback/TrackMap2D · ZoneStrip · overlays
+   ├─ panels/      PremiumSummary · ZonePanel · WhatIfPanel · SimulatePanel · DataIngestionPanel · AssumptionsPanel
+   ├─ report/      ReportDrawer
+   └─ layout/ controls/ ui/   header, toggles, primitives (Popover, Drawer, SourceBadge, charts…)
 ```
-app/insurance/page.tsx
-└── InsuranceMap.tsx                       # R4: layout, state, WebGL detection, 3D ↔ 2D switch
-    ├── scene/TrackScene3D.tsx             # R4: <Canvas>, lights, camera, <OrbitControls>
-    │   ├── scene/TrackRibbon.tsx          # R4: outline → extruded ribbon BufferGeometry
-    │   ├── scene/BarrierWalls.tsx         # R4: per-zone wall strips, emissive green→red
-    │   ├── scene/Grandstands.tsx          # R4: boxes, height ∝ capacity, offset outward
-    │   ├── scene/HeatColumns.tsx          # R4: cylinders, height ∝ EAL, glow
-    │   ├── scene/CrashDrops.tsx           # R4: spheres falling onto the track from SSE events
-    │   └── scene/ZonePicker.tsx           # R4: invisible hit meshes → onZoneClick
-    ├── fallback/TrackMap2D.tsx            # R4: SVG path + coloured zone segments + markers
-    └── panels/                            # R3
-        ├── ControlBar.tsx                 # circuit select + SeriesToggle (F1/F2/F3) + 3D/2D switch
-        ├── PremiumSummary.tsx             # blanket vs segmented, cost delta, EAL, VaR99
-        ├── ZonePanel.tsx                  # incident history, λ mean + 90% band, EAL, limit
-        ├── WhatIfPanel.tsx                # barrier/run-off/fence toggles → deltas + payback
-        ├── SimulatePanel.tsx              # "Simulate Season" + live loss counter + convergence
-        ├── AssumptionsDrawer.tsx          # series factors + params provenance
-        └── ReportButton.tsx               # JSON / PDF export
-hooks/  useRiskMap.ts · useWhatIf.ts · useSimulationStream.ts (EventSource)   # R3
-lib/    api.ts · types.ts · riskColors.ts (shared colour scale) · geometry.ts   # R3 · R3 · R4 · R4
-```
 
-### 8.2 3D scene specification
+**State:**
+- **Server data:** TanStack Query. Risk maps are cached per scenario, and the previous result stays visible while a new series loads.
+- **UI state:** a small Zustand store holding circuit, series, view, selected zone, upgrades per circuit, and whether the report is open.
+- **High-frequency map effects** (simulated crashes, freshly ingested incidents): the `store/crashBus.ts` event bus. The 3D scene animates these imperatively, so a burst of events never re-renders React.
+
+**No hardcoded data.** Everything on screen comes from the API. Without a backend the app shows a clear "can't connect" state with a retry. Enum display names (`lib/labels.ts`) are vocabulary, not data.
+
+### 8.2 3D scene
 
 | Element | Implementation |
 |---|---|
-| **Coordinate system** | Normalised outline `[0,1]²` → world XZ plane scaled to ~100 units; Y is up |
-| **Track ribbon** | For each outline point compute the tangent and normal, offset ±w/2 → triangle strip `BufferGeometry`, dark asphalt material; start/finish line decal |
-| **Barrier walls** | For each zone, slice the outline between `start_frac` and `end_frac`, offset to the outside of the corner (sign of curvature), extrude height 1.2 units; `meshStandardMaterial` with `emissive = riskColor(score)`, `emissiveIntensity` ∝ score |
-| **Grandstands** | Box at zone centroid + outward normal × `distance_to_stand_m` (scaled); height ∝ `grandstand_capacity`; tinted by exposure |
-| **Heat columns** | Cylinder at the zone centroid; height ∝ `eal_eur` (sqrt-scaled); translucent emissive; value label via drei `<Html>` on hover |
-| **Crash drops** | For each SSE `crash`: sphere spawned at y = 20 above `(x, y)`, falls with ease-out, flashes on impact (red if `breach`), fades after 2 s; pooled meshes (max 200) |
-| **Glow** | `@react-three/postprocessing` `<Bloom>` (optional, disabled on low-power devices) |
-| **Interaction** | Raycast click on `ZonePicker` meshes → `selectedZoneId`; the camera eases toward the zone (drei `CameraControls` or lerp) |
-| **Transitions** | On series or what-if change, colours and heights tween over 400 ms (no remount) |
-| **Fallback** | `InsuranceMap` renders `TrackMap2D` if WebGL is unavailable, `prefers-reduced-motion` is set, or the user picks 2D. The props are identical. |
-
-### 8.3 Shared props contract (R3 ↔ R4)
-
-```ts
-export type ZoneVisual = {
-  zoneId: string; name: string; startFrac: number; endFrac: number;
-  centroid: { x: number; y: number };
-  riskScore: number; ealEur: number; grandstandCapacity: number; breachProb?: number;
-};
-
-export type CrashEvent = { id: string; zoneId: string; x: number; y: number; lossEur: number; breach: boolean };
-
-export type InsuranceMapViewProps = {
-  outline: [number, number][];
-  zones: ZoneVisual[];
-  crashes: CrashEvent[];            // appended by useSimulationStream
-  selectedZoneId?: string;
-  onZoneClick: (zoneId: string) => void;
-};
-// TrackScene3D and TrackMap2D both implement InsuranceMapViewProps.
-```
-
-### 8.4 Interaction flows
-
-| Control | Flow |
-|---|---|
-| **Series toggle** | `useRiskMap(circuit, series)` → `GET /risk-map` → zones re-coloured with a tween; PremiumSummary animates the numbers |
-| **Zone click** | `selectedZoneId` → `GET /zones/{id}?series` → ZonePanel (incident list, λ band chart, EAL, VaR99, limit, safety inventory) |
-| **Simulate season** | `EventSource(/simulate/stream)` → `crash` events → `CrashDrops`; `progress` → live counter + convergence sparkline; `done` → final totals |
-| **Safety what-if** | Barrier/run-off/fence toggles → debounced `POST /what-if` → the zone's wall colour, column height, premium and payback update in place; "Reset" restores the baseline |
-| **Report** | `GET /report/export?format=pdf` → download; `format=json` → view in a drawer |
+| Geometry | Pure functions in `lib/trackGeometry.ts` (unit-tested): outline → track frame, zone index ranges, outside-of-corner side, ribbon/wall meshes |
+| Track | `TrackRibbon`: asphalt strip, edge lines, start line |
+| Zones | `ZoneVisual`: tinted overlay, glowing barrier wall, loss column (height ∝ √premium), grandstand tiers (flash on a severe crash). Colours and heights tween |
+| Effects | `MapEffectsLayer`: pooled meshes; crashes fall onto the run-off (red ring = one of the costliest 5% of crashes), ingested incidents drop in as teal pins |
+| Labels | DOM overlay positioned every frame by `ZoneLabelProjector` (top 3 zones + selected + hovered) |
+| Camera | `CameraRig`: OrbitControls, slow auto-rotate until the user interacts, eases to the selected zone |
+| Fallback | `TrackMap2D` (SVG) with the same props, used when WebGL is unavailable or chosen |
+| Accessibility | Reduced-motion aware; zones are keyboard-selectable in the strip and the 2D map |
 
 ---
 
@@ -657,44 +658,43 @@ FIA_ASSISTANT/
 ├── README.md
 ├── .env.example
 ├── backend/
-│   ├── main.py                          # R3  FastAPI app, CORS, router mount
-│   ├── requirements.txt                 # R3  (+ scipy, reportlab, pyyaml)
-│   ├── config/
-│   │   ├── settings.py                  # R3  pydantic-settings (env)
-│   │   └── actuarial_params.yaml        # R2  all model parameters + provenance
+│   ├── main.py                          # R3  FastAPI app, CORS, error envelopes, /api/health
+│   ├── insurance_model.py               # R2  Step 2 maths (frequency, severity, Monte Carlo, pricing, what-if)
+│   ├── openf1_extract.py                # R2  alternative telemetry impact detector → data/telemetry_impacts/
+│   ├── requirements.txt
+│   ├── config/settings.py               # R3  CORS origins, stream pacing
 │   ├── api/
 │   │   ├── insurance.py                 # R3  routes (§7)
-│   │   └── schemas.py                   # R3  request/response models (R2 reviews)
+│   │   └── schemas.py                   # R3  Pydantic contract = frontend/src/types
 │   ├── services/
-│   │   ├── openf1_client.py             # R1  (moved from app/data_sources.py)
-│   │   ├── data_loader.py               # R1  fetch, cache, geolocate, energy
-│   │   ├── zones.py                     # R1  outline → zones, merge safety inventory
-│   │   ├── actuarial.py                 # R2  pure maths (§5)
-│   │   ├── underwriter.py               # R1 extraction · R3 report + PDF
-│   │   └── repository.py                # R3  load /data JSON, LRU cache
-│   ├── scripts/
-│   │   ├── fetch_openf1.py              # R1  (exists) reference laps
-│   │   └── ingest.py                    # R1  full pipeline → data/incidents, data/tracks
-│   └── tests/
-│       ├── test_actuarial.py            # R2
-│       ├── test_data_loader.py          # R1
-│       └── test_api.py                  # R3
+│   │   ├── openf1_client.py             # R1  OpenF1 REST client
+│   │   ├── data_loader.py               # R1  race control → classified, placed incidents
+│   │   ├── geolocate.py                 # R1  two-car contact points from car positions
+│   │   ├── zones.py                     # R1  reference lap → zones + safety inventory
+│   │   ├── repository.py                # R3  Step 1 files → API shapes (Monza only)
+│   │   ├── actuarial.py                 # R2⇄R3 runs insurance_model.py on Step 1 data → risk map, what-if, simulation
+│   │   ├── report.py                    # R3  underwriter report (template) + PDF
+│   │   └── ingest_jobs.py               # R3  background ingestion jobs for the SSE stream
+│   ├── scripts/                         # R1  ingest.py (pipeline) · build_turn_map.py · fetch_openf1.py
+│   └── tests/                           # test_data_loader.py (R1) · test_api.py (contract)
 ├── data/
-│   ├── openf1/                          # R1  raw cache (reference laps exist)
+│   ├── openf1/                          # R1  raw OpenF1 cache (generated, git-ignored)
 │   ├── tracks/{circuit}.json            # R1  outline + zones + safety inventory
 │   ├── incidents/{circuit}.json         # R1  processed incidents
-│   └── mocks/                           # R3  frontend fixtures (risk_map_monza_f2.json, what_if.json, stream.txt)
-└── frontend/
-    ├── package.json                     # R3
-    ├── app/layout.tsx, globals.css      # R3
-    ├── app/insurance/page.tsx           # R4
-    ├── components/insurance/
-    │   ├── InsuranceMap.tsx             # R4
-    │   ├── scene/*                      # R4
-    │   ├── fallback/TrackMap2D.tsx      # R4
-    │   └── panels/*                     # R3
-    ├── hooks/*                          # R3
-    └── lib/{api,types}.ts               # R3 · lib/{riskColors,geometry}.ts R4
+└── frontend/                            # see §8 and frontend/README.md
+    ├── package.json · tsconfig.json · eslint.config.mjs · vitest.config.ts
+    └── src/
+        ├── app/                         # R3  layout, providers, routes (/insurance)
+        ├── types/                       # R3  API contract: api.ts · track.ts (Step 1) · risk.ts (Step 3)
+        ├── services/                    # R3  http/ · ingestion.service.ts · insurance.service.ts · queryKeys.ts
+        ├── hooks/                       # R3  ingestion/ · insurance/ · ui/
+        ├── store/                       # R3  uiStore.ts · crashBus.ts
+        ├── lib/                         # R3 format, labels, upgrades · R4 trackGeometry, riskColor
+        ├── components/
+        │   ├── map/                     # R4  InsuranceMap, scene/*, fallback/*, ZoneStrip, overlays
+        │   ├── panels/ · report/        # R3
+        │   └── layout/ · controls/ · ui/ · workspace/   # R3
+        └── assets/icons/
 ```
 
 ---
@@ -713,7 +713,7 @@ FIA_ASSISTANT/
                           fake incidents in tests/        [R4] 3D  +  [R3] Panels
                                                                        ▲
                                                           until R3 is ready:
-                                                          fake JSON in data/mocks/
+                                                          build against frontend/src/types
 
    HOUR 16 → swap fakes for real data (Monza).    HOUR 36 → all 3 circuits done.
 ```
@@ -722,14 +722,14 @@ FIA_ASSISTANT/
 |---|---|---|
 | **R1 · Data** | Turn OpenF1 messages into incidents placed on the right spot of each track, and split each track into zones | `data/tracks/*.json`, `data/incidents/*.json` |
 | **R2 · Maths** | Turn incidents + zone physics into crash rates, simulated losses and premiums | `simulate()`, `price()`, `what_if()` in `services/actuarial.py` |
-| **R3 · API & Panels** | Wrap the maths in FastAPI routes, write the report, build the side panels | REST/SSE endpoints, fake JSON in `data/mocks/`, panels |
-| **R4 · 3D** | Draw the track in 3D with glowing risk, grandstands, loss columns and falling crashes | `InsuranceMap.tsx` + 3D scene + 2D fallback |
+| **R3 · API & Panels** | Wrap the maths in FastAPI routes, write the report, build the side panels | REST/SSE endpoints matching `frontend/src/types`, panels |
+| **R4 · 3D** | Draw the track in 3D with glowing risk, grandstands, loss columns and falling crashes | `components/map/**` (3D scene + 2D fallback) |
 
 ### 10.1 Ground rules
 
 1. **Exclusive file ownership** as tagged in §9. To change another owner's file, open a PR and tag them.
-2. **Contract freeze at H+2:** `api/schemas.py`, `data/mocks/*`, `lib/types.ts` and the §8.3 props. Later changes update schema, mock and types in **one** PR.
-3. **Mock-first:** the frontend builds on `data/mocks/*` from H+2. R3 serves the mocks from the real routes (`MOCK_MODE=1`) by H+4.
+2. **Contract freeze at H+2:** `backend/api/schemas.py` must match `frontend/src/types/*.ts`. Later changes update schema and types in **one** PR.
+3. **Contract-first, no fake data in the repo:** the frontend is built against `frontend/src/types`; the backend implements exactly those shapes. Test fixtures live next to tests, never in `data/`.
 4. **Pure core:** `actuarial.py` has no I/O and no FastAPI imports. R2 tests it in isolation against fixtures.
 5. Branches `r1/*` … `r4/*` → PR into `main`. Rebase twice a day, and never force-push `main`.
 
@@ -738,16 +738,16 @@ FIA_ASSISTANT/
 | | **R1: Data & Extraction** | **R2: Actuarial Engine** | **R3: API, Reports & Panels** | **R4: 3D Digital Twin** |
 |---|---|---|---|---|
 | **Mission** | Real incidents on the right spot of the map | Numbers an underwriter would sign | Serve it, explain it, control it | Make risk visible in 3D |
-| **Owns** | `services/{openf1_client,data_loader,zones}.py`, extraction half of `underwriter.py`, `scripts/*`, `data/{openf1,tracks,incidents}` | `services/actuarial.py`, `config/actuarial_params.yaml`, `tests/test_actuarial.py` | `main.py`, `api/*`, `config/settings.py`, `services/repository.py`, report half of `underwriter.py`, `data/mocks`, `frontend/{package.json,app/layout.tsx,hooks,lib/api.ts,lib/types.ts}`, `components/insurance/panels/*` | `app/insurance/page.tsx`, `components/insurance/{InsuranceMap.tsx,scene/*,fallback/*}`, `lib/{riskColors,geometry}.ts` |
+| **Owns** | `services/{openf1_client,data_loader,zones}.py`, extraction half of `underwriter.py`, `scripts/*`, `data/{openf1,tracks,incidents}` | `services/actuarial.py`, `config/actuarial_params.yaml`, `tests/test_actuarial.py` | `main.py`, `api/*`, `config/settings.py`, `services/repository.py`, report half of `underwriter.py`, `frontend/src/{app,types,services,hooks,store}`, `components/{panels,report,layout,controls,ui,workspace}` | `frontend/src/components/map/**`, `lib/{trackGeometry,riskColor}.ts` |
 | **Produces** | `data/tracks/*.json`, `data/incidents/*.json` | `simulate_circuit`, `price`, `what_if` | REST + SSE, PDF/JSON report, panels | 3D scene + 2D fallback |
-| **Consumes** | OpenF1 | R1's JSON (fixtures until ready) | R2's functions, R1's JSON | R3's hooks/types (mocks until ready) |
+| **Consumes** | OpenF1 | R1's JSON (fixtures until ready) | R2's functions, R1's JSON | R3's hooks/types |
 
 ### 10.3 Deliverables & checkpoints
 
 | Hour | R1: Data & Extraction | R2: Actuarial | R3: API, Reports & Panels | R4: 3D Twin |
 |---|---|---|---|---|
-| **H+2** | Zone schema agreed; `zones.py` on the cached Monza lap | Params YAML + function signatures | `api/schemas.py`, mocks, Next.js shell | Scene skeleton with ribbon from the mock outline |
-| **H+6** | Monza `tracks/monza.json` (zones + inventory) | Posterior + prior fit + tests | All routes return mocks (`MOCK_MODE`) | Barrier walls + heat columns coloured from the mock |
+| **H+2** | Zone schema agreed; `zones.py` on the cached Monza lap | Params YAML + function signatures | `api/schemas.py` matching the frontend types | Scene skeleton with the track ribbon |
+| **H+6** | Monza `tracks/monza.json` (zones + inventory) | Posterior + prior fit + tests | All routes wired with the contract shapes | Barrier walls + heat columns coloured from the mock |
 | **H+12** | race_control 2023+ → geolocated incidents (regex path), Monza | Severity + Monte Carlo + pricing; tests green | Real `/risk-map` wired to R2 + R1 data | Zone picking, grandstands, 2D fallback |
 | **H+16** | **Checkpoint A:** Monza F1/F2/F3 risk map served from real data and rendered in 3D | ← | ← | ← |
 | **H+22** | Silverstone + Spa zones & incidents; LLM extraction for unmatched messages | `what_if` with common random numbers; payback | `/what-if`, `/simulate`, SSE stream | Crash drops from SSE; tweened transitions |
@@ -760,24 +760,21 @@ FIA_ASSISTANT/
 ## 11. Running Locally
 
 ```bash
-# 1. Backend
+# Backend
 cd backend
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-cp ../.env.example ../.env            # ANTHROPIC_API_KEY optional (template report without it)
+python -m scripts.ingest monza --offline     # optional: rebuild data/tracks + data/incidents from the cached OpenF1 files
+python -m pytest -q                          # Step 1 + API contract tests
+uvicorn main:app --reload --port 8000        # API docs: http://localhost:8000/docs
 
-# 2. Data (one-off; cached JSON is committed, so this is only needed to refresh)
-python -m scripts.fetch_openf1        # reference laps → data/openf1
-python -m scripts.ingest              # incidents + zones → data/incidents, data/tracks
+# Step 2 model on its own (prints the zone table and a what-if demo)
+python insurance_model.py
 
-# 3. Run the engine from the CLI (sanity check)
-python -m services.actuarial --circuit monza --series f2 --seasons 10000
-
-# 4. API
-uvicorn main:app --reload --port 8000  # docs at http://localhost:8000/docs
-
-# 5. Frontend
-cd ../frontend && npm install && npm run dev   # http://localhost:3000/insurance
+# Frontend (see frontend/README.md)
+cd ../frontend && npm install
+cp .env.example .env.local                   # NEXT_PUBLIC_API_URL=http://localhost:8000
+npm run dev                                  # http://localhost:3000/insurance
 ```
 
 ---
@@ -807,6 +804,7 @@ cd ../frontend && npm install && npm run dev   # http://localhost:3000/insurance
 
 | # | Item | Status |
 |---|---|---|
+| A0 | **Current scope is Monza only.** The pipeline and API are circuit-generic, but only Monza has data and is exposed. | Decided |
 | A1 | **OpenF1 covers F1 only (2023+).** F2/F3 risk = F1 baseline × series factors (F2: 1.1/1.3/0.8, F3: 1.5/1.8/0.6). These factors are assumptions, not measurements. | Shown in the UI's assumptions drawer |
 | A2 | The zone **safety inventory** (barrier, run-off, fence, stands, asset values) is hand-entered and **approximate**. | Labelled `inventory_source` per zone |
 | A3 | Severity and pricing parameters in `actuarial_params.yaml` are **illustrative placeholders**, and the output illustrates the method. **Not actuarial advice.** | Stated in the report caveats |

@@ -48,6 +48,11 @@ class CircuitConfig:
     length_m: float                  # official lap length: the outline is calibrated to it
     turn_names: dict[int, str]       # official turn number -> corner name
     reference_year: int = 2024
+    short_name: str = ""              # display name (e.g. "Monza")
+    country: str = ""
+    event_name: str = ""              # Grand Prix held at the circuit
+    race_laps: int = 0               # scheduled Grand Prix distance in laps (Step 2 per-pass exposure)
+    grid_size: int = 20              # cars per race (Step 2 per-pass exposure)
 
 
 CIRCUITS = {
@@ -58,6 +63,7 @@ CIRCUITS = {
                     4: "Variante della Roggia", 5: "Variante della Roggia", 6: "Lesmo 1", 7: "Lesmo 2",
                     8: "Variante Ascari", 9: "Variante Ascari", 10: "Variante Ascari",
                     11: "Curva Alboreto (Parabolica)"},
+        short_name="Monza", country="Italy", event_name="Italian Grand Prix", race_laps=53, grid_size=20,
     ),
     "montreal": CircuitConfig(
         id="montreal", name="Circuit Gilles Villeneuve", openf1_name="Montreal", multiviewer_key=23,

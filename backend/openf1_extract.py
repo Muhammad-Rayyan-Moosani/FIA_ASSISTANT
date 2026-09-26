@@ -3,19 +3,23 @@ Step 1 -- OpenF1 extractor
 ==========================
 
 Pulls real Grand Prix race data from the OpenF1 API (https://openf1.org, free
-historical data from 2023) and writes the JSON that Step 2
-(`insurance_model.py`) reads:
+historical data from 2023) and detects impacts from car telemetry:
 
-    data/tracks/<track_id>.json       track geometry + ~12 zones with speed stats
-    data/incidents/<track_id>.json    detected crashes with impact speed + zone
-    data/extraction_report.json       what was pulled / skipped / why
+    data/telemetry_impacts/tracks/<track_id>.json      track geometry + ~12 equal zones
+    data/telemetry_impacts/incidents/<track_id>.json   detected crashes with impact speed
+    data/telemetry_impacts/extraction_report.json      what was pulled / skipped / why
+
+This is an alternative, telemetry-based detector. The app itself runs on the
+race-control pipeline (`python -m scripts.ingest monza`), which owns
+data/tracks/ and data/incidents/; writing here keeps the two from overwriting
+each other. Measured impact speeds from this detector can later feed Step 2.
 
 Run it on YOUR machine (needs internet); Step 2 stays fully offline:
 
     python backend/openf1_extract.py --years 2025 --max-races 3     # quick test
     python backend/openf1_extract.py                                # 2023 -> this year
 
-Responses are cached in data/.openf1_cache, so re-runs and resumes are free.
+Responses are cached in data/telemetry_impacts/.openf1_cache, so re-runs and resumes are free.
 The free tier allows 30 requests/minute, so a full multi-season run takes
 roughly an hour the first time.  Standard library + NumPy only.
 
@@ -50,7 +54,7 @@ KNOWN LIMITS (be honest about these in your write-up)
 * 3.7 Hz sampling smears very short impacts; impact speed is approximate.
 * OpenF1 has NO barrier data.  Barrier type per zone is a heuristic
   (street circuit -> concrete; fast permanent zones -> TecPro; slow -> tyre
-  wall).  Override it in data/barrier_overrides.json, format:
+  wall).  Override it in data/telemetry_impacts/barrier_overrides.json, format:
       {"monza": {"default": "tecpro", "monza-z03": "safer"}}
 * Race sessions only (no sprints, practice, qualifying); exposure counts every
   lap equally, including safety-car laps.
@@ -600,7 +604,8 @@ def extract(years, out_dir: Path, circuits=None, deep=False, max_races=None, n_z
 def main() -> None:
     ap = argparse.ArgumentParser(description="Extract F1 track zones and crash incidents from OpenF1.")
     ap.add_argument("--years", type=int, nargs="+", default=list(range(2023, datetime.now().year + 1)))
-    ap.add_argument("--out", type=Path, default=DATA_DIR)
+    ap.add_argument("--out", type=Path, default=DATA_DIR / "telemetry_impacts",
+                    help="output folder (kept separate from the Step 1 race-control pipeline in data/tracks)")
     ap.add_argument("--circuits", nargs="+", help="filter by circuit/location name, e.g. monza spa")
     ap.add_argument("--max-races", type=int, help="only the N most recent race weekends (quick test)")
     ap.add_argument("--zones", type=int, default=12)
@@ -612,7 +617,6 @@ def main() -> None:
     n = sum(t["incidents"] for t in rep["tracks"])
     print(f"\nDone: {len(rep['tracks'])} tracks, {n} incidents, {rep['requests_network']} API calls "
           f"({rep['requests_cached']} cached), {len(rep['skipped'])} skipped. Report: {a.out / 'extraction_report.json'}")
-    print("Next: python backend/insurance_model.py")
 
 
 if __name__ == "__main__":
