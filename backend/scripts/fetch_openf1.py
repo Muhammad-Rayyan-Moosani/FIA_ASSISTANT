@@ -15,7 +15,7 @@ from pathlib import Path
 
 import numpy as np
 
-from app.data_sources import OpenF1Client
+from services.openf1_client import OpenF1Client
 
 DATA_DIR = Path(__file__).resolve().parents[2] / "data" / "openf1"
 

@@ -49,11 +49,13 @@ Two products, one platform: **faster safety decisions today, and cheaper, smarte
 ### 🛡️ Module 2: Track-Zone Risk & Insurance Engine
 - Maps **historical crash and impact data** onto circuit zones across F1, F2 and F3
 - Scores each zone's **incident probability × severity × exposure** (spectators, assets)
-- Produces a **heat map** of the track plus a **premium plan**: where to add cover, where to cut it, and how much the series saves
+- Renders a **3D digital twin** of the circuit (glowing risk barriers, grandstands, loss columns) plus a **premium plan**: where to add cover, where to cut it, and how much the series saves
 
 ---
 
 ## 🏗️ Architecture
+
+> 📐 Insurance module deep-dive (data pipeline, actuarial maths, API contracts, 3D twin, 4-person team split): **[ARCHITECTURE.md](ARCHITECTURE.md)**
 
 ```mermaid
 flowchart LR
@@ -68,12 +70,12 @@ flowchart LR
         AD[Anomaly Detector<br/><i>decel Δ · stops · flags · pit speed</i>]
         RULES[FIA Rule Evaluator<br/><i>deterministic, instant</i>]
         LLM[Steward Agent<br/><i>Claude · structured output</i>]
-        RISK[Zone Risk Model<br/><i>probability × severity × exposure</i>]
+        RISK[Actuarial Engine<br/><i>Poisson-Gamma · Monte Carlo · pricing</i>]
     end
 
     subgraph FE["🖥️ Frontend · Next.js + Tailwind"]
         SP[Steward Portal<br/><i>live replay + advisory cards</i>]
-        IM[Insurance Risk Map<br/><i>2D track heat zones</i>]
+        IM[Insurance Risk Map<br/><i>3D digital twin + what-if</i>]
     end
 
     OF1 --> RE
@@ -102,22 +104,27 @@ flowchart LR
 
 ```
 FIA_ASSISTANT/
+├── ARCHITECTURE.md          # 📐 insurance module design, maths, API contracts, team split
 ├── backend/                 # Python · FastAPI
-│   ├── app/                 # replay engine, anomaly detection, FIA rules, AI agent, risk model
-│   ├── scripts/             # data fetchers (OpenF1 / FastF1) + sample generators
+│   ├── main.py              # FastAPI app
+│   ├── api/                 # routes (insurance.py, schemas.py)
+│   ├── services/            # openf1_client · data_loader · zones · actuarial · underwriter
+│   ├── config/              # settings + actuarial_params.yaml
+│   ├── scripts/             # fetch_openf1.py (✅) · ingest.py
 │   ├── tests/
 │   ├── requirements.txt
 │   └── requirements-fastf1.txt   # optional heavier FastF1 install
-├── frontend/                # Next.js · TailwindCSS
+├── frontend/                # Next.js · TailwindCSS · React Three Fiber
 │   ├── app/steward/         # 🟡 Steward Portal
-│   ├── app/insurance/       # 🛡️ Insurance Risk Map
-│   ├── components/
+│   ├── app/insurance/       # 🛡️ Insurance Risk Map (3D digital twin)
+│   ├── components/insurance/
 │   └── lib/
 ├── data/
 │   ├── openf1/              # ✅ real 2024 reference laps + race-control logs (Monza, Silverstone, Spa)
-│   ├── replay/              # demo replay sessions
-│   ├── tracks/              # circuit outlines + zone definitions
-│   └── incidents/           # historical incident dataset for the risk model
+│   ├── tracks/              # circuit outlines + zones + safety inventory
+│   ├── incidents/           # geolocated historical incidents for the risk model
+│   ├── mocks/               # API fixtures for frontend development
+│   └── replay/              # demo replay sessions (steward module)
 ├── docs/
 ├── .env.example
 └── README.md
@@ -170,14 +177,19 @@ npm run dev                          # → http://localhost:3000
 
 ## 🗺️ Hackathon Roadmap
 
+**🛡️ Insurance module (building first — see [ARCHITECTURE.md](ARCHITECTURE.md))**
 - [x] Repo, structure & docs
 - [x] OpenF1 client + real 2024 reference data (Monza, Silverstone, Spa)
+- [ ] Incident ingestion + geolocation + zones
+- [ ] Actuarial engine (Poisson-Gamma · severity · Monte Carlo · pricing)
+- [ ] Insurance API (risk map · simulate · what-if · report)
+- [ ] 3D digital twin + control panels
+- [ ] Underwriter report (LLM + PDF)
+
+**🟡 Race Control module (next)**
 - [ ] Replay engine + anomaly detector
 - [ ] FIA rule evaluator + Claude steward agent
-- [ ] FastAPI endpoints
 - [ ] Steward Portal UI (live map + cards)
-- [ ] Zone risk model + incident dataset
-- [ ] Insurance Risk Map UI
 - [ ] Demo polish 🏆
 
 ---

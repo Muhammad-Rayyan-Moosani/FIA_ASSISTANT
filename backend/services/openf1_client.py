@@ -73,7 +73,7 @@ class OpenF1Client:
 
 
 def load_fastf1_session(year: int, event: str, session: str = "R", cache_dir: str = ".fastf1-cache"):
-    """Load a FastF1 session (lazy import: install requirements-fastf1.txt first)."""
+    """Load a FastF1 session (lazy import: pip install -r requirements-fastf1.txt)."""
     try:
         import fastf1  # type: ignore[import-not-found]
     except ImportError as exc:  # pragma: no cover - optional dependency
