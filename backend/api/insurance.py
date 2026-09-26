@@ -1,4 +1,4 @@
-"""R3 · Insurance API routes (ARCHITECTURE.md §7). Monza only; every response is validated against api/schemas.py."""
+"""R3 · Insurance API routes (ARCHITECTURE.md §7). Monza and Montreal; every response is validated against api/schemas.py."""
 
 from __future__ import annotations
 
@@ -88,6 +88,11 @@ async def stream_ingestion(job_id: str) -> StreamingResponse:
 @router.get("/risk-map", response_model=s.RiskMap)
 def get_risk_map(circuit: str, series: s.Series = "f1", upgrades: str | None = None) -> dict:
     return actuarial.risk_map(circuit, series, parse_upgrades(upgrades))
+
+
+@router.get("/assets/{circuit}", response_model=s.AssetMap)
+def get_assets(circuit: str, series: s.Series = "f1", upgrades: str | None = None) -> dict:
+    return actuarial.asset_map(circuit, series, parse_upgrades(upgrades))
 
 
 @router.post("/what-if", response_model=s.WhatIfResponse)

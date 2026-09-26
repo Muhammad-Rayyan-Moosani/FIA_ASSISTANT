@@ -23,7 +23,7 @@ from services.openf1_client import OpenF1Client
 from services.zones import load_outline, snap
 
 OUT_DIR = Path(__file__).resolve().parents[2] / "data" / "tracks"
-CIRCUITS = ["monza", "silverstone", "spa"]
+CIRCUITS = ["monza", "montreal"]
 
 # Only the variants that carry a time; "(NEXT LAP)" messages have none.
 TL_TIMED = re.compile(r"CAR (\d+) \(\w+\) (?:TIME .+?|LAP) DELETED - TRACK LIMITS AT TURN (\d+) LAP \d+ (\d\d):(\d\d):(\d\d)")

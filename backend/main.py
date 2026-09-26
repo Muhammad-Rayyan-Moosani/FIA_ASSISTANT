@@ -32,7 +32,7 @@ def _error(status: int, code: str, message: str, detail: dict | None = None) -> 
 
 @app.exception_handler(repository.UnknownCircuit)
 async def unknown_circuit(_: Request, exc: repository.UnknownCircuit) -> JSONResponse:
-    return _error(404, "UNKNOWN_CIRCUIT", f"No data for circuit {exc.args[0]}. Only Monza is available.")
+    return _error(404, "UNKNOWN_CIRCUIT", f"No data for circuit {exc.args[0]}. Available: {', '.join(repository.SUPPORTED_CIRCUITS)}.")
 
 
 @app.exception_handler(UnknownZone)
@@ -58,7 +58,8 @@ async def validation_error(_: Request, exc: RequestValidationError) -> JSONRespo
 @app.get("/api/health")
 def health() -> dict:
     try:
-        repository.data_version("monza")
+        for circuit in repository.SUPPORTED_CIRCUITS:
+            repository.data_version(circuit)
         data_loaded = True
     except repository.UnknownCircuit:
         data_loaded = False

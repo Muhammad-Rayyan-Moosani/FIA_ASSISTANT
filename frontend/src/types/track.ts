@@ -82,6 +82,10 @@ export interface TrackGeometry {
   length_m: number;
   /** Normalised [x, y] points in [-0.5, 0.5], in lap order. */
   outline: [number, number][];
+  /** Real speed (km/h) of the reference lap at each outline point. */
+  speed_kph: number[];
+  /** Metres spanned by one normalised unit (converts outline coordinates to metres). */
+  extent_m: number;
   zones: TrackZone[];
   reference: ReferenceLap;
   sources: SourceMap<TrackSourceKey>;
@@ -123,6 +127,8 @@ export interface Incident {
   geo_confidence: GeoConfidence;
   /** Marshal sector for yellow-flag incidents placed by sector. */
   marshal_sector: number | null;
+  /** Counted as an insurable crash by the Step 2 model (double yellow or confirmed collision). */
+  counts_as_crash: boolean;
   entry_speed_kph: number | null;
   kinetic_energy_kj: number | null;
   extraction: { method: "regex" | "llm"; rule: string | null; model: string | null };

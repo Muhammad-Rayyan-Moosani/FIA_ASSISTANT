@@ -62,7 +62,7 @@ export function ZonePanel({ circuitId, view, track, riskMap, upgrade }: ZonePane
                     </small>
                   </>
                 }
-                hint={`${risk.crash_rate.n_incidents} loss-relevant incidents over ${formatNumber(risk.crash_rate.exposure)} race weekends`}
+                hint={`${risk.crash_rate.n_incidents} counted crashes over ${formatNumber(risk.crash_rate.exposure)} race weekends`}
               />
               <RangeBar lo={risk.crash_rate.lo90} hi={risk.crash_rate.hi90} mean={risk.crash_rate.mean} max={maxHi} color={riskHex(risk.risk_score)} />
             </div>

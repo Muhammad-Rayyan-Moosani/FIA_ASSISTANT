@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildTrackFrame, nearestIndex, outwardSign, stripMesh, wallMesh, zoneIndexRange } from "./trackGeometry";
+import { buildTrackFrame, hash01, insidePolygon, nearestIndex, outwardSign, sampleAlong, stripMesh, stripedStrip, unitsPerMetre, wallMesh, zoneIndexRange } from "./trackGeometry";
 
 /** A counter-clockwise circle of radius 0.5 in the normalised plane. */
 const circle = Array.from({ length: 120 }, (_, i) => {
@@ -45,5 +45,30 @@ describe("trackGeometry", () => {
   it("finds the nearest outline point", () => {
     expect(nearestIndex(circle, 0.5, 0)).toBe(0);
     expect(nearestIndex(circle, 0, 0.5)).toBe(30);
+  });
+});
+
+describe("real-scale helpers", () => {
+  const frame = buildTrackFrame(circle, 100);
+  it("converts metres to world units", () => expect(unitsPerMetre(2000)).toBeCloseTo(0.055, 3));
+  it("tests points inside polygons", () => {
+    const square = [{ x: 0, z: 0 }, { x: 10, z: 0 }, { x: 10, z: 10 }, { x: 0, z: 10 }];
+    expect(insidePolygon(5, 5, square)).toBe(true);
+    expect(insidePolygon(15, 5, square)).toBe(false);
+  });
+  it("hash01 is deterministic and in range", () => {
+    expect(hash01(3, 4)).toBe(hash01(3, 4));
+    expect(hash01(3, 4)).toBeGreaterThanOrEqual(0);
+    expect(hash01(3, 4)).toBeLessThan(1);
+  });
+  it("samples along the lap and wraps", () => {
+    const a = sampleAlong(frame, 0);
+    const b = sampleAlong(frame, frame.points.length);
+    expect(b.x).toBeCloseTo(a.x, 6);
+  });
+  it("builds striped kerbs with colours per vertex", () => {
+    const k = stripedStrip(frame, 10, 20, 1, 1, 2, 0, 1, [[1, 0, 0], [1, 1, 1]] as const);
+    expect(k.colors.length).toBe(k.positions.length);
+    expect(k.indices.length % 6).toBe(0);
   });
 });

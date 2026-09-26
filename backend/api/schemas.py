@@ -108,6 +108,8 @@ class TrackGeometry(Contract):
     country: str
     length_m: float
     outline: list[tuple[float, float]]
+    speed_kph: list[float]
+    extent_m: float
     zones: list[TrackZone]
     reference: ReferenceLap
     sources: dict[TrackSourceKey, SourceInfo]
@@ -140,6 +142,7 @@ class Incident(Contract):
     geo_method: GeoMethod
     geo_confidence: GeoConfidence
     marshal_sector: int | None
+    counts_as_crash: bool
     entry_speed_kph: float | None
     kinetic_energy_kj: float | None
     extraction: Extraction
@@ -285,3 +288,58 @@ class UnderwriterReport(Contract):
     caveats: list[str]
     totals: RiskTotals
     zones: list[ZoneRisk]
+
+
+# ------------------------------------------------------------------ insured structures (assets.ts)
+AssetCategory = Literal["grandstand", "pit_building", "paddock", "hospitality", "race_control", "media", "medical",
+                        "podium", "building", "tower", "bridge", "barrier"]
+CoverageLine = Literal["property", "spectator_liability", "business_interruption", "broadcast_equipment",
+                       "participant_accident", "track_infrastructure"]
+
+
+class Asset(Contract):
+    asset_id: str
+    name: str | None
+    category: AssetCategory
+    osm_tag: str
+    coverage: list[CoverageLine]
+    geometry: Literal["polygon", "line", "point"]
+    points: list[tuple[float, float]]
+    height_m: float
+    height_source: Literal["osm_height", "osm_levels", "assumed"]
+    distance_to_track_m: float
+    nearest_lap_frac: float
+    nearest_zone_id: str
+    exposure_score: int
+    exposure_tier: RiskTier
+
+
+class CoverageSummary(Contract):
+    line: CoverageLine
+    label: str
+    description: str
+    count: int
+    high_exposure: int
+
+
+class AssetContext(Contract):
+    woods: list[list[tuple[float, float]]]
+    water: list[list[tuple[float, float]]]
+    pit_lane: list[list[tuple[float, float]]]
+    other_raceways: list[list[tuple[float, float]]]
+
+
+AssetSourceKey = Literal["structures", "coverage", "exposure"]
+
+
+class AssetMap(Contract):
+    circuit: str
+    series: Series
+    attribution: str
+    alignment_error_m: float
+    extent_m: float
+    marshal_posts: int
+    coverage: list[CoverageSummary]
+    assets: list[Asset]
+    context: AssetContext
+    sources: dict[AssetSourceKey, SourceInfo]

@@ -4,7 +4,7 @@ The insurance module UI: a 3D digital twin of each circuit coloured by insurance
 
 **Stack:** Next.js 16 (App Router) · React 19 · TypeScript (strict) · Tailwind CSS 4 · React Three Fiber 9 + drei · TanStack Query 5 · Zustand 5 · Vitest
 
-Everything on screen comes from the FastAPI backend (`backend/main.py`), which serves real OpenF1-derived data for **Monza**. There is no mock data in the app.
+Everything on screen comes from the FastAPI backend (`backend/main.py`), which serves real OpenF1-derived data for **Monza** and **Montreal**. There is no mock data in the app.
 
 ## Run it
 
@@ -64,7 +64,7 @@ The full spec is in [`ARCHITECTURE.md` §7](../ARCHITECTURE.md#7-api-specificati
 
 | Endpoint | Type | Used by |
 |---|---|---|
-| `GET /api/insurance/circuits` | `CircuitSummary[]` (Monza only) | circuit switcher, data coverage |
+| `GET /api/insurance/circuits` | `CircuitSummary[]` (Monza and Montreal) | circuit switcher, data coverage |
 | `GET /api/insurance/tracks/{circuit}` | `TrackGeometry` | 3D/2D map, zone names, safety inventory, reference lap |
 | `GET /api/insurance/incidents?circuit&zone_id` | `Incident[]` | zone incident history |
 | `POST /api/insurance/incidents/ingest` | `IngestJob` | "Refresh from OpenF1" |
@@ -77,6 +77,7 @@ When the stream sends `done`, the frontend refetches circuits, the track, incide
 | Endpoint | Type | Used by |
 |---|---|---|
 | `GET /api/insurance/risk-map?circuit&series&upgrades` | `RiskMap` | colours, strip, premium summary, zone panel |
+| `GET /api/insurance/assets/{circuit}?series&upgrades` | `AssetMap` | real structures in 3D, "What insurance covers" panel |
 | `POST /api/insurance/what-if` | `WhatIfRequest` → `WhatIfResponse` | safety what-if: barrier type, impact speed, crash frequency (its `risk_map` is written straight into the cache) |
 | `GET /api/insurance/simulate/stream?circuit&series&seasons&upgrades` | SSE `SimulationStreamEvent` | season simulation + crash animation |
 | `GET /api/insurance/report/export?…&format=json\|pdf` | `UnderwriterReport` / PDF | report drawer |

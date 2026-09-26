@@ -4,10 +4,8 @@ import { useFrame } from "@react-three/fiber";
 import { useMemo, type RefObject } from "react";
 import { Vector3 } from "three";
 import { formatEur } from "@/lib/format";
-import { TRACK_WIDTH } from "@/lib/trackGeometry";
 import type { SceneData } from "./sceneTypes";
 
-const COLUMN_INSET = TRACK_WIDTH / 2 + 3.2;
 const TOP_N = 3;
 
 export type LabelNodes = RefObject<Map<string, HTMLDivElement>>;
@@ -17,17 +15,17 @@ interface LabelAnchor {
   position: Vector3;
 }
 
-/** World-space anchor above each zone's loss column. */
+/** World-space anchor above each zone's barrier. */
 export function useLabelAnchors(scene: SceneData): LabelAnchor[] {
   return useMemo(
     () =>
       scene.zones
         .filter((z) => z.view.risk)
-        .map(({ view, mid, side }) => {
+        .map(({ view, mid, side, barrierOffset }) => {
           const p = scene.frame.points[mid]!;
           const q = scene.frame.normals[mid]!;
-          const height = 1.5 + 18 * Math.sqrt(view.risk!.premium_eur / (scene.maxPremium || 1)) + 1.2;
-          return { zoneId: view.zone.zone_id, position: new Vector3(p.x - q.x * side * COLUMN_INSET, height, p.z - q.z * side * COLUMN_INSET) };
+          const height = scene.scale.h(view.zone.fence_height_m + 6);
+          return { zoneId: view.zone.zone_id, position: new Vector3(p.x + q.x * side * barrierOffset, height, p.z + q.z * side * barrierOffset) };
         }),
     [scene],
   );

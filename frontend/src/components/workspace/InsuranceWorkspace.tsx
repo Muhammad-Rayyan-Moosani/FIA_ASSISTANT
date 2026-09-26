@@ -5,6 +5,7 @@ import { AppHeader } from "@/components/layout/AppHeader";
 import { InsuranceMap } from "@/components/map/InsuranceMap";
 import { AssumptionsPanel } from "@/components/panels/AssumptionsPanel";
 import { DataIngestionPanel } from "@/components/panels/DataIngestionPanel";
+import { InsuredAssetsPanel } from "@/components/panels/InsuredAssetsPanel";
 import { PremiumSummary } from "@/components/panels/PremiumSummary";
 import { SimulatePanel } from "@/components/panels/SimulatePanel";
 import { WhatIfPanel } from "@/components/panels/WhatIfPanel";
@@ -15,6 +16,7 @@ import { StateMessage } from "@/components/ui/StateMessage";
 import { useCircuits } from "@/hooks/ingestion/useCircuits";
 import { useIngestionStream } from "@/hooks/ingestion/useIngestionStream";
 import { useTrack } from "@/hooks/ingestion/useTrack";
+import { useAssets } from "@/hooks/insurance/useAssets";
 import { useRiskMap } from "@/hooks/insurance/useRiskMap";
 import { useSimulationStream } from "@/hooks/insurance/useSimulationStream";
 import { usePrefersReducedMotion } from "@/hooks/ui/useMediaQuery";
@@ -31,7 +33,10 @@ export function InsuranceWorkspace() {
   const view = useUiStore((s) => s.view);
   const selectedZoneId = useUiStore((s) => s.selectedZoneId);
   const reportOpen = useUiStore((s) => s.reportOpen);
-  const { setCircuit, setSeries, setView, selectZone, setReportOpen } = useUiStore.getState();
+  const riskOverlay = useUiStore((s) => s.riskOverlay);
+  const showTraffic = useUiStore((s) => s.showTraffic);
+  const selectedAssetId = useUiStore((s) => s.selectedAssetId);
+  const { setCircuit, setSeries, setView, selectZone, setReportOpen, setRiskOverlay, setShowTraffic, selectAsset } = useUiStore.getState();
   const upgrades = useActiveUpgrades();
 
   const webgl = useWebGLSupport();
@@ -40,6 +45,7 @@ export function InsuranceWorkspace() {
   const circuits = useCircuits();
   const track = useTrack(circuitId);
   const riskMap = useRiskMap(circuitId, series, upgrades);
+  const assets = useAssets(circuitId, series, upgrades);
   const ingestion = useIngestionStream(circuitId);
   const simulation = useSimulationStream(circuitId, series, upgrades);
 
@@ -111,11 +117,25 @@ export function InsuranceWorkspace() {
           view={view}
           reducedMotion={reducedMotion}
           sim={simulation.state}
+          assets={assets.data}
+          selectedAssetId={selectedAssetId}
+          onSelectAsset={selectAsset}
+          riskOverlay={riskOverlay}
+          onRiskOverlay={setRiskOverlay}
+          showTraffic={showTraffic}
+          onShowTraffic={setShowTraffic}
         />
 
         <aside className="min-h-0 overflow-y-auto border-l border-line bg-panel scrollbar-thin max-lg:overflow-visible max-lg:border-l-0 max-lg:border-t" aria-label="Pricing and controls">
           <PremiumSummary riskMap={riskMap.data} upgradeCount={upgradeCount} />
           {circuitId && <ZonePanel circuitId={circuitId} view={selected} track={track.data} riskMap={riskMap.data} upgrade={selectedZoneId ? upgrades[selectedZoneId] : undefined} />}
+          <InsuredAssetsPanel
+            assets={assets.data}
+            selectedZoneId={selectedZoneId}
+            zoneName={selected?.zone.short_name}
+            selectedAssetId={selectedAssetId}
+            onSelectAsset={selectAsset}
+          />
           {circuitId && selected && (
             <WhatIfPanel key={`${circuitId}:${selected.zone.zone_id}`} circuitId={circuitId} series={series} zone={selected.zone} upgrades={upgrades} riskMap={riskMap.data} />
           )}

@@ -29,14 +29,23 @@ def sse_events(body: str) -> list[tuple[str, dict]]:
     return out
 
 
-def test_monza_is_the_only_circuit():
+def test_monza_and_montreal_are_the_circuits():
     circuits = client.get(f"{API}/circuits").json()
-    assert [c["id"] for c in circuits] == ["monza"]
-    s.CircuitSummary.model_validate(circuits[0])
-    assert circuits[0]["coverage"]["incidents"] > 0
+    assert [c["id"] for c in circuits] == ["monza", "montreal"]
+    for c in circuits:
+        s.CircuitSummary.model_validate(c)
+        assert c["coverage"]["incidents"] > 0
 
 
-@pytest.mark.parametrize("circuit", ["spa", "silverstone", "imola"])
+@pytest.mark.parametrize("circuit", ["montreal"])
+def test_montreal_track_and_risk_map(circuit):
+    t = s.TrackGeometry.model_validate(client.get(f"{API}/tracks/{circuit}").json())
+    rm = s.RiskMap.model_validate(client.get(f"{API}/risk-map", params={"circuit": circuit}).json())
+    assert {z.zone_id for z in t.zones} == {z.zone_id for z in rm.zones}
+    assert t.reference.session_key == 9963
+
+
+@pytest.mark.parametrize("circuit", ["imola", "suzuka"])
 def test_other_circuits_are_out_of_scope(circuit):
     r = client.get(f"{API}/tracks/{circuit}")
     assert r.status_code == 404
@@ -114,3 +123,31 @@ def test_report_json_and_pdf():
     assert rep.narrative_source == "template" and rep.executive_summary
     pdf = client.get(f"{API}/report/export", params={"circuit": "monza", "format": "pdf"})
     assert pdf.headers["content-type"] == "application/pdf" and pdf.content.startswith(b"%PDF")
+
+
+def test_only_physical_incidents_count_as_crashes():
+    from services.crash_filter import CRASH_RULES
+    rows = client.get(f"{API}/incidents", params={"circuit": "monza"}).json()
+    counted = [r for r in rows if r["counts_as_crash"]]
+    assert 0 < len(counted) < sum(r["loss_relevant"] for r in rows)
+    assert all(r["extraction"]["rule"] in CRASH_RULES for r in counted)
+    assert not any(r["extraction"]["rule"] == "yellow" for r in counted)
+    rm = client.get(f"{API}/risk-map", params={"circuit": "monza"}).json()
+    assert sum(z["crash_rate"]["n_incidents"] for z in rm["zones"]) == len(counted)
+
+
+@pytest.mark.parametrize("circuit", ["monza", "montreal"])
+def test_assets_are_real_structures_with_exposure(circuit):
+    am = s.AssetMap.model_validate(client.get(f"{API}/assets/{circuit}").json())
+    assert am.alignment_error_m < 5 and len(am.assets) > 50
+    assert {c.line for c in am.coverage} >= {"property", "spectator_liability", "track_infrastructure"}
+    zones = {z["zone_id"] for z in client.get(f"{API}/tracks/{circuit}").json()["zones"]}
+    assert all(a.nearest_zone_id in zones for a in am.assets)
+    far = [a for a in am.assets if a.distance_to_track_m >= 200]
+    assert all(a.exposure_score == 0 for a in far)
+
+
+def test_track_has_real_speed_profile():
+    t = client.get(f"{API}/tracks/monza").json()
+    assert len(t["speed_kph"]) == len(t["outline"]) and max(t["speed_kph"]) > 300 and min(t["speed_kph"]) < 100
+    assert 2000 < t["extent_m"] < 2400

@@ -4,12 +4,14 @@ import { useEffect, useMemo, useRef } from "react";
 import { riskHex } from "@/lib/riskColor";
 import { zoneIndexRange } from "@/lib/trackGeometry";
 import type { ZoneView } from "@/lib/zoneView";
+import type { AssetMap } from "@/types/assets";
 import { mapEffects } from "@/store/crashBus";
 import { NEUTRAL_ZONE } from "../scene/sceneTypes";
 
 interface TrackMap2DProps {
   outline: [number, number][];
   zones: ZoneView[];
+  assets?: AssetMap;
   selectedZoneId: string | null;
   onSelectZone: (zoneId: string) => void;
   reducedMotion: boolean;
@@ -19,7 +21,7 @@ const SVG_NS = "http://www.w3.org/2000/svg";
 const toPath = (pts: [number, number][]) => pts.map(([x, y], i) => `${i ? "L" : "M"}${x.toFixed(4)} ${(-y).toFixed(4)}`).join("");
 
 /** Flat SVG map with the same props as the 3D scene. Used without WebGL or on request. */
-export function TrackMap2D({ outline, zones, selectedZoneId, onSelectZone, reducedMotion }: TrackMap2DProps) {
+export function TrackMap2D({ outline, zones, assets, selectedZoneId, onSelectZone, reducedMotion }: TrackMap2DProps) {
   const effectsRef = useRef<SVGGElement>(null);
   const trackPath = useMemo(() => `${toPath(outline)}Z`, [outline]);
   const maxPremium = Math.max(0, ...zones.map((z) => z.risk?.premium_eur ?? 0));
@@ -48,6 +50,15 @@ export function TrackMap2D({ outline, zones, selectedZoneId, onSelectZone, reduc
 
   return (
     <svg viewBox="-0.56 -0.56 1.12 1.12" preserveAspectRatio="xMidYMid meet" className="absolute inset-0 h-full w-full" role="img" aria-label="Map of the circuit coloured by insurance risk">
+      {assets?.context.woods.map((w, i) => <path key={`w${i}`} d={`${toPath(w)}Z`} fill="#1b2a1c" />)}
+      {assets?.context.water.map((w, i) => <path key={`h${i}`} d={`${toPath(w)}Z`} fill="#16303f" />)}
+      {assets?.assets.map((a) =>
+        a.geometry === "polygon" ? (
+          <path key={a.asset_id} d={`${toPath(a.points)}Z`} fill={a.category === "grandstand" ? "#5b6875" : "#3d4854"} stroke="#0b1117" strokeWidth={0.0008}>
+            <title>{a.name ?? a.category}</title>
+          </path>
+        ) : null,
+      )}
       <path d={trackPath} fill="none" stroke="#1d2731" strokeWidth={0.034} strokeLinejoin="round" />
       <path d={trackPath} fill="none" stroke="#3a4a5a" strokeWidth={0.002} />
       {zones.map(({ zone, risk }) => {

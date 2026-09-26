@@ -30,7 +30,7 @@
 
 **Problem.** Circuit owners, promoters and junior series (F2/F3) buy **blanket** property and liability cover, which prices a quiet straight like a high-energy braking zone. **Goal:** replace that with **zone-based, dynamic cover** driven by a spatial probabilistic model built from real OpenF1 incident and telemetry data.
 
-**Target circuits:** Monza · Silverstone · Spa-Francorchamps. **Series:** F1 (observed), F2 and F3 (scaled).
+**Target circuits:** Monza · Montreal (Circuit Gilles Villeneuve). **Series:** F1 (observed), F2 and F3 (scaled).
 
 | Principle | Consequence |
 |---|---|
@@ -249,7 +249,11 @@ Zones are derived from the **real reference lap** that `scripts/fetch_openf1.py`
 
 **Kinetic energy at zone entry:** `E_k = ½ · m · v²`, with `m = 798 kg` (F1 minimum car mass incl. driver, parameterised) and `v` in m/s. For example, 331 km/h ≈ 91.9 m/s gives E_k ≈ 3.37 MJ.
 
-### 4.5 Series risk scaling (F1 → F2 / F3)
+### 4.5 Insured structures (OpenStreetMap)
+
+`python -m scripts.fetch_osm_assets` downloads buildings, grandstands, barriers, towers, bridges, raceways, woods and water around each circuit from the Overpass API (cached in `data/osm/`, © OpenStreetMap contributors, ODbL). It aligns them to the OpenF1 frame by fitting a similarity transform that lays the reference lap onto OSM's raceways (trimmed ICP; median error 2.2 m at Monza, 2.3 m at Montreal), classifies each structure within reach of the track (grandstand, pit building, paddock, hospitality, medical, podium, tower, bridge, barrier, other building) and maps it to the insurance lines that cover it. Output: `data/tracks/{circuit}_assets.json`. Heights come from OSM `height` / `building:levels` where mapped, otherwise a default by type (`height_source: assumed`).
+
+### 4.6 Series risk scaling (F1 → F2 / F3)
 
 F2 and F3 race at the same circuits but have no OpenF1 telemetry. Their risk is derived from the F1 zone baseline using a deterministic multiplier matrix (defaults from the product spec; all **assumptions**, editable in `actuarial_params.yaml`):
 
@@ -269,8 +273,9 @@ $$\text{Risk}_{s} = \text{Risk}_{F1} \times \text{Grid}_s \times \text{Error}_s 
 
 ## 5. Actuarial Engine
 
-> **As built (integration, Monza):** Step 2 is `backend/insurance_model.py` (R2), run on real Step 1 data through the adapter `backend/services/actuarial.py`. The subsections below are the original design; where the built model differs:
-> - **Frequency:** Jeffreys Gamma posterior per zone (`n + 0.5`, exposure = race weekends observed), not the pooled empirical-Bayes prior. Crashes = Step 1 incidents with `loss_relevant = true`.
+> **As built (integration, Monza and Montreal):** Step 2 is `backend/insurance_model.py` (R2), run on real Step 1 data through the adapter `backend/services/actuarial.py`. The subsections below are the original design; where the built model differs:
+> - **Frequency:** Jeffreys Gamma posterior per zone (`n + 0.5`, exposure = race weekends observed), not the pooled empirical-Bayes prior.
+> - **What counts as a crash** (`services/crash_filter.py`): double yellow flags (car stopped or crashed), steward-confirmed collisions, and explicit crash / stopped / debris messages, merged when two fall in the same session and zone within 5 minutes. Plain yellow flags, steward notes without a confirmed collision, driving-standards notes, track limits and offs are **not** counted. (Counting every `loss_relevant` incident overstated losses about 2.7×: Monza 83 → 25 crashes, F1 EAL €9.75M → €3.66M.)
 > - **Severity:** impact speed = 75% of the zone's real entry speed (lognormal spread) → E = ½mv² → barrier repair + car damage (`DEFAULT_BARRIERS`, `car_damage_eur_per_mj`). No run-off physics, fence breach, spectator or marshal terms.
 > - **Pricing:** zone premium = (EAL + 8% × (VaR99 − EAL)) ÷ (1 − 15%); blanket = the 75th-percentile zone premium charged to every zone.
 > - **What-if levers:** `barrier_type`, `speed_factor`, `frequency_multiplier` (the model's own parameters). Upgrade costs and payback are not modelled.
@@ -490,7 +495,7 @@ Owner: **R3** · Files: `backend/main.py` (app factory, CORS, router mount), `ba
 **The TypeScript types are the contract.** `frontend/src/types/api.ts`, `track.ts` (Step 1) and `risk.ts` (Step 3) define every request, response and stream event. The backend Pydantic models must produce exactly these shapes (snake_case field names, same enums). A change to one side updates the other in the same PR.
 
 **Conventions**
-- **Scope: Monza only.** `GET /circuits` returns `monza`; any other circuit returns `404 UNKNOWN_CIRCUIT`. `circuit` is a circuit id from `GET /circuits`. `series ∈ {f1, f2, f3}` (lowercase). Money is EUR as plain numbers. Fractions are in `[0, 1]`, percentages are in `[0, 100]` and named `*_pct`.
+- **Scope: Monza and Montreal.** `GET /circuits` returns `monza` and `montreal`; any other circuit returns `404 UNKNOWN_CIRCUIT`. `circuit` is a circuit id from `GET /circuits`. `series ∈ {f1, f2, f3}` (lowercase). Money is EUR as plain numbers. Fractions are in `[0, 1]`, percentages are in `[0, 100]` and named `*_pct`.
 - **`upgrades` query parameter / body field:** the active what-if upgrades for the circuit, as compact JSON keyed by `zone_id`, e.g. `{"monza-z10":{"barrier_type":"tecpro","speed_factor":0.9}}`. Fields: `barrier_type` (`tyre_wall|guardrail|tecpro|concrete|safer`), `speed_factor` (impact speed × factor), `frequency_multiplier` (crash rate × factor). The frontend sorts keys and omits the parameter when there are none. Every Step 3 endpoint prices this scenario, so the map, summary, simulation and report always agree.
 - **`sources`:** track and risk responses carry a map of `SourceInfo = {provenance: "measured" | "assumed" | "modelled", title, detail}` keyed by field (see `TrackSourceKey` and `RiskSourceKey`). The UI renders these as the Real / Assumed / Calculated tags and their pop-ups, so labelling what is real stays the backend's job and stays honest as data improves.
 - **CORS:** allow the frontend origin (`CORS_ORIGINS`) for `GET`, `POST` and the `Content-Type` header.
@@ -501,11 +506,12 @@ Owner: **R3** · Files: `backend/main.py` (app factory, CORS, router mount), `ba
 |---|---|---|---|---|
 | – | GET | `/api/health` | `{status, data_loaded, llm_configured}` | – |
 | **1** | GET | `/api/insurance/circuits` | `CircuitSummary[]` (with data coverage) | `ingestionService.listCircuits` |
-| **1** | GET | `/api/insurance/tracks/{circuit}` | `TrackGeometry` (outline, zones, safety inventory, reference lap, sources) | `ingestionService.getTrack` |
+| **1** | GET | `/api/insurance/tracks/{circuit}` | `TrackGeometry` (outline, real speed profile, metre scale, zones, safety inventory, reference lap, sources) | `ingestionService.getTrack` |
 | **1** | GET | `/api/insurance/incidents?circuit&zone_id&season` | `Incident[]`, newest first | `ingestionService.listIncidents` |
 | **1** | POST | `/api/insurance/incidents/ingest` | body `IngestRequest` → `IngestJob` (202, returns immediately) | `ingestionService.startIngestion` |
 | **1** | GET | `/api/insurance/incidents/ingest/{job_id}/stream` | **SSE** `IngestStreamEvent` | `ingestionService.streamIngestion` |
 | **3** | GET | `/api/insurance/risk-map?circuit&series&upgrades` | `RiskMap` | `insuranceService.getRiskMap` |
+| **1+3** | GET | `/api/insurance/assets/{circuit}?series&upgrades` | `AssetMap` (OSM structures, coverage lines, exposure) | `insuranceService.getAssets` |
 | **3** | POST | `/api/insurance/what-if` | body `WhatIfRequest` → `WhatIfResponse` | `insuranceService.runWhatIf` |
 | **3** | GET | `/api/insurance/simulate/stream?circuit&series&seasons&upgrades` | **SSE** `SimulationStreamEvent` | `insuranceService.streamSimulation` |
 | **3** | GET | `/api/insurance/report/export?circuit&series&upgrades&format=json` | `UnderwriterReport` | `insuranceService.getReport` |
@@ -639,10 +645,14 @@ Location: `frontend/` · Stack: **Next.js 16 (App Router) · React 19 · TypeScr
 
 | Element | Implementation |
 |---|---|
-| Geometry | Pure functions in `lib/trackGeometry.ts` (unit-tested): outline → track frame, zone index ranges, outside-of-corner side, ribbon/wall meshes |
-| Track | `TrackRibbon`: asphalt strip, edge lines, start line |
-| Zones | `ZoneVisual`: tinted overlay, glowing barrier wall, loss column (height ∝ √premium), grandstand tiers (flash on a severe crash). Colours and heights tween |
-| Effects | `MapEffectsLayer`: pooled meshes; crashes fall onto the run-off (red ring = one of the costliest 5% of crashes), ingested incidents drop in as teal pins |
+| Scale | True-scale plan from `TrackGeometry.extent_m` (14 m track width); heights ×2 and cars ×3 so they read from the overview camera |
+| Environment | Physical sky, sun with soft shadows, grass ground; OSM woods (instanced trees) and water |
+| Geometry | Pure functions in `lib/trackGeometry.ts` (unit-tested): outline → track frame, zone index ranges, outside-of-corner side, ribbon/wall meshes, striped kerbs |
+| Track | `TrackSurface`: asphalt at real width, white lines, start line, red/white kerbs at each real apex (slowest point of the reference lap), OSM pit lane and old raceways |
+| Structures | `Structures`: every OSM structure extruded at its real footprint, coloured by type, tinted by exposure in risk view, hover tooltip and click-to-select |
+| Cars | `Traffic`: cars lapping at the real reference-lap speed |
+| Zones | `ZoneSafety`: run-off surface by type, barrier by type (tyre wall, guardrail, concrete, TecPro, SAFER), catch fence by grandstands, risk tint and glowing barrier cap in risk view. The barrier is drawn in front of any real structure the placeholder run-off would cross |
+| Effects | `CrashEffects`: each simulated crash is replayed as a car leaving the racing line at its impact speed, sliding across the run-off (dust by surface) and stopping or hitting the barrier (debris; barrier flash on a severe crash). Ingested incidents rise as pins |
 | Labels | DOM overlay positioned every frame by `ZoneLabelProjector` (top 3 zones + selected + hovered) |
 | Camera | `CameraRig`: OrbitControls, slow auto-rotate until the user interacts, eases to the selected zone |
 | Fallback | `TrackMap2D` (SVG) with the same props, used when WebGL is unavailable or chosen |
@@ -672,10 +682,11 @@ FIA_ASSISTANT/
 │   │   ├── geolocate.py                 # R1  two-car contact points from car positions
 │   │   ├── zones.py                     # R1  reference lap → zones + safety inventory
 │   │   ├── repository.py                # R3  Step 1 files → API shapes (Monza only)
-│   │   ├── actuarial.py                 # R2⇄R3 runs insurance_model.py on Step 1 data → risk map, what-if, simulation
+│   │   ├── actuarial.py                 # R2⇄R3 runs insurance_model.py on Step 1 data → risk map, what-if, simulation, asset exposure
+│   │   ├── crash_filter.py              # which incidents count as insurable crashes
 │   │   ├── report.py                    # R3  underwriter report (template) + PDF
 │   │   └── ingest_jobs.py               # R3  background ingestion jobs for the SSE stream
-│   ├── scripts/                         # R1  ingest.py (pipeline) · build_turn_map.py · fetch_openf1.py
+│   ├── scripts/                         # R1  ingest.py (pipeline) · fetch_osm_assets.py (structures) · build_turn_map.py · fetch_openf1.py
 │   └── tests/                           # test_data_loader.py (R1) · test_api.py (contract)
 ├── data/
 │   ├── openf1/                          # R1  raw OpenF1 cache (generated, git-ignored)
@@ -750,7 +761,7 @@ FIA_ASSISTANT/
 | **H+6** | Monza `tracks/monza.json` (zones + inventory) | Posterior + prior fit + tests | All routes wired with the contract shapes | Barrier walls + heat columns coloured from the mock |
 | **H+12** | race_control 2023+ → geolocated incidents (regex path), Monza | Severity + Monte Carlo + pricing; tests green | Real `/risk-map` wired to R2 + R1 data | Zone picking, grandstands, 2D fallback |
 | **H+16** | **Checkpoint A:** Monza F1/F2/F3 risk map served from real data and rendered in 3D | ← | ← | ← |
-| **H+22** | Silverstone + Spa zones & incidents; LLM extraction for unmatched messages | `what_if` with common random numbers; payback | `/what-if`, `/simulate`, SSE stream | Crash drops from SSE; tweened transitions |
+| **H+22** | Montreal zones & incidents; LLM extraction for unmatched messages | `what_if` with common random numbers; payback | `/what-if`, `/simulate`, SSE stream | Crash drops from SSE; tweened transitions |
 | **H+30** | Data-coverage stats per circuit (for the assumptions drawer) | Convergence stats; diversification; parameter sanity review | Report generation (LLM + template fallback) + PDF | Bloom/glow, camera focus, polish |
 | **H+36** | **Checkpoint B (feature complete):** 3 circuits × 3 series, what-if, simulate, report | ← | ← | ← |
 | **H+42** | **Code freeze:** bug fixes only; offline demo rehearsal (no Wi-Fi, no API key) | ← | ← | ← |
@@ -804,7 +815,7 @@ npm run dev                                  # http://localhost:3000/insurance
 
 | # | Item | Status |
 |---|---|---|
-| A0 | **Current scope is Monza only.** The pipeline and API are circuit-generic, but only Monza has data and is exposed. | Decided |
+| A0 | **Current scope is Monza and Montreal**, the two circuits with Step 1 data. The pipeline and API are circuit-generic. | Decided |
 | A1 | **OpenF1 covers F1 only (2023+).** F2/F3 risk = F1 baseline × series factors (F2: 1.1/1.3/0.8, F3: 1.5/1.8/0.6). These factors are assumptions, not measurements. | Shown in the UI's assumptions drawer |
 | A2 | The zone **safety inventory** (barrier, run-off, fence, stands, asset values) is hand-entered and **approximate**. | Labelled `inventory_source` per zone |
 | A3 | Severity and pricing parameters in `actuarial_params.yaml` are **illustrative placeholders**, and the output illustrates the method. **Not actuarial advice.** | Stated in the report caveats |

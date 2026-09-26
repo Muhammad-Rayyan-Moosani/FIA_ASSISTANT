@@ -1,93 +1,160 @@
 "use client";
 
 import { Canvas } from "@react-three/fiber";
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { Vector3 } from "three";
-import { buildTrackFrame, outwardSign, zoneIndexRange } from "@/lib/trackGeometry";
+import { ASSET_CATEGORY_LABEL } from "@/lib/assetLabels";
+import { buildTrackFrame, outwardSign, unitsPerMetre, WORLD_SCALE, zoneIndexRange } from "@/lib/trackGeometry";
 import type { ZoneView } from "@/lib/zoneView";
+import type { Asset, AssetMap } from "@/types/assets";
 import { CameraRig } from "./CameraRig";
-import { MapEffectsLayer } from "./MapEffectsLayer";
-import { SCENE_BG, type FlashMap, type SceneData } from "./sceneTypes";
-import { TrackRibbon } from "./TrackRibbon";
+import { CrashEffects } from "./CrashEffects";
+import { SceneEnvironment } from "./SceneEnvironment";
+import { TRACK_WIDTH_M, VERTICAL_EXAGGERATION, type FlashMap, type SceneData } from "./sceneTypes";
+import { Structures, type StructureEvents } from "./Structures";
+import { Terrain } from "./Terrain";
+import { TrackSurface } from "./TrackSurface";
+import { Traffic } from "./Traffic";
 import { useLabelAnchors, ZoneLabelLayer, ZoneLabelProjector } from "./ZoneLabels";
-import { ZoneVisual } from "./ZoneVisual";
+import { ZoneSafety } from "./ZoneSafety";
 
 export interface TrackSceneProps {
   circuitId: string;
   outline: [number, number][];
+  speedKph: number[];
+  extentM: number;
+  lengthM: number;
   zones: ZoneView[];
+  assets: AssetMap | undefined;
   selectedZoneId: string | null;
   onSelectZone: (zoneId: string) => void;
+  selectedAssetId: string | null;
+  onSelectAsset: (assetId: string) => void;
+  riskOverlay: boolean;
+  showTraffic: boolean;
   reducedMotion: boolean;
 }
 
-/** The 3D digital twin. Loaded client-side only (see InsuranceMap). */
-export default function TrackScene3D({ circuitId, outline, zones, selectedZoneId, onSelectZone, reducedMotion }: TrackSceneProps) {
-  const [hovered, setHovered] = useState<string | null>(null);
+/** The 3D digital twin at real scale: track, run-off, barriers, OSM structures, woods and water, live cars. */
+export default function TrackScene3D(p: TrackSceneProps) {
+  const [hoveredZone, setHoveredZone] = useState<string | null>(null);
+  const [hover, setHover] = useState<{ asset: Asset; x: number; y: number } | null>(null);
   const flash = useRef<FlashMap>(new Map());
+  const labelNodes = useRef(new Map<string, HTMLDivElement>());
 
-  const frame = useMemo(() => buildTrackFrame(outline), [outline]);
+  const frame = useMemo(() => buildTrackFrame(p.outline), [p.outline]);
+  const assetList = p.assets?.assets;
   const scene: SceneData = useMemo(() => {
     const n = frame.points.length;
+    const u = unitsPerMetre(p.extentM);
+    const trackHalf = (TRACK_WIDTH_M / 2) * u;
+    // The run-off depth per zone is a placeholder; where a real (OSM) structure stands on the outside of a zone,
+    // the barrier is drawn just in front of it instead of through it.
+    const nearestOutside = (zoneId: string, side: 1 | -1): number => {
+      let best = Infinity;
+      for (const a of assetList ?? []) {
+        if (a.nearest_zone_id !== zoneId || a.geometry !== "polygon" || a.category === "bridge") continue;
+        const i = Math.round(a.nearest_lap_frac * n) % n;
+        const pt = frame.points[i]!;
+        const nm = frame.normals[i]!;
+        const c = a.points.reduce((s, [x, y]) => ({ x: s.x + (x * WORLD_SCALE) / a.points.length, z: s.z - (y * WORLD_SCALE) / a.points.length }), { x: 0, z: 0 });
+        if ((c.x - pt.x) * nm.x * side + (c.z - pt.z) * nm.z * side > 0) best = Math.min(best, a.distance_to_track_m);
+      }
+      return best;
+    };
     return {
       frame,
-      outline,
-      maxPremium: Math.max(0, ...zones.map((z) => z.risk?.premium_eur ?? 0)),
-      zones: zones.map((view) => {
+      outline: p.outline,
+      speedKph: p.speedKph,
+      lengthM: p.lengthM,
+      scale: { u, trackHalf, h: (m: number) => m * u * VERTICAL_EXAGGERATION },
+      maxPremium: Math.max(0, ...p.zones.map((z) => z.risk?.premium_eur ?? 0)),
+      zones: p.zones.map((view) => {
         const range = zoneIndexRange(view.zone.start_frac, view.zone.end_frac, n);
-        return { view, range, mid: Math.floor((range[0] + range[1]) / 2), side: outwardSign(frame, range[0], range[1]) };
+        let apex = range[0];
+        for (let i = range[0]; i <= range[1]; i++) if ((p.speedKph[i] ?? 999) < (p.speedKph[apex] ?? 999)) apex = i;
+        const side = outwardSign(frame, range[0], range[1]);
+        const runoffM = Math.max(3, Math.min(view.zone.runoff_depth_m, nearestOutside(view.zone.zone_id, side) - TRACK_WIDTH_M / 2 - 3));
+        return {
+          view,
+          range,
+          apex,
+          mid: Math.floor((range[0] + range[1]) / 2),
+          side,
+          barrierOffset: trackHalf + runoffM * u,
+        };
       }),
     };
-  }, [frame, outline, zones]);
+  }, [frame, p.outline, p.speedKph, p.lengthM, p.extentM, p.zones, assetList]);
 
-  const labelNodes = useRef(new Map<string, HTMLDivElement>());
   const anchors = useLabelAnchors(scene);
-
   const focus = useMemo(() => {
-    const z = scene.zones.find((p) => p.view.zone.zone_id === selectedZoneId);
+    const z = scene.zones.find((q) => q.view.zone.zone_id === p.selectedZoneId);
     if (!z) return null;
-    const p = frame.points[z.mid]!;
-    return new Vector3(p.x, 0, p.z);
-  }, [scene.zones, selectedZoneId, frame]);
+    const pt = frame.points[z.mid]!;
+    return new Vector3(pt.x, 0, pt.z);
+  }, [scene.zones, p.selectedZoneId, frame]);
+
+  const { onSelectAsset } = p;
+  const structureEvents: StructureEvents = useMemo(() => ({
+    onHover: (asset, x, y) => setHover(asset && x !== undefined && y !== undefined ? { asset, x, y } : null),
+    onSelect: (asset) => onSelectAsset(asset.asset_id),
+  }), [onSelectAsset]);
+  const onZoneHover = useCallback((id: string | null) => setHoveredZone(id), []);
+
+  const cursor = hover || hoveredZone ? "pointer" : "grab";
 
   return (
     <div className="absolute inset-0">
       <Canvas
+        shadows
         dpr={[1, 2]}
-        camera={{ fov: 38, near: 0.5, far: 900, position: [150, 120, 110] }}
-        style={{ cursor: hovered ? "pointer" : "grab", touchAction: "none" }}
-        aria-label="3D model of the circuit coloured by insurance risk"
+        camera={{ fov: 38, near: 0.3, far: 3000, position: [150, 120, 110] }}
+        style={{ cursor, touchAction: "none" }}
+        aria-label="3D model of the circuit with its structures, coloured by insurance risk"
       >
-        <color attach="background" args={[SCENE_BG]} />
-        <fog attach="fog" args={[SCENE_BG, 220, 420]} />
-        <hemisphereLight args={["#c6dcff", SCENE_BG, 1.1]} />
-        <directionalLight position={[60, 120, 40]} intensity={1.2} />
-
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.02, 0]} raycast={() => null}>
-          <circleGeometry args={[260, 64]} />
-          <meshStandardMaterial color="#0e151c" roughness={1} />
-        </mesh>
-        <gridHelper args={[360, 72, "#1a2530", "#141d26"]} position={[0, -0.01, 0]} />
-
-        <TrackRibbon frame={frame} />
+        <SceneEnvironment />
+        {p.assets && <Terrain context={p.assets.context} scene={scene} />}
+        <TrackSurface scene={scene} context={p.assets?.context} />
         {scene.zones.map((placed) => (
-          <ZoneVisual
+          <ZoneSafety
             key={placed.view.zone.zone_id}
-            frame={frame}
+            scene={scene}
             placed={placed}
-            maxPremium={scene.maxPremium}
-            selected={placed.view.zone.zone_id === selectedZoneId}
+            selected={placed.view.zone.zone_id === p.selectedZoneId}
+            riskOverlay={p.riskOverlay}
             flash={flash}
-            reducedMotion={reducedMotion}
-            onSelect={onSelectZone}
-            onHover={setHovered}
+            onSelect={p.onSelectZone}
+            onHover={onZoneHover}
           />
         ))}
-        <MapEffectsLayer scene={scene} flash={flash} reducedMotion={reducedMotion} />
+        {p.assets && (
+          <Structures
+            assets={p.assets.assets}
+            scale={scene.scale}
+            riskOverlay={p.riskOverlay}
+            selectedAssetId={p.selectedAssetId}
+            hoveredAssetId={hover?.asset.asset_id ?? null}
+            events={structureEvents}
+          />
+        )}
+        <Traffic scene={scene} visible={p.showTraffic} />
+        <CrashEffects scene={scene} flash={flash} reducedMotion={p.reducedMotion} />
         <ZoneLabelProjector anchors={anchors} nodes={labelNodes} />
-        <CameraRig focus={focus} resetKey={circuitId} reducedMotion={reducedMotion} />
+        <CameraRig focus={focus} resetKey={p.circuitId} reducedMotion={p.reducedMotion} />
       </Canvas>
-      <ZoneLabelLayer scene={scene} nodes={labelNodes} selectedZoneId={selectedZoneId} hoveredZoneId={hovered} />
+      {p.riskOverlay && <ZoneLabelLayer scene={scene} nodes={labelNodes} selectedZoneId={p.selectedZoneId} hoveredZoneId={hoveredZone} />}
+      {hover && (
+        <div
+          className="pointer-events-none fixed z-30 -translate-x-1/2 -translate-y-[calc(100%+12px)] whitespace-nowrap rounded-md border border-line bg-bg/90 px-2.5 py-1.5 text-xs backdrop-blur"
+          style={{ left: hover.x, top: hover.y }}
+        >
+          <b className="display block text-[13px] font-semibold">{hover.asset.name ?? ASSET_CATEGORY_LABEL[hover.asset.category]}</b>
+          <span className="text-muted">
+            {ASSET_CATEGORY_LABEL[hover.asset.category]} · {Math.round(hover.asset.distance_to_track_m)} m from track · exposure {hover.asset.exposure_tier.toLowerCase()}
+          </span>
+        </div>
+      )}
     </div>
   );
 }

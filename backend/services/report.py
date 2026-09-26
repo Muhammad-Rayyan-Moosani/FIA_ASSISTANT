@@ -37,7 +37,7 @@ def build(circuit: str, series: str, upgrades: dict[str, dict] | None = None) ->
             drivers.append(f"grandstands: {', '.join(tz['grandstands'])}")
         concentrations.append({
             "zone_id": z["zone_id"], "share_of_loss_pct": z["share_of_loss_pct"], "drivers": drivers,
-            "headline": (f"{z['crash_rate']['n_incidents']} loss-relevant incidents in {z['crash_rate']['exposure']:.0f} race weekends; "
+            "headline": (f"{z['crash_rate']['n_incidents']} crashes in {z['crash_rate']['exposure']:.0f} race weekends; "
                          f"expected loss {_eur(z['eal_eur'])} per weekend, 1-in-100 worst {_eur(z['var99_eur'])}."),
         })
 
@@ -82,7 +82,7 @@ def build(circuit: str, series: str, upgrades: dict[str, dict] | None = None) ->
     exposure = [f"The top three zones carry {top_share:.0f}% of expected loss.",
                 f"Grandstands beside the track: {'; '.join(stands)}." if stands else "No grandstands mapped to zones."]
     if straights:
-        exposure.append(f"No loss-relevant incidents recorded on {', '.join(straights)}; their rate comes from the model's prior.")
+        exposure.append(f"No crashes recorded on {', '.join(straights)}; their rate comes from the model's prior.")
 
     names = [zones[z["zone_id"]]["short_name"] for z in top3]
     summary = (f"For an {series_label} race weekend at {track['name']}, the model expects {_eur(t['eal_eur'])} of loss, with a "
@@ -94,6 +94,8 @@ def build(circuit: str, series: str, upgrades: dict[str, dict] | None = None) ->
 
     caveats = [a["label"] + ": " + a["value"] for a in rm["assumptions"] if a["provenance"] == "assumed"]
     caveats.insert(0, "Barrier, run-off, fence and asset values per zone are placeholders by zone type, not surveyed.")
+    caveats.insert(1, "Crashes are inferred from race-control messages (double yellows and confirmed collisions); "
+                      "OpenF1 has no official crash log.")
     return {
         "circuit": circuit, "series": series, "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "narrative_source": "template", "model": None, "executive_summary": summary,
