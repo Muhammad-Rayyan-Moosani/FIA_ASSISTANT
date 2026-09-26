@@ -2,6 +2,8 @@
  "circuit": "monza",
  "name": "Autodromo Nazionale Monza",
  "length_m": 5793,
+ "reference_lap": "data/openf1/monza_2024.json",
+ "rotation_deg": 95,
  "outline": [
   [
    0.006,
@@ -9,1555 +11,2123 @@
   ],
   [
    0.0066,
-   0.2466
+   0.2459
   ],
   [
-   0.0073,
-   0.2539
+   0.0072,
+   0.2525
   ],
   [
-   0.0079,
-   0.2612
+   0.0077,
+   0.2591
   ],
   [
-   0.0092,
-   0.275
+   0.0083,
+   0.2657
   ],
   [
-   0.0098,
-   0.2824
+   0.0089,
+   0.2723
   ],
   [
-   0.0104,
-   0.2889
+   0.0095,
+   0.2789
   ],
   [
-   0.0119,
-   0.3063
+   0.0101,
+   0.2855
   ],
   [
-   0.0125,
-   0.3138
+   0.0107,
+   0.2921
+  ],
+  [
+   0.0112,
+   0.2987
+  ],
+  [
+   0.0118,
+   0.3053
+  ],
+  [
+   0.0124,
+   0.3119
+  ],
+  [
+   0.0129,
+   0.3184
   ],
   [
    0.0135,
-   0.3254
+   0.325
   ],
   [
-   0.0149,
-   0.3405
+   0.0141,
+   0.3316
   ],
   [
-   0.016,
-   0.3539
+   0.0147,
+   0.3382
   ],
   [
-   0.0171,
-   0.3665
+   0.0152,
+   0.3448
   ],
   [
-   0.0183,
-   0.3809
+   0.0158,
+   0.3514
   ],
   [
-   0.019,
-   0.3893
+   0.0164,
+   0.358
   ],
   [
-   0.0196,
-   0.3961
+   0.0169,
+   0.3646
+  ],
+  [
+   0.0175,
+   0.3712
+  ],
+  [
+   0.018,
+   0.3778
+  ],
+  [
+   0.0186,
+   0.3844
+  ],
+  [
+   0.0192,
+   0.391
+  ],
+  [
+   0.0197,
+   0.3976
   ],
   [
    0.0203,
-   0.4045
+   0.4042
   ],
   [
-   0.0212,
-   0.4147
+   0.0209,
+   0.4108
   ],
   [
-   0.0223,
-   0.4274
+   0.0214,
+   0.4174
   ],
   [
-   0.023,
-   0.435
+   0.022,
+   0.424
+  ],
+  [
+   0.0226,
+   0.4305
+  ],
+  [
+   0.0232,
+   0.4371
   ],
   [
    0.0237,
-   0.4434
+   0.4437
   ],
   [
-   0.0251,
-   0.4594
+   0.0243,
+   0.4503
   ],
   [
-   0.0252,
-   0.4611
-  ],
-  [
-   0.0264,
-   0.4746
-  ],
-  [
-   0.0277,
-   0.4897
-  ],
-  [
-   0.0285,
-   0.4998
-  ],
-  [
-   0.0298,
-   0.514
-  ],
-  [
-   0.0306,
-   0.5231
-  ],
-  [
-   0.0315,
-   0.5347
-  ],
-  [
-   0.0323,
-   0.5438
-  ],
-  [
-   0.0329,
-   0.5504
-  ],
-  [
-   0.0339,
-   0.5619
-  ],
-  [
-   0.035,
-   0.575
-  ],
-  [
-   0.0363,
-   0.5909
-  ],
-  [
-   0.0371,
-   0.6007
-  ],
-  [
-   0.0378,
-   0.6087
-  ],
-  [
-   0.0384,
-   0.6158
-  ],
-  [
-   0.0386,
-   0.6178
-  ],
-  [
-   0.0394,
-   0.6272
-  ],
-  [
-   0.0399,
-   0.6323
-  ],
-  [
-   0.0405,
-   0.6361
-  ],
-  [
-   0.0409,
-   0.6379
-  ],
-  [
-   0.0416,
-   0.6405
-  ],
-  [
-   0.0438,
-   0.6451
-  ],
-  [
-   0.0455,
-   0.6473
-  ],
-  [
-   0.0462,
-   0.648
-  ],
-  [
-   0.0502,
-   0.6503
-  ],
-  [
-   0.0519,
-   0.6507
-  ],
-  [
-   0.0535,
-   0.651
-  ],
-  [
-   0.0571,
-   0.6519
-  ],
-  [
-   0.0586,
-   0.6526
-  ],
-  [
-   0.0601,
-   0.6539
-  ],
-  [
-   0.0609,
-   0.6551
-  ],
-  [
-   0.0619,
-   0.6574
-  ],
-  [
-   0.062,
-   0.6577
-  ],
-  [
-   0.0624,
-   0.6602
-  ],
-  [
-   0.0626,
-   0.6626
-  ],
-  [
-   0.0626,
-   0.6647
-  ],
-  [
-   0.0625,
-   0.6653
-  ],
-  [
-   0.0621,
-   0.6686
-  ],
-  [
-   0.0613,
-   0.6723
-  ],
-  [
-   0.0605,
-   0.6756
-  ],
-  [
-   0.0591,
-   0.6807
-  ],
-  [
-   0.0577,
-   0.6859
-  ],
-  [
-   0.0568,
-   0.6894
-  ],
-  [
-   0.0561,
-   0.6923
-  ],
-  [
-   0.0552,
-   0.6959
-  ],
-  [
-   0.0537,
-   0.7022
-  ],
-  [
-   0.0526,
-   0.7073
-  ],
-  [
-   0.0519,
-   0.7111
-  ],
-  [
-   0.0513,
-   0.715
-  ],
-  [
-   0.0508,
-   0.7185
-  ],
-  [
-   0.0501,
-   0.7254
-  ],
-  [
-   0.0495,
-   0.7389
-  ],
-  [
-   0.0494,
-   0.7441
-  ],
-  [
-   0.0495,
-   0.7506
-  ],
-  [
-   0.0497,
-   0.7584
-  ],
-  [
-   0.0499,
-   0.7634
-  ],
-  [
-   0.0506,
-   0.7741
-  ],
-  [
-   0.0513,
-   0.7812
-  ],
-  [
-   0.0517,
-   0.7844
-  ],
-  [
-   0.0526,
-   0.7916
-  ],
-  [
-   0.0539,
-   0.7996
-  ],
-  [
-   0.0558,
-   0.8083
-  ],
-  [
-   0.0594,
-   0.821
-  ],
-  [
-   0.0636,
-   0.8323
-  ],
-  [
-   0.0678,
-   0.8414
-  ],
-  [
-   0.0737,
-   0.8522
-  ],
-  [
-   0.0772,
-   0.8578
-  ],
-  [
-   0.0824,
-   0.865
-  ],
-  [
-   0.0876,
-   0.8715
-  ],
-  [
-   0.0983,
-   0.8822
-  ],
-  [
-   0.1059,
-   0.8887
-  ],
-  [
-   0.1114,
-   0.8929
-  ],
-  [
-   0.1211,
-   0.8994
-  ],
-  [
-   0.1277,
-   0.9032
-  ],
-  [
-   0.1347,
-   0.9069
-  ],
-  [
-   0.1403,
-   0.9096
-  ],
-  [
-   0.155,
-   0.9156
-  ],
-  [
-   0.1649,
-   0.9186
-  ],
-  [
-   0.1805,
-   0.9223
-  ],
-  [
-   0.19,
-   0.924
-  ],
-  [
-   0.1963,
-   0.9251
-  ],
-  [
-   0.2067,
-   0.9265
-  ],
-  [
-   0.2179,
-   0.9278
-  ],
-  [
-   0.2355,
-   0.9293
-  ],
-  [
-   0.2452,
-   0.9301
-  ],
-  [
-   0.259,
-   0.9313
-  ],
-  [
-   0.2723,
-   0.9323
-  ],
-  [
-   0.3096,
-   0.9345
-  ],
-  [
-   0.3231,
-   0.935
-  ],
-  [
-   0.3339,
-   0.9355
-  ],
-  [
-   0.3446,
-   0.9358
-  ],
-  [
-   0.3502,
-   0.936
-  ],
-  [
-   0.3542,
-   0.9362
-  ],
-  [
-   0.3636,
-   0.9366
-  ],
-  [
-   0.3678,
-   0.9371
-  ],
-  [
-   0.3736,
-   0.9383
-  ],
-  [
-   0.3765,
-   0.9392
-  ],
-  [
-   0.3797,
-   0.9405
-  ],
-  [
-   0.3817,
-   0.9415
-  ],
-  [
-   0.3851,
-   0.9441
-  ],
-  [
-   0.3867,
-   0.9462
-  ],
-  [
-   0.3885,
-   0.9497
-  ],
-  [
-   0.3905,
-   0.9536
-  ],
-  [
-   0.3919,
-   0.9554
-  ],
-  [
-   0.3944,
-   0.9577
-  ],
-  [
-   0.3975,
-   0.9599
-  ],
-  [
-   0.4019,
-   0.9622
-  ],
-  [
-   0.4045,
-   0.9631
-  ],
-  [
-   0.4085,
-   0.9643
-  ],
-  [
-   0.4095,
-   0.9646
-  ],
-  [
-   0.414,
-   0.9656
-  ],
-  [
-   0.4173,
-   0.9662
-  ],
-  [
-   0.4204,
-   0.9667
-  ],
-  [
-   0.427,
-   0.9679
-  ],
-  [
-   0.4305,
-   0.9687
-  ],
-  [
-   0.4389,
-   0.971
-  ],
-  [
-   0.4441,
-   0.9726
-  ],
-  [
-   0.4526,
-   0.9752
-  ],
-  [
-   0.4563,
-   0.9763
-  ],
-  [
-   0.461,
-   0.9779
-  ],
-  [
-   0.4657,
-   0.9796
-  ],
-  [
-   0.4776,
-   0.9842
-  ],
-  [
-   0.4831,
-   0.9863
-  ],
-  [
-   0.4962,
-   0.991
-  ],
-  [
-   0.5038,
-   0.9935
-  ],
-  [
-   0.5079,
-   0.9949
-  ],
-  [
-   0.5161,
-   0.9975
-  ],
-  [
-   0.522,
-   0.999
-  ],
-  [
-   0.5292,
-   1.0
-  ],
-  [
-   0.5352,
-   1.0
-  ],
-  [
-   0.5448,
-   0.9981
-  ],
-  [
-   0.5503,
-   0.9957
-  ],
-  [
-   0.5537,
-   0.9936
-  ],
-  [
-   0.5602,
-   0.9881
-  ],
-  [
-   0.5654,
-   0.9811
-  ],
-  [
-   0.5678,
-   0.9763
-  ],
-  [
-   0.5707,
-   0.9673
-  ],
-  [
-   0.5724,
-   0.9585
-  ],
-  [
-   0.5731,
-   0.9531
-  ],
-  [
-   0.5736,
-   0.9482
-  ],
-  [
-   0.5745,
-   0.9378
-  ],
-  [
-   0.5755,
-   0.9236
-  ],
-  [
-   0.5757,
-   0.9194
-  ],
-  [
-   0.5761,
-   0.9139
-  ],
-  [
-   0.5771,
-   0.9019
-  ],
-  [
-   0.5777,
-   0.8956
-  ],
-  [
-   0.5785,
-   0.8875
-  ],
-  [
-   0.5789,
-   0.8835
-  ],
-  [
-   0.5796,
-   0.8705
-  ],
-  [
-   0.5794,
-   0.8655
-  ],
-  [
-   0.5788,
-   0.861
-  ],
-  [
-   0.5762,
-   0.853
-  ],
-  [
-   0.5748,
-   0.8504
-  ],
-  [
-   0.5703,
-   0.8448
-  ],
-  [
-   0.5675,
-   0.8422
-  ],
-  [
-   0.5618,
-   0.8382
-  ],
-  [
-   0.5546,
-   0.8341
-  ],
-  [
-   0.5502,
-   0.8318
-  ],
-  [
-   0.5425,
-   0.828
-  ],
-  [
-   0.5363,
-   0.8248
-  ],
-  [
-   0.53,
-   0.8215
-  ],
-  [
-   0.5244,
-   0.8186
-  ],
-  [
-   0.5224,
-   0.8175
-  ],
-  [
-   0.5183,
-   0.8152
-  ],
-  [
-   0.5125,
-   0.8121
-  ],
-  [
-   0.4994,
-   0.805
-  ],
-  [
-   0.4932,
-   0.8016
-  ],
-  [
-   0.4881,
-   0.7986
-  ],
-  [
-   0.4748,
-   0.791
-  ],
-  [
-   0.4664,
-   0.7863
-  ],
-  [
-   0.4597,
-   0.7825
-  ],
-  [
-   0.4523,
-   0.7784
-  ],
-  [
-   0.4467,
-   0.7752
-  ],
-  [
-   0.4386,
-   0.7705
-  ],
-  [
-   0.4341,
-   0.7679
-  ],
-  [
-   0.4285,
-   0.7645
-  ],
-  [
-   0.4204,
-   0.7592
-  ],
-  [
-   0.4137,
-   0.7545
-  ],
-  [
-   0.4071,
-   0.7495
-  ],
-  [
-   0.4048,
-   0.7476
-  ],
-  [
-   0.3922,
-   0.7373
-  ],
-  [
-   0.3845,
-   0.7309
-  ],
-  [
-   0.3763,
-   0.7237
-  ],
-  [
-   0.3455,
-   0.697
-  ],
-  [
-   0.3315,
-   0.6848
-  ],
-  [
-   0.3247,
-   0.6789
-  ],
-  [
-   0.3174,
-   0.6725
-  ],
-  [
-   0.3131,
-   0.6687
-  ],
-  [
-   0.3069,
-   0.6634
-  ],
-  [
-   0.294,
-   0.6522
-  ],
-  [
-   0.2884,
-   0.6473
-  ],
-  [
-   0.2746,
-   0.6353
-  ],
-  [
-   0.267,
-   0.6287
-  ],
-  [
-   0.2611,
-   0.6236
-  ],
-  [
-   0.2538,
-   0.6171
-  ],
-  [
-   0.2458,
-   0.6103
-  ],
-  [
-   0.2404,
-   0.6055
-  ],
-  [
-   0.2337,
-   0.5998
-  ],
-  [
-   0.2271,
-   0.5939
-  ],
-  [
-   0.2234,
-   0.5908
-  ],
-  [
-   0.2123,
-   0.5812
-  ],
-  [
-   0.2044,
-   0.5742
-  ],
-  [
-   0.2001,
-   0.5702
-  ],
-  [
-   0.1967,
-   0.5669
-  ],
-  [
-   0.1918,
-   0.5612
-  ],
-  [
-   0.1895,
-   0.5575
-  ],
-  [
-   0.1875,
-   0.5523
-  ],
-  [
-   0.1865,
-   0.5421
-  ],
-  [
-   0.1866,
-   0.5363
-  ],
-  [
-   0.1866,
-   0.5311
-  ],
-  [
-   0.1864,
-   0.5266
-  ],
-  [
-   0.1862,
-   0.5243
-  ],
-  [
-   0.1844,
-   0.5142
-  ],
-  [
-   0.1826,
-   0.5086
-  ],
-  [
-   0.1806,
-   0.5041
-  ],
-  [
-   0.179,
-   0.501
-  ],
-  [
-   0.173,
-   0.4925
-  ],
-  [
-   0.1681,
-   0.4873
-  ],
-  [
-   0.1648,
-   0.4841
-  ],
-  [
-   0.1597,
-   0.478
-  ],
-  [
-   0.1556,
-   0.4711
-  ],
-  [
-   0.1527,
-   0.463
-  ],
-  [
-   0.1511,
+   0.0249,
    0.4569
   ],
   [
-   0.1493,
-   0.4449
+   0.0254,
+   0.4635
   ],
   [
-   0.1484,
-   0.4352
+   0.026,
+   0.4701
   ],
   [
-   0.1477,
-   0.4273
+   0.0266,
+   0.4767
   ],
   [
-   0.1472,
-   0.422
+   0.0271,
+   0.4833
   ],
   [
-   0.1457,
-   0.4062
+   0.0277,
+   0.4899
   ],
   [
-   0.145,
-   0.3993
+   0.0283,
+   0.4965
   ],
   [
-   0.144,
-   0.388
+   0.0288,
+   0.5031
   ],
   [
-   0.1436,
-   0.3837
+   0.0294,
+   0.5097
   ],
   [
-   0.143,
-   0.3772
+   0.03,
+   0.5163
   ],
   [
-   0.1422,
-   0.3685
+   0.0306,
+   0.5229
   ],
   [
-   0.1413,
-   0.3582
+   0.0311,
+   0.5295
   ],
   [
-   0.1406,
-   0.3508
+   0.0317,
+   0.5361
   ],
   [
-   0.1402,
-   0.3463
+   0.0322,
+   0.5426
   ],
   [
-   0.1394,
-   0.338
+   0.0328,
+   0.5492
   ],
   [
-   0.1383,
-   0.3258
+   0.0333,
+   0.5558
   ],
   [
-   0.1375,
-   0.3174
+   0.0339,
+   0.5624
   ],
   [
-   0.1367,
-   0.3089
+   0.0345,
+   0.569
   ],
   [
-   0.1364,
-   0.3058
+   0.035,
+   0.5756
+  ],
+  [
+   0.0356,
+   0.5822
+  ],
+  [
+   0.0361,
+   0.5888
+  ],
+  [
+   0.0367,
+   0.5954
+  ],
+  [
+   0.0372,
+   0.602
+  ],
+  [
+   0.0378,
+   0.6086
+  ],
+  [
+   0.0383,
+   0.6152
+  ],
+  [
+   0.0389,
+   0.6218
+  ],
+  [
+   0.0395,
+   0.6284
+  ],
+  [
+   0.0404,
+   0.6349
+  ],
+  [
+   0.042,
+   0.6413
+  ],
+  [
+   0.0453,
+   0.647
+  ],
+  [
+   0.0509,
+   0.6504
+  ],
+  [
+   0.0573,
+   0.652
+  ],
+  [
+   0.0616,
+   0.6567
+  ],
+  [
+   0.0626,
+   0.6632
+  ],
+  [
+   0.0619,
+   0.6698
+  ],
+  [
+   0.0603,
+   0.6762
+  ],
+  [
+   0.0586,
+   0.6826
+  ],
+  [
+   0.0569,
+   0.689
+  ],
+  [
+   0.0553,
+   0.6954
+  ],
+  [
+   0.0538,
+   0.7019
+  ],
+  [
+   0.0524,
+   0.7083
+  ],
+  [
+   0.0513,
+   0.7149
+  ],
+  [
+   0.0505,
+   0.7214
+  ],
+  [
+   0.05,
+   0.728
+  ],
+  [
+   0.0497,
+   0.7346
+  ],
+  [
+   0.0495,
+   0.7412
+  ],
+  [
+   0.0495,
+   0.7479
+  ],
+  [
+   0.0496,
+   0.7545
+  ],
+  [
+   0.0498,
+   0.7611
+  ],
+  [
+   0.0502,
+   0.7677
+  ],
+  [
+   0.0507,
+   0.7743
+  ],
+  [
+   0.0513,
+   0.7809
+  ],
+  [
+   0.052,
+   0.7875
+  ],
+  [
+   0.053,
+   0.794
+  ],
+  [
+   0.0541,
+   0.8005
+  ],
+  [
+   0.0555,
+   0.807
+  ],
+  [
+   0.0572,
+   0.8134
+  ],
+  [
+   0.059,
+   0.8198
+  ],
+  [
+   0.0612,
+   0.826
+  ],
+  [
+   0.0635,
+   0.8322
+  ],
+  [
+   0.0663,
+   0.8382
+  ],
+  [
+   0.0692,
+   0.8441
+  ],
+  [
+   0.0724,
+   0.8499
+  ],
+  [
+   0.0758,
+   0.8556
+  ],
+  [
+   0.0795,
+   0.8611
+  ],
+  [
+   0.0835,
+   0.8664
+  ],
+  [
+   0.0877,
+   0.8715
+  ],
+  [
+   0.0923,
+   0.8762
+  ],
+  [
+   0.097,
+   0.8809
+  ],
+  [
+   0.1019,
+   0.8853
+  ],
+  [
+   0.107,
+   0.8895
+  ],
+  [
+   0.1123,
+   0.8935
+  ],
+  [
+   0.1178,
+   0.8972
+  ],
+  [
+   0.1234,
+   0.9007
+  ],
+  [
+   0.1292,
+   0.904
   ],
   [
    0.135,
-   0.2902
+   0.9071
   ],
   [
-   0.1338,
-   0.2776
+   0.141,
+   0.9099
   ],
   [
-   0.1332,
-   0.2697
+   0.1471,
+   0.9124
   ],
   [
-   0.1326,
-   0.2641
+   0.1533,
+   0.9149
   ],
   [
-   0.1319,
-   0.2562
+   0.1595,
+   0.917
   ],
   [
-   0.1307,
-   0.2432
+   0.1659,
+   0.9189
   ],
   [
-   0.1299,
-   0.2344
+   0.1723,
+   0.9204
   ],
   [
-   0.1296,
-   0.2319
+   0.1788,
+   0.9219
   ],
   [
-   0.1279,
-   0.2132
+   0.1853,
+   0.9232
+  ],
+  [
+   0.1918,
+   0.9243
+  ],
+  [
+   0.1983,
+   0.9253
+  ],
+  [
+   0.2049,
+   0.9263
+  ],
+  [
+   0.2114,
+   0.9271
+  ],
+  [
+   0.218,
+   0.9278
+  ],
+  [
+   0.2246,
+   0.9284
+  ],
+  [
+   0.2312,
+   0.929
+  ],
+  [
+   0.2378,
+   0.9295
+  ],
+  [
+   0.2444,
+   0.9301
+  ],
+  [
+   0.251,
+   0.9306
+  ],
+  [
+   0.2576,
+   0.9312
+  ],
+  [
+   0.2642,
+   0.9317
+  ],
+  [
+   0.2708,
+   0.9322
+  ],
+  [
+   0.2774,
+   0.9326
+  ],
+  [
+   0.284,
+   0.933
+  ],
+  [
+   0.2906,
+   0.9334
+  ],
+  [
+   0.2972,
+   0.9338
+  ],
+  [
+   0.3038,
+   0.9341
+  ],
+  [
+   0.3104,
+   0.9345
+  ],
+  [
+   0.317,
+   0.9348
+  ],
+  [
+   0.3237,
+   0.935
+  ],
+  [
+   0.3303,
+   0.9353
+  ],
+  [
+   0.3369,
+   0.9356
+  ],
+  [
+   0.3435,
+   0.9358
+  ],
+  [
+   0.3501,
+   0.936
+  ],
+  [
+   0.3567,
+   0.9363
+  ],
+  [
+   0.3633,
+   0.9366
+  ],
+  [
+   0.3699,
+   0.9375
+  ],
+  [
+   0.3763,
+   0.9392
+  ],
+  [
+   0.3823,
+   0.9419
+  ],
+  [
+   0.3869,
+   0.9465
+  ],
+  [
+   0.3899,
+   0.9524
+  ],
+  [
+   0.3942,
+   0.9574
+  ],
+  [
+   0.3997,
+   0.961
+  ],
+  [
+   0.4058,
+   0.9635
+  ],
+  [
+   0.4122,
+   0.9652
+  ],
+  [
+   0.4187,
+   0.9665
+  ],
+  [
+   0.4252,
+   0.9676
+  ],
+  [
+   0.4317,
+   0.969
+  ],
+  [
+   0.4381,
+   0.9708
+  ],
+  [
+   0.4444,
+   0.9727
+  ],
+  [
+   0.4507,
+   0.9746
+  ],
+  [
+   0.4571,
+   0.9766
+  ],
+  [
+   0.4633,
+   0.9787
+  ],
+  [
+   0.4695,
+   0.9811
+  ],
+  [
+   0.4757,
+   0.9835
+  ],
+  [
+   0.4818,
+   0.9859
+  ],
+  [
+   0.4881,
+   0.9881
+  ],
+  [
+   0.4943,
+   0.9903
+  ],
+  [
+   0.5006,
+   0.9924
+  ],
+  [
+   0.5068,
+   0.9946
+  ],
+  [
+   0.5132,
+   0.9966
+  ],
+  [
+   0.5195,
+   0.9984
+  ],
+  [
+   0.526,
+   0.9996
+  ],
+  [
+   0.5326,
+   1.0
+  ],
+  [
+   0.5391,
+   0.9992
+  ],
+  [
+   0.5456,
+   0.9977
+  ],
+  [
+   0.5516,
+   0.9949
+  ],
+  [
+   0.5569,
+   0.991
+  ],
+  [
+   0.5615,
+   0.9864
+  ],
+  [
+   0.5655,
+   0.981
+  ],
+  [
+   0.5682,
+   0.975
+  ],
+  [
+   0.5703,
+   0.9687
+  ],
+  [
+   0.5717,
+   0.9623
+  ],
+  [
+   0.5727,
+   0.9557
+  ],
+  [
+   0.5735,
+   0.9492
+  ],
+  [
+   0.5741,
+   0.9426
+  ],
+  [
+   0.5746,
+   0.936
+  ],
+  [
+   0.5751,
+   0.9294
+  ],
+  [
+   0.5755,
+   0.9228
+  ],
+  [
+   0.5759,
+   0.9162
+  ],
+  [
+   0.5765,
+   0.9096
+  ],
+  [
+   0.577,
+   0.903
+  ],
+  [
+   0.5776,
+   0.8964
+  ],
+  [
+   0.5783,
+   0.8898
+  ],
+  [
+   0.5789,
+   0.8832
+  ],
+  [
+   0.5793,
+   0.8766
+  ],
+  [
+   0.5795,
+   0.87
+  ],
+  [
+   0.5791,
+   0.8634
+  ],
+  [
+   0.5775,
+   0.857
+  ],
+  [
+   0.575,
+   0.8509
+  ],
+  [
+   0.571,
+   0.8456
+  ],
+  [
+   0.5661,
+   0.8412
+  ],
+  [
+   0.5606,
+   0.8375
+  ],
+  [
+   0.5549,
+   0.8342
+  ],
+  [
+   0.549,
+   0.8312
+  ],
+  [
+   0.5431,
+   0.8282
+  ],
+  [
+   0.5372,
+   0.8253
+  ],
+  [
+   0.5313,
+   0.8222
+  ],
+  [
+   0.5255,
+   0.8191
+  ],
+  [
+   0.5197,
+   0.8159
+  ],
+  [
+   0.5138,
+   0.8128
+  ],
+  [
+   0.508,
+   0.8097
+  ],
+  [
+   0.5022,
+   0.8065
+  ],
+  [
+   0.4964,
+   0.8033
+  ],
+  [
+   0.4906,
+   0.8001
+  ],
+  [
+   0.4849,
+   0.7968
+  ],
+  [
+   0.4791,
+   0.7935
+  ],
+  [
+   0.4734,
+   0.7902
+  ],
+  [
+   0.4676,
+   0.787
+  ],
+  [
+   0.4618,
+   0.7837
+  ],
+  [
+   0.4561,
+   0.7805
+  ],
+  [
+   0.4503,
+   0.7773
+  ],
+  [
+   0.4445,
+   0.774
+  ],
+  [
+   0.4388,
+   0.7707
+  ],
+  [
+   0.4331,
+   0.7673
+  ],
+  [
+   0.4275,
+   0.7638
+  ],
+  [
+   0.4219,
+   0.7602
+  ],
+  [
+   0.4165,
+   0.7565
+  ],
+  [
+   0.4111,
+   0.7525
+  ],
+  [
+   0.4059,
+   0.7485
+  ],
+  [
+   0.4008,
+   0.7443
+  ],
+  [
+   0.3956,
+   0.7401
+  ],
+  [
+   0.3905,
+   0.7359
+  ],
+  [
+   0.3855,
+   0.7317
+  ],
+  [
+   0.3805,
+   0.7273
+  ],
+  [
+   0.3755,
+   0.723
+  ],
+  [
+   0.3705,
+   0.7187
+  ],
+  [
+   0.3655,
+   0.7143
+  ],
+  [
+   0.3605,
+   0.71
+  ],
+  [
+   0.3555,
+   0.7056
+  ],
+  [
+   0.3505,
+   0.7013
+  ],
+  [
+   0.3455,
+   0.6969
+  ],
+  [
+   0.3405,
+   0.6926
+  ],
+  [
+   0.3355,
+   0.6883
+  ],
+  [
+   0.3305,
+   0.6839
+  ],
+  [
+   0.3255,
+   0.6796
+  ],
+  [
+   0.3205,
+   0.6752
+  ],
+  [
+   0.3155,
+   0.6709
+  ],
+  [
+   0.3106,
+   0.6665
+  ],
+  [
+   0.3055,
+   0.6622
+  ],
+  [
+   0.3006,
+   0.6579
+  ],
+  [
+   0.2956,
+   0.6535
+  ],
+  [
+   0.2906,
+   0.6492
+  ],
+  [
+   0.2856,
+   0.6448
+  ],
+  [
+   0.2806,
+   0.6405
+  ],
+  [
+   0.2756,
+   0.6362
+  ],
+  [
+   0.2706,
+   0.6318
+  ],
+  [
+   0.2656,
+   0.6275
+  ],
+  [
+   0.2606,
+   0.6231
+  ],
+  [
+   0.2556,
+   0.6188
+  ],
+  [
+   0.2506,
+   0.6144
+  ],
+  [
+   0.2456,
+   0.6101
+  ],
+  [
+   0.2406,
+   0.6057
+  ],
+  [
+   0.2356,
+   0.6014
+  ],
+  [
+   0.2306,
+   0.5971
+  ],
+  [
+   0.2256,
+   0.5927
+  ],
+  [
+   0.2206,
+   0.5884
+  ],
+  [
+   0.2156,
+   0.584
+  ],
+  [
+   0.2107,
+   0.5797
+  ],
+  [
+   0.2057,
+   0.5753
+  ],
+  [
+   0.2008,
+   0.5708
+  ],
+  [
+   0.1961,
+   0.5662
+  ],
+  [
+   0.1917,
+   0.5612
+  ],
+  [
+   0.1887,
+   0.5554
+  ],
+  [
+   0.1872,
+   0.549
+  ],
+  [
+   0.1865,
+   0.5424
+  ],
+  [
+   0.1866,
+   0.5358
+  ],
+  [
+   0.1865,
+   0.5292
+  ],
+  [
+   0.1859,
+   0.5226
+  ],
+  [
+   0.1848,
+   0.5161
+  ],
+  [
+   0.183,
+   0.5097
+  ],
+  [
+   0.1804,
+   0.5036
+  ],
+  [
+   0.1769,
+   0.498
+  ],
+  [
+   0.173,
+   0.4926
+  ],
+  [
+   0.1685,
+   0.4878
+  ],
+  [
+   0.1639,
+   0.483
+  ],
+  [
+   0.1596,
+   0.478
+  ],
+  [
+   0.1563,
+   0.4723
+  ],
+  [
+   0.1538,
+   0.4662
+  ],
+  [
+   0.1519,
+   0.4598
+  ],
+  [
+   0.1506,
+   0.4534
+  ],
+  [
+   0.1496,
+   0.4468
+  ],
+  [
+   0.1489,
+   0.4402
+  ],
+  [
+   0.1483,
+   0.4336
+  ],
+  [
+   0.1477,
+   0.4271
+  ],
+  [
+   0.1471,
+   0.4205
+  ],
+  [
+   0.1464,
+   0.4139
+  ],
+  [
+   0.1458,
+   0.4073
+  ],
+  [
+   0.1451,
+   0.4007
+  ],
+  [
+   0.1445,
+   0.3941
+  ],
+  [
+   0.144,
+   0.3875
+  ],
+  [
+   0.1434,
+   0.3809
+  ],
+  [
+   0.1427,
+   0.3743
+  ],
+  [
+   0.1421,
+   0.3678
+  ],
+  [
+   0.1415,
+   0.3612
+  ],
+  [
+   0.1409,
+   0.3546
+  ],
+  [
+   0.1403,
+   0.348
+  ],
+  [
+   0.1397,
+   0.3414
+  ],
+  [
+   0.1391,
+   0.3348
+  ],
+  [
+   0.1385,
+   0.3282
+  ],
+  [
+   0.1379,
+   0.3216
+  ],
+  [
+   0.1373,
+   0.315
+  ],
+  [
+   0.1367,
+   0.3084
+  ],
+  [
+   0.1361,
+   0.3018
+  ],
+  [
+   0.1355,
+   0.2953
+  ],
+  [
+   0.1349,
+   0.2887
+  ],
+  [
+   0.1343,
+   0.2821
+  ],
+  [
+   0.1337,
+   0.2755
+  ],
+  [
+   0.1331,
+   0.2689
+  ],
+  [
+   0.1324,
+   0.2623
+  ],
+  [
+   0.1318,
+   0.2557
+  ],
+  [
+   0.1312,
+   0.2491
+  ],
+  [
+   0.1306,
+   0.2425
+  ],
+  [
+   0.13,
+   0.2359
+  ],
+  [
+   0.1294,
+   0.2293
+  ],
+  [
+   0.1288,
+   0.2228
+  ],
+  [
+   0.1282,
+   0.2162
+  ],
+  [
+   0.1276,
+   0.2096
   ],
   [
    0.127,
-   0.2034
+   0.203
   ],
   [
-   0.1262,
-   0.1944
+   0.1264,
+   0.1964
   ],
   [
-   0.1256,
-   0.1879
+   0.1258,
+   0.1898
   ],
   [
-   0.1249,
-   0.1805
+   0.1252,
+   0.1832
   ],
   [
-   0.1239,
-   0.1691
+   0.1246,
+   0.1766
   ],
   [
-   0.1231,
-   0.1609
+   0.124,
+   0.17
   ],
   [
-   0.1221,
-   0.1494
+   0.1234,
+   0.1634
+  ],
+  [
+   0.1228,
+   0.1568
+  ],
+  [
+   0.1222,
+   0.1503
   ],
   [
    0.1215,
    0.1437
   ],
   [
-   0.1205,
-   0.1322
+   0.1209,
+   0.1371
   ],
   [
-   0.1195,
-   0.1217
+   0.1204,
+   0.1305
   ],
   [
-   0.1186,
-   0.1119
+   0.1197,
+   0.1239
   ],
   [
-   0.1177,
-   0.1022
+   0.1191,
+   0.1173
   ],
   [
-   0.1163,
-   0.0876
+   0.1185,
+   0.1107
   ],
   [
-   0.1152,
-   0.0763
+   0.1179,
+   0.1041
   ],
   [
-   0.1142,
-   0.0675
+   0.1173,
+   0.0975
   ],
   [
-   0.1133,
-   0.0596
-  ],
-  [
-   0.1118,
-   0.0491
-  ],
-  [
-   0.1104,
-   0.0414
-  ],
-  [
-   0.1078,
-   0.0313
-  ],
-  [
-   0.1063,
-   0.0267
-  ],
-  [
-   0.1034,
-   0.0202
-  ],
-  [
-   0.0987,
-   0.013
-  ],
-  [
-   0.0948,
-   0.0089
-  ],
-  [
-   0.0907,
-   0.0059
-  ],
-  [
-   0.0838,
-   0.0024
-  ],
-  [
-   0.0781,
-   0.0007
-  ],
-  [
-   0.0715,
-   0.0
-  ],
-  [
-   0.0628,
-   0.0007
-  ],
-  [
-   0.0549,
-   0.0028
-  ],
-  [
-   0.044,
-   0.0079
-  ],
-  [
-   0.0389,
-   0.0113
-  ],
-  [
-   0.0323,
-   0.0168
-  ],
-  [
-   0.0286,
-   0.0206
-  ],
-  [
-   0.0233,
-   0.027
-  ],
-  [
-   0.0202,
-   0.0315
-  ],
-  [
-   0.0163,
-   0.0378
-  ],
-  [
-   0.0124,
-   0.0457
-  ],
-  [
-   0.0107,
-   0.0499
-  ],
-  [
-   0.0084,
-   0.0559
-  ],
-  [
-   0.006,
-   0.0635
-  ],
-  [
-   0.0028,
-   0.078
-  ],
-  [
-   0.0021,
-   0.082
-  ],
-  [
-   0.0011,
+   0.1166,
    0.0909
   ],
   [
-   0.0006,
-   0.0965
+   0.116,
+   0.0844
   ],
   [
-   0.0002,
-   0.1043
+   0.1154,
+   0.0778
   ],
   [
-   0.0,
-   0.1166
+   0.1146,
+   0.0712
   ],
   [
-   0.0,
-   0.1225
+   0.1139,
+   0.0646
   ],
   [
-   0.0,
-   0.1298
+   0.1131,
+   0.058
   ],
   [
-   0.0001,
-   0.1372
+   0.1121,
+   0.0515
   ],
   [
-   0.0003,
-   0.1469
+   0.111,
+   0.045
   ],
   [
-   0.0004,
-   0.1499
+   0.1096,
+   0.0385
   ],
   [
-   0.0008,
-   0.1613
+   0.108,
+   0.0321
   ],
   [
-   0.0014,
-   0.1743
+   0.1059,
+   0.0258
+  ],
+  [
+   0.1032,
+   0.0198
+  ],
+  [
+   0.0996,
+   0.0143
+  ],
+  [
+   0.0952,
+   0.0093
+  ],
+  [
+   0.0899,
+   0.0054
+  ],
+  [
+   0.084,
+   0.0024
+  ],
+  [
+   0.0776,
+   0.0006
+  ],
+  [
+   0.071,
+   0.0
+  ],
+  [
+   0.0644,
+   0.0006
+  ],
+  [
+   0.058,
+   0.002
+  ],
+  [
+   0.0518,
+   0.0043
+  ],
+  [
+   0.0458,
+   0.007
+  ],
+  [
+   0.0401,
+   0.0105
+  ],
+  [
+   0.035,
+   0.0146
+  ],
+  [
+   0.0301,
+   0.0191
+  ],
+  [
+   0.0257,
+   0.024
+  ],
+  [
+   0.0217,
+   0.0293
+  ],
+  [
+   0.0181,
+   0.0348
+  ],
+  [
+   0.0149,
+   0.0406
+  ],
+  [
+   0.012,
+   0.0466
+  ],
+  [
+   0.0096,
+   0.0527
+  ],
+  [
+   0.0074,
+   0.059
+  ],
+  [
+   0.0056,
+   0.0653
+  ],
+  [
+   0.0041,
+   0.0718
+  ],
+  [
+   0.0027,
+   0.0783
   ],
   [
    0.0018,
-   0.1813
+   0.0848
   ],
   [
-   0.003,
-   0.2008
+   0.001,
+   0.0914
   ],
   [
-   0.004,
-   0.2143
+   0.0006,
+   0.098
   ],
   [
-   0.0051,
-   0.2278
+   0.0002,
+   0.1046
   ],
   [
-   0.0053,
-   0.2302
+   0.0001,
+   0.1112
+  ],
+  [
+   0.0,
+   0.1178
+  ],
+  [
+   0.0,
+   0.1245
+  ],
+  [
+   0.0,
+   0.1311
+  ],
+  [
+   0.0001,
+   0.1377
+  ],
+  [
+   0.0003,
+   0.1443
+  ],
+  [
+   0.0005,
+   0.1509
+  ],
+  [
+   0.0007,
+   0.1575
+  ],
+  [
+   0.001,
+   0.1641
+  ],
+  [
+   0.0013,
+   0.1708
+  ],
+  [
+   0.0016,
+   0.1774
+  ],
+  [
+   0.002,
+   0.184
+  ],
+  [
+   0.0024,
+   0.1906
+  ],
+  [
+   0.0028,
+   0.1972
+  ],
+  [
+   0.0033,
+   0.2038
+  ],
+  [
+   0.0037,
+   0.2104
+  ],
+  [
+   0.0042,
+   0.217
+  ],
+  [
+   0.0047,
+   0.2236
   ]
+ ],
+ "turns": [
+  {
+   "number": 1,
+   "name": "Variante del Rettifilo",
+   "x": 0.0428,
+   "y": 0.6436,
+   "lap_frac": 0.1541
+  },
+  {
+   "number": 2,
+   "name": "Variante del Rettifilo",
+   "x": 0.0624,
+   "y": 0.6584,
+   "lap_frac": 0.1629
+  },
+  {
+   "number": 3,
+   "name": "Curva Biassono (Curva Grande)",
+   "x": 0.0974,
+   "y": 0.8815,
+   "lap_frac": 0.2532
+  },
+  {
+   "number": 4,
+   "name": "Variante della Roggia",
+   "x": 0.3832,
+   "y": 0.9423,
+   "lap_frac": 0.3647
+  },
+  {
+   "number": 5,
+   "name": "Variante della Roggia",
+   "x": 0.398,
+   "y": 0.9604,
+   "lap_frac": 0.3741
+  },
+  {
+   "number": 6,
+   "name": "Lesmo 1",
+   "x": 0.5559,
+   "y": 0.9923,
+   "lap_frac": 0.436
+  },
+  {
+   "number": 7,
+   "name": "Lesmo 2",
+   "x": 0.5752,
+   "y": 0.8509,
+   "lap_frac": 0.4927
+  },
+  {
+   "number": 8,
+   "name": "Variante Ascari",
+   "x": 0.1873,
+   "y": 0.5522,
+   "lap_frac": 0.6787
+  },
+  {
+   "number": 9,
+   "name": "Variante Ascari",
+   "x": 0.1834,
+   "y": 0.5107,
+   "lap_frac": 0.6954
+  },
+  {
+   "number": 10,
+   "name": "Variante Ascari",
+   "x": 0.1563,
+   "y": 0.4728,
+   "lap_frac": 0.713
+  },
+  {
+   "number": 11,
+   "name": "Curva Alboreto (Parabolica)",
+   "x": 0.0666,
+   "y": 0.0,
+   "lap_frac": 0.9031
+  }
  ],
  "zones": [
   {
    "zone_id": "monza-z01",
-   "name": "Straight 1",
+   "name": "Start/finish straight",
    "zone_type": "straight",
+   "turns": [],
    "start_frac": 0.0,
-   "end_frac": 0.0537,
-   "v_entry_kph": 314,
+   "end_frac": 0.1223,
+   "length_m": 708,
+   "v_entry_kph": 331,
    "v_apex_kph": 314,
-   "barrier_type": "tyre_wall",
-   "runoff_type": "gravel",
-   "runoff_depth_m": 30,
-   "fence_height_m": 4.0,
-   "grandstand_capacity": 0,
-   "distance_to_stand_m": 100,
    "marshal_posts": 1,
-   "asset_value_eur": 500000,
-   "inventory_source": "PLACEHOLDER - not yet authored"
+   "grandstands": [
+    "Central Grandstand n° 1",
+    "Bleachers Finish line n. 2, 3",
+    "Left Side Stand n° 4",
+    "Right Side Stand ABC n° 26",
+    "Bleachers Finish line n. 27–30"
+   ],
+   "grandstand_capacity": 12500,
+   "distance_to_stand_m": 40,
+   "barrier_type": "concrete",
+   "runoff_type": "grass",
+   "runoff_depth_m": 15,
+   "fence_height_m": 3.0,
+   "asset_value_eur": 400000,
+   "inventory_source": "grandstands: official list (monzanet.it), seats and distance assumed; marshal_posts: MultiViewer marshal sectors (real); barrier / run-off / fence / asset value: assumed default by zone type",
+   "n_incidents": 2,
+   "n_loss_relevant": 2
   },
   {
    "zone_id": "monza-z02",
-   "name": "Variante del Rettifilo (T1-T2)",
+   "name": "Variante del Rettifilo",
    "zone_type": "braking",
-   "start_frac": 0.0537,
-   "end_frac": 0.1864,
-   "v_entry_kph": 331,
+   "turns": [
+    1,
+    2
+   ],
+   "start_frac": 0.1223,
+   "end_frac": 0.185,
+   "length_m": 363,
+   "v_entry_kph": 321,
    "v_apex_kph": 69,
+   "marshal_posts": 2,
+   "grandstands": [
+    "External Grandstand First Variant AB n° 8"
+   ],
+   "grandstand_capacity": 2500,
+   "distance_to_stand_m": 40,
    "barrier_type": "tyre_wall",
    "runoff_type": "gravel",
-   "runoff_depth_m": 30,
+   "runoff_depth_m": 60,
    "fence_height_m": 4.0,
-   "grandstand_capacity": 0,
-   "distance_to_stand_m": 100,
-   "marshal_posts": 1,
-   "asset_value_eur": 500000,
-   "inventory_source": "PLACEHOLDER - not yet authored"
+   "asset_value_eur": 1000000,
+   "inventory_source": "grandstands: official list (monzanet.it), seats and distance assumed; marshal_posts: MultiViewer marshal sectors (real); barrier / run-off / fence / asset value: assumed default by zone type",
+   "n_incidents": 110,
+   "n_loss_relevant": 19
   },
   {
    "zone_id": "monza-z03",
-   "name": "Straight 2",
-   "zone_type": "straight",
-   "start_frac": 0.1864,
-   "end_frac": 0.3091,
-   "v_entry_kph": 203,
-   "v_apex_kph": 203,
-   "barrier_type": "tyre_wall",
-   "runoff_type": "gravel",
+   "name": "Curva Biassono (Curva Grande)",
+   "zone_type": "high_speed",
+   "turns": [
+    3
+   ],
+   "start_frac": 0.185,
+   "end_frac": 0.3464,
+   "length_m": 935,
+   "v_entry_kph": 315,
+   "v_apex_kph": 197,
+   "marshal_posts": 3,
+   "grandstands": [],
+   "grandstand_capacity": 0,
+   "distance_to_stand_m": null,
+   "barrier_type": "guardrail",
+   "runoff_type": "asphalt",
    "runoff_depth_m": 30,
    "fence_height_m": 4.0,
-   "grandstand_capacity": 0,
-   "distance_to_stand_m": 100,
-   "marshal_posts": 1,
-   "asset_value_eur": 500000,
-   "inventory_source": "PLACEHOLDER - not yet authored"
+   "asset_value_eur": 600000,
+   "inventory_source": "grandstands: official list (monzanet.it), seats and distance assumed; marshal_posts: MultiViewer marshal sectors (real); barrier / run-off / fence / asset value: assumed default by zone type",
+   "n_incidents": 4,
+   "n_loss_relevant": 4
   },
   {
    "zone_id": "monza-z04",
-   "name": "Variante della Roggia (T4-T5)",
+   "name": "Variante della Roggia",
    "zone_type": "braking",
-   "start_frac": 0.3091,
-   "end_frac": 0.3972,
-   "v_entry_kph": 315,
+   "turns": [
+    4,
+    5
+   ],
+   "start_frac": 0.3464,
+   "end_frac": 0.4179,
+   "length_m": 415,
+   "v_entry_kph": 306,
    "v_apex_kph": 106,
+   "marshal_posts": 1,
+   "grandstands": [
+    "Second Variant Grandstand n° 9",
+    "Roggia grandstand n° 10"
+   ],
+   "grandstand_capacity": 5000,
+   "distance_to_stand_m": 40,
    "barrier_type": "tyre_wall",
    "runoff_type": "gravel",
-   "runoff_depth_m": 30,
+   "runoff_depth_m": 60,
    "fence_height_m": 4.0,
-   "grandstand_capacity": 0,
-   "distance_to_stand_m": 100,
-   "marshal_posts": 1,
-   "asset_value_eur": 500000,
-   "inventory_source": "PLACEHOLDER - not yet authored"
+   "asset_value_eur": 1000000,
+   "inventory_source": "grandstands: official list (monzanet.it), seats and distance assumed; marshal_posts: MultiViewer marshal sectors (real); barrier / run-off / fence / asset value: assumed default by zone type",
+   "n_incidents": 78,
+   "n_loss_relevant": 15
   },
   {
    "zone_id": "monza-z05",
-   "name": "High-speed section 3",
-   "zone_type": "high_speed",
-   "start_frac": 0.3972,
-   "end_frac": 0.4179,
-   "v_entry_kph": 213,
-   "v_apex_kph": 213,
+   "name": "Lesmo 1",
+   "zone_type": "braking",
+   "turns": [
+    6
+   ],
+   "start_frac": 0.4179,
+   "end_frac": 0.4784,
+   "length_m": 350,
+   "v_entry_kph": 242,
+   "v_apex_kph": 174,
+   "marshal_posts": 0,
+   "grandstands": [],
+   "grandstand_capacity": 0,
+   "distance_to_stand_m": null,
    "barrier_type": "tyre_wall",
    "runoff_type": "gravel",
-   "runoff_depth_m": 30,
+   "runoff_depth_m": 60,
    "fence_height_m": 4.0,
-   "grandstand_capacity": 0,
-   "distance_to_stand_m": 100,
-   "marshal_posts": 1,
-   "asset_value_eur": 500000,
-   "inventory_source": "PLACEHOLDER - not yet authored"
+   "asset_value_eur": 1000000,
+   "inventory_source": "grandstands: official list (monzanet.it), seats and distance assumed; marshal_posts: MultiViewer marshal sectors (real); barrier / run-off / fence / asset value: assumed default by zone type",
+   "n_incidents": 16,
+   "n_loss_relevant": 9
   },
   {
    "zone_id": "monza-z06",
-   "name": "Curva di Lesmo 1 (T6)",
+   "name": "Lesmo 2",
    "zone_type": "braking",
-   "start_frac": 0.4179,
-   "end_frac": 0.4535,
-   "v_entry_kph": 242,
-   "v_apex_kph": 174,
+   "turns": [
+    7
+   ],
+   "start_frac": 0.4784,
+   "end_frac": 0.5104,
+   "length_m": 185,
+   "v_entry_kph": 238,
+   "v_apex_kph": 165,
+   "marshal_posts": 1,
+   "grandstands": [],
+   "grandstand_capacity": 0,
+   "distance_to_stand_m": null,
    "barrier_type": "tyre_wall",
    "runoff_type": "gravel",
-   "runoff_depth_m": 30,
+   "runoff_depth_m": 60,
    "fence_height_m": 4.0,
-   "grandstand_capacity": 0,
-   "distance_to_stand_m": 100,
-   "marshal_posts": 1,
-   "asset_value_eur": 500000,
-   "inventory_source": "PLACEHOLDER - not yet authored"
+   "asset_value_eur": 1000000,
+   "inventory_source": "grandstands: official list (monzanet.it), seats and distance assumed; marshal_posts: MultiViewer marshal sectors (real); barrier / run-off / fence / asset value: assumed default by zone type",
+   "n_incidents": 22,
+   "n_loss_relevant": 8
   },
   {
    "zone_id": "monza-z07",
-   "name": "High-speed section 4",
-   "zone_type": "high_speed",
-   "start_frac": 0.4535,
-   "end_frac": 0.4753,
-   "v_entry_kph": 211,
+   "name": "Straight after Lesmo 2",
+   "zone_type": "straight",
+   "turns": [],
+   "start_frac": 0.5104,
+   "end_frac": 0.6586,
+   "length_m": 859,
+   "v_entry_kph": 319,
    "v_apex_kph": 211,
-   "barrier_type": "tyre_wall",
-   "runoff_type": "gravel",
-   "runoff_depth_m": 30,
-   "fence_height_m": 4.0,
+   "marshal_posts": 4,
+   "grandstands": [],
    "grandstand_capacity": 0,
-   "distance_to_stand_m": 100,
-   "marshal_posts": 1,
-   "asset_value_eur": 500000,
-   "inventory_source": "PLACEHOLDER - not yet authored"
+   "distance_to_stand_m": null,
+   "barrier_type": "concrete",
+   "runoff_type": "grass",
+   "runoff_depth_m": 15,
+   "fence_height_m": 3.0,
+   "asset_value_eur": 400000,
+   "inventory_source": "grandstands: official list (monzanet.it), seats and distance assumed; marshal_posts: MultiViewer marshal sectors (real); barrier / run-off / fence / asset value: assumed default by zone type",
+   "n_incidents": 0,
+   "n_loss_relevant": 0
   },
   {
    "zone_id": "monza-z08",
-   "name": "Curva di Lesmo 2 (T7)",
+   "name": "Variante Ascari",
    "zone_type": "braking",
-   "start_frac": 0.4753,
-   "end_frac": 0.5104,
-   "v_entry_kph": 246,
-   "v_apex_kph": 165,
+   "turns": [
+    8,
+    9,
+    10
+   ],
+   "start_frac": 0.6586,
+   "end_frac": 0.7187,
+   "length_m": 348,
+   "v_entry_kph": 312,
+   "v_apex_kph": 167,
+   "marshal_posts": 0,
+   "grandstands": [
+    "Ascari Tre grandstand n° 12",
+    "Ascari Due grandstand n° 13",
+    "Ascari Uno grandstand n° 15",
+    "Ascari grandstand n° 16",
+    "Ascari exit grandstands n° 18, 19, 20"
+   ],
+   "grandstand_capacity": 12500,
+   "distance_to_stand_m": 40,
    "barrier_type": "tyre_wall",
    "runoff_type": "gravel",
-   "runoff_depth_m": 30,
+   "runoff_depth_m": 60,
    "fence_height_m": 4.0,
-   "grandstand_capacity": 0,
-   "distance_to_stand_m": 100,
-   "marshal_posts": 1,
-   "asset_value_eur": 500000,
-   "inventory_source": "PLACEHOLDER - not yet authored"
+   "asset_value_eur": 1000000,
+   "inventory_source": "grandstands: official list (monzanet.it), seats and distance assumed; marshal_posts: MultiViewer marshal sectors (real); barrier / run-off / fence / asset value: assumed default by zone type",
+   "n_incidents": 26,
+   "n_loss_relevant": 17
   },
   {
    "zone_id": "monza-z09",
-   "name": "Straight 5",
+   "name": "Straight after Variante Ascari",
    "zone_type": "straight",
-   "start_frac": 0.5104,
-   "end_frac": 0.6261,
-   "v_entry_kph": 211,
-   "v_apex_kph": 211,
-   "barrier_type": "tyre_wall",
-   "runoff_type": "gravel",
-   "runoff_depth_m": 30,
-   "fence_height_m": 4.0,
+   "turns": [],
+   "start_frac": 0.7187,
+   "end_frac": 0.8664,
+   "length_m": 856,
+   "v_entry_kph": 321,
+   "v_apex_kph": 244,
+   "marshal_posts": 2,
+   "grandstands": [],
    "grandstand_capacity": 0,
-   "distance_to_stand_m": 100,
-   "marshal_posts": 1,
-   "asset_value_eur": 500000,
-   "inventory_source": "PLACEHOLDER - not yet authored"
+   "distance_to_stand_m": null,
+   "barrier_type": "concrete",
+   "runoff_type": "grass",
+   "runoff_depth_m": 15,
+   "fence_height_m": 3.0,
+   "asset_value_eur": 400000,
+   "inventory_source": "grandstands: official list (monzanet.it), seats and distance assumed; marshal_posts: MultiViewer marshal sectors (real); barrier / run-off / fence / asset value: assumed default by zone type",
+   "n_incidents": 0,
+   "n_loss_relevant": 0
   },
   {
    "zone_id": "monza-z10",
-   "name": "Variante Ascari (T8-T10)",
+   "name": "Curva Alboreto (Parabolica)",
    "zone_type": "braking",
-   "start_frac": 0.6261,
-   "end_frac": 0.7187,
-   "v_entry_kph": 319,
-   "v_apex_kph": 167,
+   "turns": [
+    11
+   ],
+   "start_frac": 0.8664,
+   "end_frac": 0.9296,
+   "length_m": 366,
+   "v_entry_kph": 315,
+   "v_apex_kph": 179,
+   "marshal_posts": 1,
+   "grandstands": [
+    "Parabolic Side Grandstand ABCDE n° 21",
+    "Parabolic grandstand n° 22",
+    "Parabolic Grandstand AB n° 23"
+   ],
+   "grandstand_capacity": 7500,
+   "distance_to_stand_m": 40,
    "barrier_type": "tyre_wall",
    "runoff_type": "gravel",
-   "runoff_depth_m": 30,
+   "runoff_depth_m": 60,
    "fence_height_m": 4.0,
-   "grandstand_capacity": 0,
-   "distance_to_stand_m": 100,
-   "marshal_posts": 1,
-   "asset_value_eur": 500000,
-   "inventory_source": "PLACEHOLDER - not yet authored"
+   "asset_value_eur": 1000000,
+   "inventory_source": "grandstands: official list (monzanet.it), seats and distance assumed; marshal_posts: MultiViewer marshal sectors (real); barrier / run-off / fence / asset value: assumed default by zone type",
+   "n_incidents": 10,
+   "n_loss_relevant": 9
   },
   {
    "zone_id": "monza-z11",
-   "name": "Straight 6",
+   "name": "Straight to the line (after Curva Alboreto (Parabolica))",
    "zone_type": "straight",
-   "start_frac": 0.7187,
-   "end_frac": 0.8207,
-   "v_entry_kph": 244,
-   "v_apex_kph": 244,
-   "barrier_type": "tyre_wall",
-   "runoff_type": "gravel",
-   "runoff_depth_m": 30,
-   "fence_height_m": 4.0,
-   "grandstand_capacity": 0,
-   "distance_to_stand_m": 100,
-   "marshal_posts": 1,
-   "asset_value_eur": 500000,
-   "inventory_source": "PLACEHOLDER - not yet authored"
-  },
-  {
-   "zone_id": "monza-z12",
-   "name": "Curva Alboreto (Parabolica, T11)",
-   "zone_type": "braking",
-   "start_frac": 0.8207,
-   "end_frac": 0.9313,
-   "v_entry_kph": 321,
-   "v_apex_kph": 179,
-   "barrier_type": "tyre_wall",
-   "runoff_type": "gravel",
-   "runoff_depth_m": 30,
-   "fence_height_m": 4.0,
-   "grandstand_capacity": 0,
-   "distance_to_stand_m": 100,
-   "marshal_posts": 1,
-   "asset_value_eur": 500000,
-   "inventory_source": "PLACEHOLDER - not yet authored"
-  },
-  {
-   "zone_id": "monza-z13",
-   "name": "Straight 7",
-   "zone_type": "straight",
-   "start_frac": 0.9313,
+   "turns": [],
+   "start_frac": 0.9296,
    "end_frac": 1.0,
-   "v_entry_kph": 251,
-   "v_apex_kph": 251,
-   "barrier_type": "tyre_wall",
-   "runoff_type": "gravel",
-   "runoff_depth_m": 30,
-   "fence_height_m": 4.0,
+   "length_m": 408,
+   "v_entry_kph": 313,
+   "v_apex_kph": 250,
+   "marshal_posts": 2,
+   "grandstands": [],
    "grandstand_capacity": 0,
-   "distance_to_stand_m": 100,
-   "marshal_posts": 1,
-   "asset_value_eur": 500000,
-   "inventory_source": "PLACEHOLDER - not yet authored"
+   "distance_to_stand_m": null,
+   "barrier_type": "concrete",
+   "runoff_type": "grass",
+   "runoff_depth_m": 15,
+   "fence_height_m": 3.0,
+   "asset_value_eur": 400000,
+   "inventory_source": "grandstands: official list (monzanet.it), seats and distance assumed; marshal_posts: MultiViewer marshal sectors (real); barrier / run-off / fence / asset value: assumed default by zone type",
+   "n_incidents": 0,
+   "n_loss_relevant": 0
   }
- ]
+ ],
+ "grandstands_unmapped": [
+  "Swimming pool grandstand n° 5",
+  "ABC High Speed Grandstand n° 6",
+  "Tribune of the Friends of the racetrack and park Association n° 14",
+  "Vedano stand n° 24",
+  "Grandstand for the disabled n. 25"
+ ],
+ "data_coverage": {
+  "seasons": [
+   2023,
+   2024,
+   2025,
+   2026
+  ],
+  "sessions": [
+   {
+    "session_key": 9150,
+    "season": 2023,
+    "session_type": "Practice 1"
+   },
+   {
+    "session_key": 9151,
+    "season": 2023,
+    "session_type": "Practice 2"
+   },
+   {
+    "session_key": 9152,
+    "season": 2023,
+    "session_type": "Practice 3"
+   },
+   {
+    "session_key": 9153,
+    "season": 2023,
+    "session_type": "Qualifying"
+   },
+   {
+    "session_key": 9157,
+    "season": 2023,
+    "session_type": "Race"
+   },
+   {
+    "session_key": 9583,
+    "season": 2024,
+    "session_type": "Practice 1"
+   },
+   {
+    "session_key": 9584,
+    "season": 2024,
+    "session_type": "Practice 2"
+   },
+   {
+    "session_key": 9585,
+    "season": 2024,
+    "session_type": "Practice 3"
+   },
+   {
+    "session_key": 9586,
+    "season": 2024,
+    "session_type": "Qualifying"
+   },
+   {
+    "session_key": 9590,
+    "season": 2024,
+    "session_type": "Race"
+   },
+   {
+    "session_key": 9905,
+    "season": 2025,
+    "session_type": "Practice 1"
+   },
+   {
+    "session_key": 9906,
+    "season": 2025,
+    "session_type": "Practice 2"
+   },
+   {
+    "session_key": 9907,
+    "season": 2025,
+    "session_type": "Practice 3"
+   },
+   {
+    "session_key": 9908,
+    "season": 2025,
+    "session_type": "Qualifying"
+   },
+   {
+    "session_key": 9912,
+    "season": 2025,
+    "session_type": "Race"
+   },
+   {
+    "session_key": 11354,
+    "season": 2026,
+    "session_type": "Practice 1"
+   },
+   {
+    "session_key": 11355,
+    "season": 2026,
+    "session_type": "Practice 2"
+   },
+   {
+    "session_key": 11356,
+    "season": 2026,
+    "session_type": "Practice 3"
+   },
+   {
+    "session_key": 11357,
+    "season": 2026,
+    "session_type": "Qualifying"
+   },
+   {
+    "session_key": 11361,
+    "season": 2026,
+    "session_type": "Race"
+   }
+  ],
+  "race_control_messages": 925,
+  "incidents": 268,
+  "loss_relevant": 83,
+  "by_type": {
+   "track_limits": 156,
+   "flag_only": 49,
+   "stopped": 19,
+   "administrative": 19,
+   "collision": 15,
+   "spin": 10
+  },
+  "by_geo_method": {
+   "turn_in_message": 194,
+   "marshal_sector": 68
+  },
+  "not_placed": {
+   "no_location_admin": 53,
+   "no_location_loss_relevant": 0,
+   "safety_car": 3,
+   "virtual_safety_car": 5,
+   "red_flag": 7
+  },
+  "car_location_check": {
+   "candidates": 15,
+   "contact_found": 11,
+   "agrees_with_turn": 6,
+   "not_checked": 0
+  }
+ },
+ "sources": {
+  "incidents_and_lap": "OpenF1 (openf1.org)",
+  "turns_and_marshal_sectors": "MultiViewer circuit API, circuit 39, 2024",
+  "grandstands": "Official list, Autodromo Nazionale Monza: https://www.monzanet.it/en/circuit/ (names as published). Mapping name -> corner is ours; stands whose name gives no corner are left unmapped.",
+  "barrier_runoff_fence_asset": "ASSUMED placeholder by zone type, not surveyed. Replace per zone when real inventory is available."
+ }
 }
