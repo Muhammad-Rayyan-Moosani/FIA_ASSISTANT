@@ -1,0 +1,11 @@
+{
+  "track": "Demo Street Circuit (synthetic data)",
+  "zones": [
+    {"zone_id": "T1",  "name": "Turn 1 hairpin",     "crashes": 7, "yellow_flags": 11, "warnings": 24, "seasons_observed": 6, "approach_speed_kph": 318, "top_speed_kph": 88,  "grandstand_dist_m": 45,  "marshal_dist_m": 18, "barrier_type": "tecpro"},
+    {"zone_id": "T3",  "name": "Turn 3 kink",        "crashes": 2, "yellow_flags": 4,  "warnings": 9,  "seasons_observed": 6, "approach_speed_kph": 285, "top_speed_kph": 240, "grandstand_dist_m": 220, "marshal_dist_m": 30, "barrier_type": "armco"},
+    {"zone_id": "T5",  "name": "Turn 5 chicane",     "crashes": 5, "yellow_flags": 8,  "warnings": 41, "seasons_observed": 6, "approach_speed_kph": 262, "top_speed_kph": 115, "grandstand_dist_m": 70,  "marshal_dist_m": 22, "barrier_type": "tyre_wall"},
+    {"zone_id": "T8",  "name": "Turn 8 swimming pool","crashes": 9, "yellow_flags": 13, "warnings": 6,  "seasons_observed": 6, "approach_speed_kph": 240, "top_speed_kph": 145, "grandstand_dist_m": 25,  "marshal_dist_m": 12, "barrier_type": "armco"},
+    {"zone_id": "T11", "name": "Turn 11 tunnel exit","crashes": 3, "yellow_flags": 5,  "warnings": 3,  "seasons_observed": 6, "approach_speed_kph": 295, "top_speed_kph": 190, "grandstand_dist_m": 140, "marshal_dist_m": 40, "barrier_type": "concrete"},
+    {"zone_id": "T14", "name": "Turn 14 final corner","crashes": 4, "yellow_flags": 7,  "warnings": 30, "seasons_observed": 6, "approach_speed_kph": 250, "top_speed_kph": 105, "grandstand_dist_m": 35,  "marshal_dist_m": 15, "barrier_type": "tecpro"}
+  ]
+}
