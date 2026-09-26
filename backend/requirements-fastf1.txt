@@ -1,0 +1,4 @@
+# Optional: FastF1 adapter (heavier install: pandas, matplotlib, requests-cache...).
+# Only needed for `python -m scripts.fetch_fastf1` / the FastF1 data source.
+-r requirements.txt
+fastf1>=3.4

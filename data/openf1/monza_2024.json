@@ -1,0 +1,2935 @@
+{
+ "circuit": "monza",
+ "session": {
+  "session_key": 9590,
+  "meeting_key": 1244,
+  "circuit_short_name": "Monza",
+  "country_name": "Italy",
+  "date_start": "2024-09-01T13:00:00+00:00",
+  "year": 2024
+ },
+ "reference": {
+  "driver_number": 16,
+  "lap_number": 12,
+  "lap_duration": 84.916
+ },
+ "samples": [
+  {
+   "t": 0.032,
+   "x": -1368,
+   "y": -612,
+   "speed": 314.1
+  },
+  {
+   "t": 0.212,
+   "x": -1355,
+   "y": -454,
+   "speed": 316.2
+  },
+  {
+   "t": 0.392,
+   "x": -1341,
+   "y": -296,
+   "speed": 317.2
+  },
+  {
+   "t": 0.572,
+   "x": -1327,
+   "y": -138,
+   "speed": 318.2
+  },
+  {
+   "t": 0.912,
+   "x": -1300,
+   "y": 162,
+   "speed": 320.3
+  },
+  {
+   "t": 1.092,
+   "x": -1286,
+   "y": 322,
+   "speed": 321.0
+  },
+  {
+   "t": 1.252,
+   "x": -1274,
+   "y": 464,
+   "speed": 321.3
+  },
+  {
+   "t": 1.532,
+   "x": -1241,
+   "y": 841,
+   "speed": 324.0
+  },
+  {
+   "t": 1.852,
+   "x": -1227,
+   "y": 1002,
+   "speed": 324.2
+  },
+  {
+   "t": 2.132,
+   "x": -1206,
+   "y": 1255,
+   "speed": 326.2
+  },
+  {
+   "t": 2.352,
+   "x": -1177,
+   "y": 1581,
+   "speed": 327.5
+  },
+  {
+   "t": 2.813,
+   "x": -1152,
+   "y": 1872,
+   "speed": 329.9
+  },
+  {
+   "t": 2.973,
+   "x": -1129,
+   "y": 2146,
+   "speed": 330.0
+  },
+  {
+   "t": 3.453,
+   "x": -1102,
+   "y": 2457,
+   "speed": 331.0
+  },
+  {
+   "t": 3.653,
+   "x": -1086,
+   "y": 2640,
+   "speed": 331.0
+  },
+  {
+   "t": 3.813,
+   "x": -1074,
+   "y": 2787,
+   "speed": 331.0
+  },
+  {
+   "t": 4.013,
+   "x": -1058,
+   "y": 2970,
+   "speed": 331.0
+  },
+  {
+   "t": 4.253,
+   "x": -1039,
+   "y": 3190,
+   "speed": 331.0
+  },
+  {
+   "t": 4.493,
+   "x": -1015,
+   "y": 3465,
+   "speed": 331.0
+  },
+  {
+   "t": 4.733,
+   "x": -1001,
+   "y": 3630,
+   "speed": 331.0
+  },
+  {
+   "t": 4.932,
+   "x": -985,
+   "y": 3813,
+   "speed": 331.0
+  },
+  {
+   "t": 5.312,
+   "x": -955,
+   "y": 4160,
+   "speed": 330.2
+  },
+  {
+   "t": 5.352,
+   "x": -952,
+   "y": 4197,
+   "speed": 330.1
+  },
+  {
+   "t": 5.672,
+   "x": -927,
+   "y": 4489,
+   "speed": 329.8
+  },
+  {
+   "t": 5.912,
+   "x": -899,
+   "y": 4817,
+   "speed": 329.1
+  },
+  {
+   "t": 6.272,
+   "x": -880,
+   "y": 5035,
+   "speed": 327.3
+  },
+  {
+   "t": 6.512,
+   "x": -853,
+   "y": 5343,
+   "speed": 326.9
+  },
+  {
+   "t": 6.832,
+   "x": -836,
+   "y": 5541,
+   "speed": 325.7
+  },
+  {
+   "t": 7.112,
+   "x": -815,
+   "y": 5793,
+   "speed": 323.6
+  },
+  {
+   "t": 7.332,
+   "x": -798,
+   "y": 5989,
+   "speed": 322.6
+  },
+  {
+   "t": 7.492,
+   "x": -786,
+   "y": 6132,
+   "speed": 322.2
+  },
+  {
+   "t": 7.772,
+   "x": -765,
+   "y": 6382,
+   "speed": 321.1
+  },
+  {
+   "t": 7.972,
+   "x": -741,
+   "y": 6666,
+   "speed": 320.5
+  },
+  {
+   "t": 8.432,
+   "x": -712,
+   "y": 7011,
+   "speed": 302.3
+  },
+  {
+   "t": 8.772,
+   "x": -694,
+   "y": 7223,
+   "speed": 256.7
+  },
+  {
+   "t": 9.032,
+   "x": -680,
+   "y": 7397,
+   "speed": 230.5
+  },
+  {
+   "t": 9.292,
+   "x": -667,
+   "y": 7550,
+   "speed": 205.3
+  },
+  {
+   "t": 9.373,
+   "x": -663,
+   "y": 7594,
+   "speed": 195.7
+  },
+  {
+   "t": 9.713,
+   "x": -645,
+   "y": 7798,
+   "speed": 164.8
+  },
+  {
+   "t": 10.073,
+   "x": -633,
+   "y": 7909,
+   "speed": 135.7
+  },
+  {
+   "t": 10.313,
+   "x": -620,
+   "y": 7992,
+   "speed": 123.7
+  },
+  {
+   "t": 10.433,
+   "x": -612,
+   "y": 8030,
+   "speed": 117.7
+  },
+  {
+   "t": 10.633,
+   "x": -596,
+   "y": 8086,
+   "speed": 108.1
+  },
+  {
+   "t": 10.933,
+   "x": -549,
+   "y": 8185,
+   "speed": 95.6
+  },
+  {
+   "t": 11.313,
+   "x": -513,
+   "y": 8233,
+   "speed": 83.4
+  },
+  {
+   "t": 11.413,
+   "x": -497,
+   "y": 8249,
+   "speed": 81.5
+  },
+  {
+   "t": 11.772,
+   "x": -411,
+   "y": 8298,
+   "speed": 76.8
+  },
+  {
+   "t": 12.072,
+   "x": -374,
+   "y": 8307,
+   "speed": 75.0
+  },
+  {
+   "t": 12.232,
+   "x": -339,
+   "y": 8314,
+   "speed": 76.3
+  },
+  {
+   "t": 12.592,
+   "x": -262,
+   "y": 8333,
+   "speed": 77.9
+  },
+  {
+   "t": 12.772,
+   "x": -229,
+   "y": 8349,
+   "speed": 75.9
+  },
+  {
+   "t": 12.992,
+   "x": -196,
+   "y": 8376,
+   "speed": 73.5
+  },
+  {
+   "t": 13.152,
+   "x": -178,
+   "y": 8402,
+   "speed": 71.9
+  },
+  {
+   "t": 13.432,
+   "x": -157,
+   "y": 8452,
+   "speed": 69.4
+  },
+  {
+   "t": 13.472,
+   "x": -155,
+   "y": 8459,
+   "speed": 69.0
+  },
+  {
+   "t": 13.752,
+   "x": -145,
+   "y": 8513,
+   "speed": 69.1
+  },
+  {
+   "t": 14.012,
+   "x": -141,
+   "y": 8565,
+   "speed": 72.3
+  },
+  {
+   "t": 14.232,
+   "x": -142,
+   "y": 8611,
+   "speed": 76.7
+  },
+  {
+   "t": 14.292,
+   "x": -143,
+   "y": 8623,
+   "speed": 78.1
+  },
+  {
+   "t": 14.612,
+   "x": -152,
+   "y": 8695,
+   "speed": 83.8
+  },
+  {
+   "t": 14.832,
+   "x": -169,
+   "y": 8775,
+   "speed": 92.5
+  },
+  {
+   "t": 15.192,
+   "x": -188,
+   "y": 8847,
+   "speed": 107.5
+  },
+  {
+   "t": 15.412,
+   "x": -218,
+   "y": 8958,
+   "speed": 116.7
+  },
+  {
+   "t": 15.872,
+   "x": -247,
+   "y": 9070,
+   "speed": 136.2
+  },
+  {
+   "t": 16.073,
+   "x": -267,
+   "y": 9146,
+   "speed": 145.5
+  },
+  {
+   "t": 16.233,
+   "x": -283,
+   "y": 9210,
+   "speed": 154.0
+  },
+  {
+   "t": 16.413,
+   "x": -302,
+   "y": 9288,
+   "speed": 164.0
+  },
+  {
+   "t": 16.713,
+   "x": -335,
+   "y": 9425,
+   "speed": 176.2
+  },
+  {
+   "t": 16.933,
+   "x": -358,
+   "y": 9534,
+   "speed": 184.2
+  },
+  {
+   "t": 17.093,
+   "x": -373,
+   "y": 9616,
+   "speed": 190.0
+  },
+  {
+   "t": 17.253,
+   "x": -387,
+   "y": 9701,
+   "speed": 196.6
+  },
+  {
+   "t": 17.393,
+   "x": -398,
+   "y": 9778,
+   "speed": 202.8
+  },
+  {
+   "t": 17.653,
+   "x": -413,
+   "y": 9927,
+   "speed": 211.2
+  },
+  {
+   "t": 17.953,
+   "x": -426,
+   "y": 10220,
+   "speed": 219.1
+  },
+  {
+   "t": 18.232,
+   "x": -427,
+   "y": 10332,
+   "speed": 227.8
+  },
+  {
+   "t": 18.452,
+   "x": -426,
+   "y": 10473,
+   "speed": 232.9
+  },
+  {
+   "t": 18.712,
+   "x": -422,
+   "y": 10642,
+   "speed": 235.7
+  },
+  {
+   "t": 18.872,
+   "x": -417,
+   "y": 10750,
+   "speed": 239.8
+  },
+  {
+   "t": 19.212,
+   "x": -401,
+   "y": 10982,
+   "speed": 249.6
+  },
+  {
+   "t": 19.432,
+   "x": -387,
+   "y": 11136,
+   "speed": 254.7
+  },
+  {
+   "t": 19.532,
+   "x": -379,
+   "y": 11206,
+   "speed": 256.4
+  },
+  {
+   "t": 19.752,
+   "x": -359,
+   "y": 11363,
+   "speed": 259.9
+  },
+  {
+   "t": 19.992,
+   "x": -330,
+   "y": 11536,
+   "speed": 264.4
+  },
+  {
+   "t": 20.252,
+   "x": -290,
+   "y": 11724,
+   "speed": 269.7
+  },
+  {
+   "t": 20.492,
+   "x": -212,
+   "y": 12001,
+   "speed": 273.8
+  },
+  {
+   "t": 20.872,
+   "x": -121,
+   "y": 12245,
+   "speed": 277.8
+  },
+  {
+   "t": 21.252,
+   "x": -30,
+   "y": 12443,
+   "speed": 281.6
+  },
+  {
+   "t": 21.472,
+   "x": 98,
+   "y": 12676,
+   "speed": 284.5
+  },
+  {
+   "t": 21.772,
+   "x": 175,
+   "y": 12798,
+   "speed": 288.6
+  },
+  {
+   "t": 22.012,
+   "x": 287,
+   "y": 12955,
+   "speed": 291.1
+  },
+  {
+   "t": 22.232,
+   "x": 400,
+   "y": 13094,
+   "speed": 292.0
+  },
+  {
+   "t": 22.513,
+   "x": 632,
+   "y": 13327,
+   "speed": 295.6
+  },
+  {
+   "t": 22.893,
+   "x": 797,
+   "y": 13467,
+   "speed": 299.9
+  },
+  {
+   "t": 23.073,
+   "x": 917,
+   "y": 13558,
+   "speed": 301.4
+  },
+  {
+   "t": 23.373,
+   "x": 1126,
+   "y": 13699,
+   "speed": 304.2
+  },
+  {
+   "t": 23.513,
+   "x": 1270,
+   "y": 13783,
+   "speed": 304.6
+  },
+  {
+   "t": 23.713,
+   "x": 1421,
+   "y": 13863,
+   "speed": 305.8
+  },
+  {
+   "t": 23.873,
+   "x": 1544,
+   "y": 13922,
+   "speed": 307.3
+  },
+  {
+   "t": 24.173,
+   "x": 1862,
+   "y": 14051,
+   "speed": 309.1
+  },
+  {
+   "t": 24.533,
+   "x": 2076,
+   "y": 14117,
+   "speed": 310.8
+  },
+  {
+   "t": 24.792,
+   "x": 2414,
+   "y": 14197,
+   "speed": 311.6
+  },
+  {
+   "t": 25.172,
+   "x": 2620,
+   "y": 14234,
+   "speed": 312.9
+  },
+  {
+   "t": 25.332,
+   "x": 2757,
+   "y": 14256,
+   "speed": 313.3
+  },
+  {
+   "t": 25.592,
+   "x": 2982,
+   "y": 14288,
+   "speed": 313.9
+  },
+  {
+   "t": 25.772,
+   "x": 3225,
+   "y": 14316,
+   "speed": 314.0
+  },
+  {
+   "t": 26.232,
+   "x": 3608,
+   "y": 14349,
+   "speed": 315.0
+  },
+  {
+   "t": 26.552,
+   "x": 3817,
+   "y": 14366,
+   "speed": 314.0
+  },
+  {
+   "t": 26.812,
+   "x": 4116,
+   "y": 14392,
+   "speed": 314.0
+  },
+  {
+   "t": 27.212,
+   "x": 4405,
+   "y": 14414,
+   "speed": 312.3
+  },
+  {
+   "t": 28.132,
+   "x": 5213,
+   "y": 14460,
+   "speed": 312.0
+  },
+  {
+   "t": 28.412,
+   "x": 5506,
+   "y": 14472,
+   "speed": 310.0
+  },
+  {
+   "t": 28.752,
+   "x": 5741,
+   "y": 14482,
+   "speed": 305.9
+  },
+  {
+   "t": 29.052,
+   "x": 5973,
+   "y": 14490,
+   "speed": 266.2
+  },
+  {
+   "t": 29.233,
+   "x": 6093,
+   "y": 14494,
+   "speed": 235.3
+  },
+  {
+   "t": 29.373,
+   "x": 6180,
+   "y": 14497,
+   "speed": 218.8
+  },
+  {
+   "t": 29.653,
+   "x": 6385,
+   "y": 14507,
+   "speed": 189.1
+  },
+  {
+   "t": 29.953,
+   "x": 6475,
+   "y": 14517,
+   "speed": 167.4
+  },
+  {
+   "t": 30.353,
+   "x": 6601,
+   "y": 14543,
+   "speed": 136.3
+  },
+  {
+   "t": 30.533,
+   "x": 6664,
+   "y": 14563,
+   "speed": 129.1
+  },
+  {
+   "t": 30.753,
+   "x": 6733,
+   "y": 14590,
+   "speed": 120.7
+  },
+  {
+   "t": 30.913,
+   "x": 6777,
+   "y": 14612,
+   "speed": 114.6
+  },
+  {
+   "t": 31.173,
+   "x": 6851,
+   "y": 14669,
+   "speed": 109.5
+  },
+  {
+   "t": 31.432,
+   "x": 6886,
+   "y": 14714,
+   "speed": 108.9
+  },
+  {
+   "t": 31.712,
+   "x": 6924,
+   "y": 14791,
+   "speed": 105.6
+  },
+  {
+   "t": 32.012,
+   "x": 6968,
+   "y": 14875,
+   "speed": 110.6
+  },
+  {
+   "t": 32.172,
+   "x": 6998,
+   "y": 14913,
+   "speed": 113.7
+  },
+  {
+   "t": 32.412,
+   "x": 7053,
+   "y": 14964,
+   "speed": 112.0
+  },
+  {
+   "t": 32.572,
+   "x": 7120,
+   "y": 15011,
+   "speed": 112.0
+  },
+  {
+   "t": 33.012,
+   "x": 7216,
+   "y": 15061,
+   "speed": 117.1
+  },
+  {
+   "t": 33.192,
+   "x": 7271,
+   "y": 15082,
+   "speed": 121.1
+  },
+  {
+   "t": 33.452,
+   "x": 7358,
+   "y": 15108,
+   "speed": 128.1
+  },
+  {
+   "t": 33.512,
+   "x": 7379,
+   "y": 15113,
+   "speed": 130.8
+  },
+  {
+   "t": 33.772,
+   "x": 7477,
+   "y": 15135,
+   "speed": 142.3
+  },
+  {
+   "t": 33.952,
+   "x": 7549,
+   "y": 15149,
+   "speed": 147.3
+  },
+  {
+   "t": 34.112,
+   "x": 7616,
+   "y": 15160,
+   "speed": 155.9
+  },
+  {
+   "t": 34.432,
+   "x": 7760,
+   "y": 15186,
+   "speed": 169.3
+  },
+  {
+   "t": 34.592,
+   "x": 7835,
+   "y": 15203,
+   "speed": 177.2
+  },
+  {
+   "t": 34.772,
+   "x": 8018,
+   "y": 15252,
+   "speed": 183.2
+  },
+  {
+   "t": 35.132,
+   "x": 8131,
+   "y": 15287,
+   "speed": 195.6
+  },
+  {
+   "t": 35.472,
+   "x": 8315,
+   "y": 15343,
+   "speed": 209.1
+  },
+  {
+   "t": 35.612,
+   "x": 8394,
+   "y": 15367,
+   "speed": 213.3
+  },
+  {
+   "t": 35.793,
+   "x": 8496,
+   "y": 15401,
+   "speed": 216.9
+  },
+  {
+   "t": 35.973,
+   "x": 8599,
+   "y": 15439,
+   "speed": 219.6
+  },
+  {
+   "t": 36.293,
+   "x": 8856,
+   "y": 15539,
+   "speed": 226.7
+  },
+  {
+   "t": 36.613,
+   "x": 8976,
+   "y": 15585,
+   "speed": 233.5
+  },
+  {
+   "t": 36.953,
+   "x": 9260,
+   "y": 15685,
+   "speed": 237.4
+  },
+  {
+   "t": 37.333,
+   "x": 9425,
+   "y": 15741,
+   "speed": 241.3
+  },
+  {
+   "t": 37.473,
+   "x": 9514,
+   "y": 15771,
+   "speed": 242.0
+  },
+  {
+   "t": 37.753,
+   "x": 9690,
+   "y": 15826,
+   "speed": 232.6
+  },
+  {
+   "t": 37.972,
+   "x": 9820,
+   "y": 15860,
+   "speed": 216.1
+  },
+  {
+   "t": 38.192,
+   "x": 9976,
+   "y": 15881,
+   "speed": 202.8
+  },
+  {
+   "t": 38.492,
+   "x": 10105,
+   "y": 15880,
+   "speed": 192.3
+  },
+  {
+   "t": 38.812,
+   "x": 10314,
+   "y": 15839,
+   "speed": 182.5
+  },
+  {
+   "t": 39.172,
+   "x": 10432,
+   "y": 15788,
+   "speed": 176.7
+  },
+  {
+   "t": 39.352,
+   "x": 10507,
+   "y": 15743,
+   "speed": 174.4
+  },
+  {
+   "t": 39.652,
+   "x": 10648,
+   "y": 15624,
+   "speed": 175.9
+  },
+  {
+   "t": 40.032,
+   "x": 10760,
+   "y": 15472,
+   "speed": 183.7
+  },
+  {
+   "t": 40.332,
+   "x": 10811,
+   "y": 15368,
+   "speed": 190.6
+  },
+  {
+   "t": 40.672,
+   "x": 10876,
+   "y": 15171,
+   "speed": 199.1
+  },
+  {
+   "t": 41.052,
+   "x": 10911,
+   "y": 14981,
+   "speed": 206.0
+  },
+  {
+   "t": 41.252,
+   "x": 10926,
+   "y": 14864,
+   "speed": 211.4
+  },
+  {
+   "t": 41.432,
+   "x": 10938,
+   "y": 14757,
+   "speed": 217.8
+  },
+  {
+   "t": 41.672,
+   "x": 10957,
+   "y": 14533,
+   "speed": 223.5
+  },
+  {
+   "t": 42.132,
+   "x": 10978,
+   "y": 14224,
+   "speed": 234.0
+  },
+  {
+   "t": 42.413,
+   "x": 10984,
+   "y": 14133,
+   "speed": 237.8
+  },
+  {
+   "t": 42.593,
+   "x": 10992,
+   "y": 14014,
+   "speed": 238.0
+  },
+  {
+   "t": 42.893,
+   "x": 11014,
+   "y": 13753,
+   "speed": 241.8
+  },
+  {
+   "t": 43.213,
+   "x": 11027,
+   "y": 13617,
+   "speed": 245.7
+  },
+  {
+   "t": 43.473,
+   "x": 11045,
+   "y": 13442,
+   "speed": 238.4
+  },
+  {
+   "t": 43.613,
+   "x": 11053,
+   "y": 13354,
+   "speed": 224.4
+  },
+  {
+   "t": 43.993,
+   "x": 11067,
+   "y": 13074,
+   "speed": 196.9
+  },
+  {
+   "t": 44.333,
+   "x": 11063,
+   "y": 12964,
+   "speed": 180.4
+  },
+  {
+   "t": 44.532,
+   "x": 11051,
+   "y": 12868,
+   "speed": 175.0
+  },
+  {
+   "t": 44.832,
+   "x": 10994,
+   "y": 12693,
+   "speed": 168.4
+  },
+  {
+   "t": 45.072,
+   "x": 10963,
+   "y": 12638,
+   "speed": 165.7
+  },
+  {
+   "t": 45.412,
+   "x": 10867,
+   "y": 12516,
+   "speed": 164.8
+  },
+  {
+   "t": 45.592,
+   "x": 10806,
+   "y": 12460,
+   "speed": 167.1
+  },
+  {
+   "t": 45.872,
+   "x": 10682,
+   "y": 12372,
+   "speed": 171.0
+  },
+  {
+   "t": 46.272,
+   "x": 10525,
+   "y": 12283,
+   "speed": 186.1
+  },
+  {
+   "t": 46.472,
+   "x": 10431,
+   "y": 12235,
+   "speed": 191.9
+  },
+  {
+   "t": 46.712,
+   "x": 10264,
+   "y": 12151,
+   "speed": 201.1
+  },
+  {
+   "t": 47.072,
+   "x": 10130,
+   "y": 12083,
+   "speed": 210.7
+  },
+  {
+   "t": 47.332,
+   "x": 9992,
+   "y": 12011,
+   "speed": 219.6
+  },
+  {
+   "t": 47.552,
+   "x": 9872,
+   "y": 11947,
+   "speed": 224.6
+  },
+  {
+   "t": 47.632,
+   "x": 9828,
+   "y": 11923,
+   "speed": 225.6
+  },
+  {
+   "t": 47.792,
+   "x": 9739,
+   "y": 11874,
+   "speed": 228.3
+  },
+  {
+   "t": 48.012,
+   "x": 9612,
+   "y": 11806,
+   "speed": 234.4
+  },
+  {
+   "t": 48.332,
+   "x": 9329,
+   "y": 11654,
+   "speed": 245.6
+  },
+  {
+   "t": 48.692,
+   "x": 9195,
+   "y": 11579,
+   "speed": 254.3
+  },
+  {
+   "t": 48.873,
+   "x": 9084,
+   "y": 11515,
+   "speed": 256.9
+  },
+  {
+   "t": 49.193,
+   "x": 8795,
+   "y": 11349,
+   "speed": 262.1
+  },
+  {
+   "t": 49.613,
+   "x": 8613,
+   "y": 11248,
+   "speed": 270.0
+  },
+  {
+   "t": 49.833,
+   "x": 8468,
+   "y": 11166,
+   "speed": 273.5
+  },
+  {
+   "t": 50.073,
+   "x": 8307,
+   "y": 11076,
+   "speed": 277.7
+  },
+  {
+   "t": 50.253,
+   "x": 8186,
+   "y": 11007,
+   "speed": 280.5
+  },
+  {
+   "t": 50.513,
+   "x": 8010,
+   "y": 10906,
+   "speed": 284.8
+  },
+  {
+   "t": 50.653,
+   "x": 7914,
+   "y": 10849,
+   "speed": 286.3
+  },
+  {
+   "t": 50.833,
+   "x": 7792,
+   "y": 10775,
+   "speed": 287.7
+  },
+  {
+   "t": 51.092,
+   "x": 7617,
+   "y": 10661,
+   "speed": 290.9
+  },
+  {
+   "t": 51.312,
+   "x": 7471,
+   "y": 10558,
+   "speed": 293.3
+  },
+  {
+   "t": 51.532,
+   "x": 7328,
+   "y": 10449,
+   "speed": 296.1
+  },
+  {
+   "t": 51.612,
+   "x": 7277,
+   "y": 10408,
+   "speed": 297.0
+  },
+  {
+   "t": 51.912,
+   "x": 7005,
+   "y": 10186,
+   "speed": 301.1
+  },
+  {
+   "t": 52.292,
+   "x": 6838,
+   "y": 10046,
+   "speed": 304.0
+  },
+  {
+   "t": 52.572,
+   "x": 6659,
+   "y": 9890,
+   "speed": 304.3
+  },
+  {
+   "t": 53.592,
+   "x": 5993,
+   "y": 9311,
+   "speed": 315.2
+  },
+  {
+   "t": 53.972,
+   "x": 5688,
+   "y": 9046,
+   "speed": 316.2
+  },
+  {
+   "t": 54.272,
+   "x": 5542,
+   "y": 8919,
+   "speed": 318.0
+  },
+  {
+   "t": 54.512,
+   "x": 5382,
+   "y": 8780,
+   "speed": 318.0
+  },
+  {
+   "t": 54.652,
+   "x": 5289,
+   "y": 8698,
+   "speed": 318.0
+  },
+  {
+   "t": 54.852,
+   "x": 5155,
+   "y": 8582,
+   "speed": 318.0
+  },
+  {
+   "t": 55.172,
+   "x": 4875,
+   "y": 8339,
+   "speed": 318.5
+  },
+  {
+   "t": 55.453,
+   "x": 4755,
+   "y": 8234,
+   "speed": 318.9
+  },
+  {
+   "t": 55.793,
+   "x": 4455,
+   "y": 7974,
+   "speed": 318.0
+  },
+  {
+   "t": 56.093,
+   "x": 4290,
+   "y": 7830,
+   "speed": 317.3
+  },
+  {
+   "t": 56.273,
+   "x": 4162,
+   "y": 7719,
+   "speed": 316.8
+  },
+  {
+   "t": 56.513,
+   "x": 4003,
+   "y": 7580,
+   "speed": 315.6
+  },
+  {
+   "t": 56.773,
+   "x": 3831,
+   "y": 7431,
+   "speed": 314.7
+  },
+  {
+   "t": 56.953,
+   "x": 3713,
+   "y": 7328,
+   "speed": 314.3
+  },
+  {
+   "t": 57.173,
+   "x": 3568,
+   "y": 7203,
+   "speed": 314.0
+  },
+  {
+   "t": 57.393,
+   "x": 3424,
+   "y": 7077,
+   "speed": 313.1
+  },
+  {
+   "t": 57.512,
+   "x": 3345,
+   "y": 7009,
+   "speed": 312.2
+  },
+  {
+   "t": 57.892,
+   "x": 3105,
+   "y": 6800,
+   "speed": 277.5
+  },
+  {
+   "t": 58.072,
+   "x": 2933,
+   "y": 6648,
+   "speed": 263.4
+  },
+  {
+   "t": 58.412,
+   "x": 2840,
+   "y": 6562,
+   "speed": 224.0
+  },
+  {
+   "t": 58.592,
+   "x": 2766,
+   "y": 6490,
+   "speed": 207.5
+  },
+  {
+   "t": 58.912,
+   "x": 2659,
+   "y": 6368,
+   "speed": 187.9
+  },
+  {
+   "t": 59.132,
+   "x": 2609,
+   "y": 6287,
+   "speed": 181.9
+  },
+  {
+   "t": 59.332,
+   "x": 2567,
+   "y": 6174,
+   "speed": 176.4
+  },
+  {
+   "t": 59.772,
+   "x": 2545,
+   "y": 5952,
+   "speed": 167.2
+  },
+  {
+   "t": 60.112,
+   "x": 2546,
+   "y": 5827,
+   "speed": 167.0
+  },
+  {
+   "t": 60.352,
+   "x": 2546,
+   "y": 5714,
+   "speed": 169.2
+  },
+  {
+   "t": 60.552,
+   "x": 2542,
+   "y": 5616,
+   "speed": 177.7
+  },
+  {
+   "t": 60.652,
+   "x": 2539,
+   "y": 5567,
+   "speed": 181.4
+  },
+  {
+   "t": 61.012,
+   "x": 2500,
+   "y": 5347,
+   "speed": 187.1
+  },
+  {
+   "t": 61.332,
+   "x": 2460,
+   "y": 5227,
+   "speed": 188.0
+  },
+  {
+   "t": 61.532,
+   "x": 2417,
+   "y": 5129,
+   "speed": 193.7
+  },
+  {
+   "t": 61.672,
+   "x": 2382,
+   "y": 5062,
+   "speed": 199.1
+  },
+  {
+   "t": 61.932,
+   "x": 2251,
+   "y": 4878,
+   "speed": 204.9
+  },
+  {
+   "t": 62.333,
+   "x": 2145,
+   "y": 4765,
+   "speed": 217.4
+  },
+  {
+   "t": 62.493,
+   "x": 2075,
+   "y": 4695,
+   "speed": 222.5
+  },
+  {
+   "t": 62.773,
+   "x": 1963,
+   "y": 4564,
+   "speed": 227.9
+  },
+  {
+   "t": 63.053,
+   "x": 1874,
+   "y": 4413,
+   "speed": 233.5
+  },
+  {
+   "t": 63.293,
+   "x": 1811,
+   "y": 4238,
+   "speed": 239.2
+  },
+  {
+   "t": 63.533,
+   "x": 1778,
+   "y": 4105,
+   "speed": 243.8
+  },
+  {
+   "t": 63.913,
+   "x": 1738,
+   "y": 3846,
+   "speed": 250.1
+  },
+  {
+   "t": 64.112,
+   "x": 1719,
+   "y": 3634,
+   "speed": 253.0
+  },
+  {
+   "t": 64.452,
+   "x": 1704,
+   "y": 3464,
+   "speed": 260.6
+  },
+  {
+   "t": 64.612,
+   "x": 1693,
+   "y": 3348,
+   "speed": 264.6
+  },
+  {
+   "t": 64.952,
+   "x": 1659,
+   "y": 3007,
+   "speed": 269.4
+  },
+  {
+   "t": 65.232,
+   "x": 1645,
+   "y": 2856,
+   "speed": 271.6
+  },
+  {
+   "t": 65.552,
+   "x": 1623,
+   "y": 2611,
+   "speed": 277.2
+  },
+  {
+   "t": 65.672,
+   "x": 1615,
+   "y": 2518,
+   "speed": 277.8
+  },
+  {
+   "t": 65.852,
+   "x": 1602,
+   "y": 2378,
+   "speed": 283.0
+  },
+  {
+   "t": 66.092,
+   "x": 1584,
+   "y": 2189,
+   "speed": 286.5
+  },
+  {
+   "t": 66.372,
+   "x": 1564,
+   "y": 1965,
+   "speed": 289.2
+  },
+  {
+   "t": 66.572,
+   "x": 1549,
+   "y": 1804,
+   "speed": 291.3
+  },
+  {
+   "t": 66.692,
+   "x": 1540,
+   "y": 1707,
+   "speed": 293.0
+  },
+  {
+   "t": 66.912,
+   "x": 1524,
+   "y": 1527,
+   "speed": 296.0
+  },
+  {
+   "t": 67.232,
+   "x": 1499,
+   "y": 1264,
+   "speed": 299.6
+  },
+  {
+   "t": 67.452,
+   "x": 1483,
+   "y": 1081,
+   "speed": 302.1
+  },
+  {
+   "t": 67.672,
+   "x": 1466,
+   "y": 897,
+   "speed": 303.6
+  },
+  {
+   "t": 67.752,
+   "x": 1459,
+   "y": 829,
+   "speed": 304.6
+  },
+  {
+   "t": 68.032,
+   "x": 1428,
+   "y": 491,
+   "speed": 307.1
+  },
+  {
+   "t": 68.472,
+   "x": 1403,
+   "y": 218,
+   "speed": 310.0
+  },
+  {
+   "t": 68.673,
+   "x": 1388,
+   "y": 47,
+   "speed": 312.5
+  },
+  {
+   "t": 68.813,
+   "x": 1376,
+   "y": -74,
+   "speed": 313.7
+  },
+  {
+   "t": 69.013,
+   "x": 1360,
+   "y": -247,
+   "speed": 314.7
+  },
+  {
+   "t": 69.333,
+   "x": 1335,
+   "y": -527,
+   "speed": 316.5
+  },
+  {
+   "t": 69.553,
+   "x": 1317,
+   "y": -719,
+   "speed": 317.0
+  },
+  {
+   "t": 69.613,
+   "x": 1312,
+   "y": -772,
+   "speed": 317.3
+  },
+  {
+   "t": 69.953,
+   "x": 1275,
+   "y": -1178,
+   "speed": 319.0
+  },
+  {
+   "t": 70.313,
+   "x": 1255,
+   "y": -1390,
+   "speed": 319.9
+  },
+  {
+   "t": 70.533,
+   "x": 1238,
+   "y": -1585,
+   "speed": 320.6
+  },
+  {
+   "t": 70.692,
+   "x": 1224,
+   "y": -1727,
+   "speed": 321.0
+  },
+  {
+   "t": 70.872,
+   "x": 1210,
+   "y": -1887,
+   "speed": 321.0
+  },
+  {
+   "t": 71.152,
+   "x": 1187,
+   "y": -2135,
+   "speed": 321.0
+  },
+  {
+   "t": 71.352,
+   "x": 1171,
+   "y": -2313,
+   "speed": 321.0
+  },
+  {
+   "t": 71.632,
+   "x": 1148,
+   "y": -2561,
+   "speed": 321.0
+  },
+  {
+   "t": 71.772,
+   "x": 1136,
+   "y": -2686,
+   "speed": 321.0
+  },
+  {
+   "t": 72.052,
+   "x": 1114,
+   "y": -2934,
+   "speed": 320.0
+  },
+  {
+   "t": 72.252,
+   "x": 1093,
+   "y": -3163,
+   "speed": 318.1
+  },
+  {
+   "t": 72.552,
+   "x": 1073,
+   "y": -3375,
+   "speed": 318.0
+  },
+  {
+   "t": 72.792,
+   "x": 1054,
+   "y": -3586,
+   "speed": 318.0
+  },
+  {
+   "t": 73.012,
+   "x": 1023,
+   "y": -3901,
+   "speed": 317.3
+  },
+  {
+   "t": 73.432,
+   "x": 999,
+   "y": -4146,
+   "speed": 316.0
+  },
+  {
+   "t": 73.652,
+   "x": 978,
+   "y": -4338,
+   "speed": 315.1
+  },
+  {
+   "t": 73.852,
+   "x": 958,
+   "y": -4508,
+   "speed": 306.5
+  },
+  {
+   "t": 74.112,
+   "x": 925,
+   "y": -4737,
+   "speed": 280.3
+  },
+  {
+   "t": 74.392,
+   "x": 894,
+   "y": -4903,
+   "speed": 239.8
+  },
+  {
+   "t": 74.752,
+   "x": 838,
+   "y": -5122,
+   "speed": 224.6
+  },
+  {
+   "t": 74.932,
+   "x": 805,
+   "y": -5222,
+   "speed": 211.1
+  },
+  {
+   "t": 75.113,
+   "x": 744,
+   "y": -5364,
+   "speed": 202.5
+  },
+  {
+   "t": 75.573,
+   "x": 641,
+   "y": -5520,
+   "speed": 190.5
+  },
+  {
+   "t": 75.773,
+   "x": 556,
+   "y": -5607,
+   "speed": 184.4
+  },
+  {
+   "t": 76.033,
+   "x": 468,
+   "y": -5674,
+   "speed": 179.6
+  },
+  {
+   "t": 76.373,
+   "x": 319,
+   "y": -5750,
+   "speed": 179.2
+  },
+  {
+   "t": 76.633,
+   "x": 194,
+   "y": -5786,
+   "speed": 182.4
+  },
+  {
+   "t": 76.833,
+   "x": 51,
+   "y": -5801,
+   "speed": 185.6
+  },
+  {
+   "t": 77.193,
+   "x": -138,
+   "y": -5786,
+   "speed": 188.9
+  },
+  {
+   "t": 77.592,
+   "x": -309,
+   "y": -5740,
+   "speed": 203.1
+  },
+  {
+   "t": 77.832,
+   "x": -546,
+   "y": -5630,
+   "speed": 209.1
+  },
+  {
+   "t": 78.192,
+   "x": -655,
+   "y": -5556,
+   "speed": 217.1
+  },
+  {
+   "t": 78.492,
+   "x": -798,
+   "y": -5437,
+   "speed": 224.9
+  },
+  {
+   "t": 78.672,
+   "x": -878,
+   "y": -5355,
+   "speed": 230.1
+  },
+  {
+   "t": 78.892,
+   "x": -994,
+   "y": -5216,
+   "speed": 234.6
+  },
+  {
+   "t": 79.132,
+   "x": -1062,
+   "y": -5119,
+   "speed": 239.3
+  },
+  {
+   "t": 79.372,
+   "x": -1145,
+   "y": -4981,
+   "speed": 243.2
+  },
+  {
+   "t": 79.652,
+   "x": -1230,
+   "y": -4810,
+   "speed": 249.6
+  },
+  {
+   "t": 79.792,
+   "x": -1268,
+   "y": -4720,
+   "speed": 250.6
+  },
+  {
+   "t": 79.992,
+   "x": -1317,
+   "y": -4589,
+   "speed": 254.7
+  },
+  {
+   "t": 80.232,
+   "x": -1369,
+   "y": -4424,
+   "speed": 259.4
+  },
+  {
+   "t": 80.532,
+   "x": -1439,
+   "y": -4110,
+   "speed": 264.7
+  },
+  {
+   "t": 80.792,
+   "x": -1453,
+   "y": -4022,
+   "speed": 270.3
+  },
+  {
+   "t": 81.032,
+   "x": -1476,
+   "y": -3830,
+   "speed": 273.1
+  },
+  {
+   "t": 81.192,
+   "x": -1485,
+   "y": -3708,
+   "speed": 275.1
+  },
+  {
+   "t": 81.412,
+   "x": -1494,
+   "y": -3539,
+   "speed": 279.8
+  },
+  {
+   "t": 81.753,
+   "x": -1499,
+   "y": -3273,
+   "speed": 283.7
+  },
+  {
+   "t": 81.913,
+   "x": -1499,
+   "y": -3146,
+   "speed": 285.6
+  },
+  {
+   "t": 82.113,
+   "x": -1499,
+   "y": -2986,
+   "speed": 288.1
+  },
+  {
+   "t": 82.313,
+   "x": -1497,
+   "y": -2826,
+   "speed": 290.4
+  },
+  {
+   "t": 82.573,
+   "x": -1492,
+   "y": -2615,
+   "speed": 293.0
+  },
+  {
+   "t": 82.653,
+   "x": -1490,
+   "y": -2550,
+   "speed": 294.2
+  },
+  {
+   "t": 82.953,
+   "x": -1481,
+   "y": -2303,
+   "speed": 296.5
+  },
+  {
+   "t": 83.233,
+   "x": -1468,
+   "y": -2021,
+   "speed": 300.2
+  },
+  {
+   "t": 83.473,
+   "x": -1460,
+   "y": -1871,
+   "speed": 301.5
+  },
+  {
+   "t": 83.852,
+   "x": -1433,
+   "y": -1448,
+   "speed": 305.3
+  },
+  {
+   "t": 84.172,
+   "x": -1412,
+   "y": -1155,
+   "speed": 308.4
+  },
+  {
+   "t": 84.672,
+   "x": -1389,
+   "y": -862,
+   "speed": 312.2
+  },
+  {
+   "t": 84.732,
+   "x": -1385,
+   "y": -810,
+   "speed": 312.7
+  }
+ ],
+ "race_control": [
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T12:08:03+00:00",
+   "driver_number": null,
+   "lap_number": 1,
+   "category": "Other",
+   "flag": null,
+   "scope": null,
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "BLUE HEAD PADDING MATERIAL MUST BE USED"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T12:20:01+00:00",
+   "driver_number": null,
+   "lap_number": 1,
+   "category": "Flag",
+   "flag": "GREEN",
+   "scope": "Track",
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "GREEN LIGHT - PIT EXIT OPEN"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T12:30:01+00:00",
+   "driver_number": null,
+   "lap_number": 1,
+   "category": "Other",
+   "flag": null,
+   "scope": null,
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "PIT EXIT CLOSED"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T12:45:09+00:00",
+   "driver_number": null,
+   "lap_number": 1,
+   "category": "Other",
+   "flag": null,
+   "scope": null,
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "RISK OF RAIN FOR F1 RACE IS 40 %"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T12:57:04+00:00",
+   "driver_number": null,
+   "lap_number": 1,
+   "category": "Drs",
+   "flag": null,
+   "scope": null,
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "DRS DISABLED"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T13:03:34+00:00",
+   "driver_number": null,
+   "lap_number": 1,
+   "category": "Flag",
+   "flag": "GREEN",
+   "scope": "Track",
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "GREEN LIGHT - PIT EXIT OPEN"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T13:03:34.412000+00:00",
+   "driver_number": null,
+   "lap_number": 1,
+   "category": "SessionStatus",
+   "flag": null,
+   "scope": null,
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "SESSION STARTED"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T13:05:13+00:00",
+   "driver_number": null,
+   "lap_number": 2,
+   "category": "Drs",
+   "flag": null,
+   "scope": null,
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "DRS ENABLED"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T13:07:52+00:00",
+   "driver_number": null,
+   "lap_number": 3,
+   "category": "Other",
+   "flag": null,
+   "scope": null,
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "TURN 8 INCIDENT INVOLVING CARS 3 (RIC) AND 27 (HUL) NOTED - CAUSING A COLLISION"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T13:11:21+00:00",
+   "driver_number": null,
+   "lap_number": 6,
+   "category": "Other",
+   "flag": null,
+   "scope": null,
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "TURN 1 INCIDENT INVOLVING CARS 27 (HUL) AND 22 (TSU) NOTED - CAUSING A COLLISION"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T13:12:02+00:00",
+   "driver_number": null,
+   "lap_number": 6,
+   "category": "Other",
+   "flag": null,
+   "scope": null,
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "CAR 22 (TSU) TIME 1:32.241 DELETED - TRACK LIMITS AT TURN 2 LAP 5 15:09:44"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T13:13:02+00:00",
+   "driver_number": null,
+   "lap_number": 7,
+   "category": "Other",
+   "flag": null,
+   "scope": null,
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "FIA STEWARDS: TURN 8 INCIDENT INVOLVING CARS 3 (RIC) AND 27 (HUL) UNDER INVESTIGATION - CAUSING A COLLISION"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T13:14:30+00:00",
+   "driver_number": null,
+   "lap_number": 8,
+   "category": "Other",
+   "flag": null,
+   "scope": null,
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "FIA STEWARDS: TURN 1 INCIDENT INVOLVING CARS 27 (HUL) AND 22 (TSU) UNDER INVESTIGATION - CAUSING A COLLISION"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T13:15:00+00:00",
+   "driver_number": null,
+   "lap_number": 9,
+   "category": "Other",
+   "flag": null,
+   "scope": null,
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "FIA STEWARDS: 5 SECOND TIME PENALTY FOR CAR 3 (RIC) - FORCING ANOTHER CAR OFF THE TRACK"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T13:15:12+00:00",
+   "driver_number": null,
+   "lap_number": 9,
+   "category": "Other",
+   "flag": null,
+   "scope": null,
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "CAR 22 (TSU) LAP DELETED - TRACK LIMITS AT TURN 2 LAP 7 15:12:44 (PIT)"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T13:15:36+00:00",
+   "driver_number": null,
+   "lap_number": 9,
+   "category": "Other",
+   "flag": null,
+   "scope": null,
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "FIA STEWARDS: 10 SECOND TIME PENALTY FOR CAR 27 (HUL) - CAUSING A COLLISION"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T13:18:09+00:00",
+   "driver_number": null,
+   "lap_number": 11,
+   "category": "Other",
+   "flag": null,
+   "scope": null,
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "CAR 3 (RIC) TIME 1:26.111 DELETED - TRACK LIMITS AT TURN 2 LAP 10 15:16:50"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T13:22:08+00:00",
+   "driver_number": null,
+   "lap_number": 14,
+   "category": "Other",
+   "flag": null,
+   "scope": null,
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "CAR 55 (SAI) TIME 1:25.423 DELETED - TRACK LIMITS AT TURN 2 LAP 13 15:20:51"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T13:26:21+00:00",
+   "driver_number": null,
+   "lap_number": 17,
+   "category": "Other",
+   "flag": null,
+   "scope": null,
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "PIT LANE INCIDENT INVOLVING CAR 3 (RIC) NOTED - FAILING TO SERVE TIME PENALTY CORRECTLY"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T13:27:21+00:00",
+   "driver_number": null,
+   "lap_number": 17,
+   "category": "Other",
+   "flag": null,
+   "scope": null,
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "FIA STEWARDS: PIT LANE INCIDENT INVOLVING CAR 3 (RIC) UNDER INVESTIGATION - FAILING TO SERVE TIME PENALTY CORRECTLY"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T13:28:31+00:00",
+   "driver_number": null,
+   "lap_number": 18,
+   "category": "Other",
+   "flag": null,
+   "scope": null,
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "FIA STEWARDS: 10 SECOND TIME PENALTY FOR CAR 3 (RIC) - FAILING TO SERVE TIME PENALTY CORRECTLY"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T13:30:30+00:00",
+   "driver_number": null,
+   "lap_number": 19,
+   "category": "Other",
+   "flag": null,
+   "scope": null,
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "TURN 4 INCIDENT INVOLVING CARS 20 (MAG) AND 10 (GAS) NOTED - CAUSING A COLLISION"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T13:31:45+00:00",
+   "driver_number": null,
+   "lap_number": 20,
+   "category": "Other",
+   "flag": null,
+   "scope": null,
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "CAR 14 (ALO) TIME 1:24.882 DELETED - TRACK LIMITS AT TURN 4 LAP 18 15:28:55"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T13:31:48+00:00",
+   "driver_number": null,
+   "lap_number": 20,
+   "category": "Other",
+   "flag": null,
+   "scope": null,
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "CAR 20 (MAG) TIME 1:26.533 DELETED - TRACK LIMITS AT TURN 5 LAP 18 15:29:03"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T13:31:52+00:00",
+   "driver_number": null,
+   "lap_number": 20,
+   "category": "Other",
+   "flag": null,
+   "scope": null,
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "CAR 10 (GAS) TIME 1:26.182 DELETED - TRACK LIMITS AT TURN 5 LAP 18 15:29:03"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T13:35:41+00:00",
+   "driver_number": null,
+   "lap_number": 23,
+   "category": "Other",
+   "flag": null,
+   "scope": null,
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "FIA STEWARDS: TURN 4 INCIDENT INVOLVING CARS 20 (MAG) AND 10 (GAS) UNDER INVESTIGATION - CAUSING A COLLISION"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T13:38:15+00:00",
+   "driver_number": null,
+   "lap_number": 25,
+   "category": "Other",
+   "flag": null,
+   "scope": null,
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "FIA STEWARDS: 10 SECOND TIME PENALTY FOR CAR 20 (MAG) - CAUSING A COLLISION"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T13:42:50+00:00",
+   "driver_number": null,
+   "lap_number": 28,
+   "category": "Other",
+   "flag": null,
+   "scope": null,
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "CAR 10 (GAS) TIME 1:27.191 DELETED - TRACK LIMITS AT TURN 4 LAP 27 15:41:52"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T13:47:42+00:00",
+   "driver_number": 10,
+   "lap_number": 32,
+   "category": "Flag",
+   "flag": "BLUE",
+   "scope": "Driver",
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "WAVED BLUE FLAG FOR CAR 10 (GAS) TIMED AT 15:47:42"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T13:47:56+00:00",
+   "driver_number": null,
+   "lap_number": 32,
+   "category": "Other",
+   "flag": null,
+   "scope": null,
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "CAR 4 (NOR) TIME 1:24.940 DELETED - TRACK LIMITS AT TURN 4 LAP 31 15:46:43"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T13:48:10+00:00",
+   "driver_number": null,
+   "lap_number": 32,
+   "category": "Other",
+   "flag": null,
+   "scope": null,
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "CAR 63 (RUS) TIME 1:25.331 DELETED - TRACK LIMITS AT TURN 2 LAP 31 15:46:51"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T13:53:21+00:00",
+   "driver_number": null,
+   "lap_number": 36,
+   "category": "Other",
+   "flag": null,
+   "scope": null,
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "CAR 23 (ALB) TIME 1:26.282 DELETED - TRACK LIMITS AT TURN 2 LAP 33 15:49:58"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T13:53:48+00:00",
+   "driver_number": 10,
+   "lap_number": 36,
+   "category": "Flag",
+   "flag": "BLUE",
+   "scope": "Driver",
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "WAVED BLUE FLAG FOR CAR 10 (GAS) TIMED AT 15:53:48"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T13:54:03+00:00",
+   "driver_number": 24,
+   "lap_number": 36,
+   "category": "Flag",
+   "flag": "BLUE",
+   "scope": "Driver",
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "WAVED BLUE FLAG FOR CAR 24 (ZHO) TIMED AT 15:54:03"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T13:56:30+00:00",
+   "driver_number": 27,
+   "lap_number": 38,
+   "category": "Flag",
+   "flag": "BLUE",
+   "scope": "Driver",
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "WAVED BLUE FLAG FOR CAR 27 (HUL) TIMED AT 15:56:29"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T13:56:58+00:00",
+   "driver_number": null,
+   "lap_number": 38,
+   "category": "Other",
+   "flag": null,
+   "scope": null,
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "CAR 23 (ALB) TIME 1:25.882 DELETED - TRACK LIMITS AT TURN 2 LAP 37 15:55:40"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T13:57:56+00:00",
+   "driver_number": 24,
+   "lap_number": 39,
+   "category": "Flag",
+   "flag": "BLUE",
+   "scope": "Driver",
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "WAVED BLUE FLAG FOR CAR 24 (ZHO) TIMED AT 15:57:56"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T13:58:23+00:00",
+   "driver_number": 77,
+   "lap_number": 39,
+   "category": "Flag",
+   "flag": "BLUE",
+   "scope": "Driver",
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "WAVED BLUE FLAG FOR CAR 77 (BOT) TIMED AT 15:58:23"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T14:01:42+00:00",
+   "driver_number": null,
+   "lap_number": 42,
+   "category": "Other",
+   "flag": null,
+   "scope": null,
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "CAR 18 (STR) TIME 1:25.777 DELETED - TRACK LIMITS AT TURN 2 LAP 40 16:00:24"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T14:01:44+00:00",
+   "driver_number": 77,
+   "lap_number": 42,
+   "category": "Flag",
+   "flag": "BLUE",
+   "scope": "Driver",
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "WAVED BLUE FLAG FOR CAR 77 (BOT) TIMED AT 16:01:44"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T14:03:50+00:00",
+   "driver_number": 24,
+   "lap_number": 43,
+   "category": "Flag",
+   "flag": "BLUE",
+   "scope": "Driver",
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "WAVED BLUE FLAG FOR CAR 24 (ZHO) TIMED AT 16:03:49"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T14:03:50+00:00",
+   "driver_number": 77,
+   "lap_number": 43,
+   "category": "Flag",
+   "flag": "BLUE",
+   "scope": "Driver",
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "WAVED BLUE FLAG FOR CAR 77 (BOT) TIMED AT 16:03:49"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T14:04:05+00:00",
+   "driver_number": 31,
+   "lap_number": 43,
+   "category": "Flag",
+   "flag": "BLUE",
+   "scope": "Driver",
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "WAVED BLUE FLAG FOR CAR 31 (OCO) TIMED AT 16:04:05"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T14:04:26+00:00",
+   "driver_number": 24,
+   "lap_number": 44,
+   "category": "Flag",
+   "flag": "BLUE",
+   "scope": "Driver",
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "WAVED BLUE FLAG FOR CAR 24 (ZHO) TIMED AT 16:04:25"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T14:04:58+00:00",
+   "driver_number": 10,
+   "lap_number": 44,
+   "category": "Flag",
+   "flag": "BLUE",
+   "scope": "Driver",
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "WAVED BLUE FLAG FOR CAR 10 (GAS) TIMED AT 16:04:57"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T14:05:56+00:00",
+   "driver_number": 24,
+   "lap_number": 45,
+   "category": "Flag",
+   "flag": "BLUE",
+   "scope": "Driver",
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "WAVED BLUE FLAG FOR CAR 24 (ZHO) TIMED AT 16:05:56"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T14:07:56+00:00",
+   "driver_number": 10,
+   "lap_number": 46,
+   "category": "Flag",
+   "flag": "BLUE",
+   "scope": "Driver",
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "WAVED BLUE FLAG FOR CAR 10 (GAS) TIMED AT 16:07:56"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T14:11:08+00:00",
+   "driver_number": 27,
+   "lap_number": 48,
+   "category": "Flag",
+   "flag": "BLUE",
+   "scope": "Driver",
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "WAVED BLUE FLAG FOR CAR 27 (HUL) TIMED AT 16:11:08"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T14:11:19+00:00",
+   "driver_number": 24,
+   "lap_number": 49,
+   "category": "Flag",
+   "flag": "BLUE",
+   "scope": "Driver",
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "WAVED BLUE FLAG FOR CAR 24 (ZHO) TIMED AT 16:11:18"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T14:12:04+00:00",
+   "driver_number": 18,
+   "lap_number": 49,
+   "category": "Flag",
+   "flag": "BLUE",
+   "scope": "Driver",
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "WAVED BLUE FLAG FOR CAR 18 (STR) TIMED AT 16:12:03"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T14:12:21+00:00",
+   "driver_number": 77,
+   "lap_number": 49,
+   "category": "Flag",
+   "flag": "BLUE",
+   "scope": "Driver",
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "WAVED BLUE FLAG FOR CAR 77 (BOT) TIMED AT 16:12:21"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T14:13:07+00:00",
+   "driver_number": 31,
+   "lap_number": 50,
+   "category": "Flag",
+   "flag": "BLUE",
+   "scope": "Driver",
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "WAVED BLUE FLAG FOR CAR 31 (OCO) TIMED AT 16:13:07"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T14:13:35+00:00",
+   "driver_number": 18,
+   "lap_number": 50,
+   "category": "Flag",
+   "flag": "BLUE",
+   "scope": "Driver",
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "WAVED BLUE FLAG FOR CAR 18 (STR) TIMED AT 16:13:34"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T14:14:19+00:00",
+   "driver_number": 18,
+   "lap_number": 51,
+   "category": "Flag",
+   "flag": "BLUE",
+   "scope": "Driver",
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "WAVED BLUE FLAG FOR CAR 18 (STR) TIMED AT 16:14:19"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T14:14:58+00:00",
+   "driver_number": 31,
+   "lap_number": 51,
+   "category": "Flag",
+   "flag": "BLUE",
+   "scope": "Driver",
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "WAVED BLUE FLAG FOR CAR 31 (OCO) TIMED AT 16:14:57"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T14:16:14+00:00",
+   "driver_number": 18,
+   "lap_number": 52,
+   "category": "Flag",
+   "flag": "BLUE",
+   "scope": "Driver",
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "WAVED BLUE FLAG FOR CAR 18 (STR) TIMED AT 16:16:14"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T14:16:40+00:00",
+   "driver_number": 18,
+   "lap_number": 52,
+   "category": "Flag",
+   "flag": "BLUE",
+   "scope": "Driver",
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "WAVED BLUE FLAG FOR CAR 18 (STR) TIMED AT 16:16:39"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T14:17:53+00:00",
+   "driver_number": 24,
+   "lap_number": 53,
+   "category": "Flag",
+   "flag": "BLUE",
+   "scope": "Driver",
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "WAVED BLUE FLAG FOR CAR 24 (ZHO) TIMED AT 16:17:53"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T14:18:15+00:00",
+   "driver_number": null,
+   "lap_number": 53,
+   "category": "Flag",
+   "flag": "CHEQUERED",
+   "scope": "Track",
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "CHEQUERED FLAG"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T14:18:15.374000+00:00",
+   "driver_number": null,
+   "lap_number": 53,
+   "category": "SessionStatus",
+   "flag": null,
+   "scope": null,
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "SESSION FINISHED"
+  },
+  {
+   "meeting_key": 1244,
+   "session_key": 9590,
+   "date": "2024-09-01T14:18:36+00:00",
+   "driver_number": 24,
+   "lap_number": 53,
+   "category": "Flag",
+   "flag": "BLUE",
+   "scope": "Driver",
+   "sector": null,
+   "qualifying_phase": null,
+   "message": "WAVED BLUE FLAG FOR CAR 24 (ZHO) TIMED AT 16:18:35"
+  }
+ ],
+ "drivers": [
+  {
+   "driver_number": 1,
+   "name_acronym": "VER",
+   "full_name": "Max VERSTAPPEN",
+   "team_name": "Red Bull Racing",
+   "team_colour": "3671C6"
+  },
+  {
+   "driver_number": 3,
+   "name_acronym": "RIC",
+   "full_name": "Daniel RICCIARDO",
+   "team_name": "RB",
+   "team_colour": "6692FF"
+  },
+  {
+   "driver_number": 4,
+   "name_acronym": "NOR",
+   "full_name": "Lando NORRIS",
+   "team_name": "McLaren",
+   "team_colour": "FF8000"
+  },
+  {
+   "driver_number": 10,
+   "name_acronym": "GAS",
+   "full_name": "Pierre GASLY",
+   "team_name": "Alpine",
+   "team_colour": "0093cc"
+  },
+  {
+   "driver_number": 11,
+   "name_acronym": "PER",
+   "full_name": "Sergio PEREZ",
+   "team_name": "Red Bull Racing",
+   "team_colour": "3671C6"
+  },
+  {
+   "driver_number": 14,
+   "name_acronym": "ALO",
+   "full_name": "Fernando ALONSO",
+   "team_name": "Aston Martin",
+   "team_colour": "229971"
+  },
+  {
+   "driver_number": 16,
+   "name_acronym": "LEC",
+   "full_name": "Charles LECLERC",
+   "team_name": "Ferrari",
+   "team_colour": "E80020"
+  },
+  {
+   "driver_number": 18,
+   "name_acronym": "STR",
+   "full_name": "Lance STROLL",
+   "team_name": "Aston Martin",
+   "team_colour": "229971"
+  },
+  {
+   "driver_number": 20,
+   "name_acronym": "MAG",
+   "full_name": "Kevin MAGNUSSEN",
+   "team_name": "Haas F1 Team",
+   "team_colour": "B6BABD"
+  },
+  {
+   "driver_number": 22,
+   "name_acronym": "TSU",
+   "full_name": "Yuki TSUNODA",
+   "team_name": "RB",
+   "team_colour": "6692FF"
+  },
+  {
+   "driver_number": 23,
+   "name_acronym": "ALB",
+   "full_name": "Alexander ALBON",
+   "team_name": "Williams",
+   "team_colour": "64C4FF"
+  },
+  {
+   "driver_number": 24,
+   "name_acronym": "ZHO",
+   "full_name": "ZHOU Guanyu",
+   "team_name": "Kick Sauber",
+   "team_colour": "52e252"
+  },
+  {
+   "driver_number": 27,
+   "name_acronym": "HUL",
+   "full_name": "Nico HULKENBERG",
+   "team_name": "Haas F1 Team",
+   "team_colour": "B6BABD"
+  },
+  {
+   "driver_number": 31,
+   "name_acronym": "OCO",
+   "full_name": "Esteban OCON",
+   "team_name": "Alpine",
+   "team_colour": "0093cc"
+  },
+  {
+   "driver_number": 43,
+   "name_acronym": "COL",
+   "full_name": "Franco COLAPINTO",
+   "team_name": "Williams",
+   "team_colour": "64C4FF"
+  },
+  {
+   "driver_number": 44,
+   "name_acronym": "HAM",
+   "full_name": "Lewis HAMILTON",
+   "team_name": "Mercedes",
+   "team_colour": "27F4D2"
+  },
+  {
+   "driver_number": 55,
+   "name_acronym": "SAI",
+   "full_name": "Carlos SAINZ",
+   "team_name": "Ferrari",
+   "team_colour": "E80020"
+  },
+  {
+   "driver_number": 63,
+   "name_acronym": "RUS",
+   "full_name": "George RUSSELL",
+   "team_name": "Mercedes",
+   "team_colour": "27F4D2"
+  },
+  {
+   "driver_number": 77,
+   "name_acronym": "BOT",
+   "full_name": "Valtteri BOTTAS",
+   "team_name": "Kick Sauber",
+   "team_colour": "52e252"
+  },
+  {
+   "driver_number": 81,
+   "name_acronym": "PIA",
+   "full_name": "Oscar PIASTRI",
+   "team_name": "McLaren",
+   "team_colour": "FF8000"
+  }
+ ]
+}
