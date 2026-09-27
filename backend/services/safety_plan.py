@@ -1,17 +1,18 @@
-"""Safety plan: for the corners where incidents happen next to the crowd, a few ways to protect
-spectators, each with an estimated price in CAD.
+"""Safety plan: low-cost ways to protect spectators and marshals at the corners where incidents happen
+next to the crowd, each with a rough price in CAD.
 
 Which corners: the zones next to a grandstand, ranked by serious incidents (services/exposure.py).
 Why each one: its real numbers (incidents, marshal call-outs, entry speed, the stands it faces).
-Which option is recommended: a plain rule on those real numbers (see `_recommend`).
+Plus one thing for the whole circuit: send the insurer the incident report every season, with the
+year-by-year count at these corners.
 
-Prices are ESTIMATES, taken at the LOW END of each estimate. Where a public price exists it is used and
-linked; where none exists (F1-grade barriers and debris fences are sold on quotation only) the rate is
-marked "estimate". Every rate,
-length and seat count used is in PRICES / ASSUMPTIONS below.
+Prices are rough, at the LOW END: a public price where one exists (linked), otherwise free because it
+only moves people or changes a rule. Every rate and count used is in PRICES / ASSUMPTIONS below.
 """
 
 from __future__ import annotations
+
+import math
 
 from services import exposure as exposure_service
 from services import repository
@@ -23,18 +24,23 @@ FX_SOURCE = "https://www.bankofcanada.ca/rates/exchange/annual-average-exchange-
 PRICES = {
     "guardrail": {
         "label": "Steel guardrail (Armco)", "per_m": 28 * FX["GBP"], "currency_note": "GBP 28 / m",
-        "provenance": "sourced", "note": "supply only, installation not included",
+        "note": "supply only, installation not included",
         "source": "https://www.armcodirect.co.uk/armco-barriers/armco-barrier-prices/",
     },
-    "tecpro": {
-        "label": "TecPro energy-absorbing barrier", "per_m": 1_600 * FX["USD"], "currency_note": "about USD 1,600 / m",
-        "provenance": "estimate", "note": "figure from a public forum, not a quote: ask TecPro for a price",
-        "source": "https://rennlist.com/forums/racing-and-drivers-education-forum/989179-safer-barriers.html",
+    "camera": {
+        "label": "Outdoor PTZ camera (Reolink TrackMix PoE)", "each": 199.99 * FX["USD"], "currency_note": "USD 199.99 each",
+        "note": "camera only; cabling and a recorder not included",
+        "source": "https://store.reolink.com/us/ptz-camera/",
     },
-    "debris_fence": {
-        "label": "FIA debris fence (6 m)", "per_m_range": (1_000, 3_000), "currency_note": "no public price",
-        "provenance": "estimate", "note": "rough estimate only: FIA-homologated fences (e.g. Geobrugg) are priced on quotation",
-        "source": "https://www.geobrugg.com/en/Race-circuits-proving-grounds-199514.html",
+    "fence_hire": {
+        "label": "Temporary crowd fence hire (Heras panel, 3.5 m)", "per_panel_week": 5.50 * FX["GBP"], "panel_m": 3.5,
+        "currency_note": "GBP 5.50 per panel per week", "note": "hire price before VAT and delivery",
+        "source": "https://hirein.co.uk/temporary-heras-fencing/",
+    },
+    "marshal_training": {
+        "label": "Marshal training day",
+        "note": "training days are run free by licensed trainers (e.g. Motorsport UK)",
+        "source": "https://motorsportuk.org/volunteers/marshals/marshals-training/",
     },
 }
 
@@ -48,30 +54,17 @@ TICKETS = {
 
 ASSUMPTIONS = {
     "frontage_per_stand_m": 100,   # length of track in front of one grandstand
-    "rows_closed": 3,              # front rows emptied to move the crowd back
-    "seats_per_row": 50,           # seats per row in one grandstand
     "guardrail_rails": 2,          # a double-rail guardrail
-    "marshal_callouts": 1.5,       # call-outs per weekend above which cars keep stopping at the barrier
-    "fast_apex_kph": 150,          # slowest speed in the corner above which debris flies far (the Monza 2000 wheel)
+    "cameras_per_corner": 2,       # one on the barrier, one on the crowd side
 }
 MAX_CORNERS = 3
 
 
 def _range(lo: float, hi: float | None = None) -> dict:
+    """Round to the nearest CAD 100 (small costs) or CAD 1,000."""
     hi = lo if hi is None else hi
-    return {"low": round(lo, -3), "high": round(hi, -3)}
-
-
-def _recommend(z: dict, apex_kph: float) -> str:
-    """Plain rule on the real numbers:
-    cars stop at this barrier often          -> impacts are the danger  -> energy-absorbing barrier
-    cars are still fast through the corner   -> debris flies far        -> debris fence
-    otherwise (slow corner, fewer stops)     -> give the crowd distance -> close the front rows"""
-    if z["marshals_out_per_weekend"] >= ASSUMPTIONS["marshal_callouts"]:
-        return "tecpro"
-    if apex_kph >= ASSUMPTIONS["fast_apex_kph"]:
-        return "debris_fence"
-    return "close_rows"
+    step = -2 if hi < 10_000 else -3
+    return {"low": round(lo, step), "high": round(hi, step)}
 
 
 def safety_plan(circuit: str) -> dict:
@@ -86,77 +79,83 @@ def safety_plan(circuit: str) -> dict:
         tz = zones[z["zone_id"]]
         stands = z["grandstands"]
         frontage = min(tz["length_m"], A["frontage_per_stand_m"] * len(stands))
-        seats = A["rows_closed"] * A["seats_per_row"] * len(stands)
+        panels = math.ceil(frontage / PRICES["fence_hire"]["panel_m"])
+        cams = A["cameras_per_corner"]
         options = [
             {
-                "key": "close_rows", "title": "Move the crowd back",
-                "action": f"Close the front {A['rows_closed']} rows of the {len(stands)} grandstand{'s' if len(stands) > 1 else ''} here.",
-                "protects_against": "Debris and cars that get past the barrier: the crowd is further away.",
-                "cost": _range(seats * ticket["price"]) if ticket else None,
-                "cost_basis": (f"{seats} seats × cheapest grandstand ticket ({ticket['currency_note']}), per race weekend"
-                               if ticket else "ticket price not available"),
-                "recurring": True, "provenance": "sourced ticket price, estimated seat count",
-                "source": ticket["source"] if ticket else None,
+                "key": "crews", "title": "Put crews at this corner",
+                "action": "Station a medical car, fire crew and recovery team here instead of spreading them evenly.",
+                "protects_against": "Slow response: help reaches a crash here in seconds.",
+                "cost": _range(0), "cost_basis": "Free: moves crews you already have",
+                "recurring": True, "provenance": "free", "source": None, "note": None,
             },
             {
-                "key": "tecpro", "title": "Energy-absorbing barrier",
-                "action": f"Replace the barrier along {frontage:.0f} m in front of the stands with TecPro modules.",
-                "protects_against": "Cars hitting the barrier: softer impacts, less debris thrown towards the stands.",
-                "cost": _range(frontage * PRICES["tecpro"]["per_m"]),
-                "cost_basis": f"{frontage:.0f} m × {PRICES['tecpro']['currency_note']} (one-off)",
-                "recurring": False, "provenance": PRICES["tecpro"]["provenance"], "source": PRICES["tecpro"]["source"],
-                "note": PRICES["tecpro"]["note"],
+                "key": "marshal_training", "title": "Refresher training for the marshals here",
+                "action": f"Brief the marshals at this corner on its incidents ({z['marshals_out_per_weekend']:.1f} call-outs per weekend) before each event.",
+                "protects_against": "Marshals hurt while recovering cars, and slow recoveries.",
+                "cost": _range(0), "cost_basis": "Free: " + PRICES["marshal_training"]["note"],
+                "recurring": True, "provenance": "sourced", "source": PRICES["marshal_training"]["source"], "note": None,
             },
             {
-                "key": "debris_fence", "title": "Higher debris fence",
-                "action": f"Install a 6 m FIA debris fence along {frontage:.0f} m in front of the stands.",
-                "protects_against": "Wheels and parts flying over the barrier into the crowd.",
-                "cost": _range(frontage * PRICES["debris_fence"]["per_m_range"][0]),
-                "cost_basis": f"{frontage:.0f} m × CAD 1,000 / m, the low end of CAD 1,000–3,000 / m (one-off, {PRICES['debris_fence']['currency_note']})",
-                "recurring": False, "provenance": PRICES["debris_fence"]["provenance"], "source": PRICES["debris_fence"]["source"],
-                "note": PRICES["debris_fence"]["note"],
+                "key": "move_crowd", "title": "Move standing areas back",
+                "action": f"Set grass banks and standing areas back from the barrier with {panels} temporary fence panels along {frontage:.0f} m.",
+                "protects_against": "Debris and cars reaching people standing close to the track.",
+                "cost": _range(panels * PRICES["fence_hire"]["per_panel_week"]),
+                "cost_basis": f"{panels} panels × {PRICES['fence_hire']['currency_note']}, per race weekend",
+                "recurring": True, "provenance": "sourced", "source": PRICES["fence_hire"]["source"], "note": PRICES["fence_hire"]["note"],
+            },
+            {
+                "key": "cameras", "title": "Cameras on this corner",
+                "action": f"Put {cams} cameras here: one on the barrier, one on the crowd.",
+                "protects_against": "Slow response, and claims you can't check: every incident is on video.",
+                "cost": _range(cams * PRICES["camera"]["each"]),
+                "cost_basis": f"{cams} × {PRICES['camera']['currency_note']} (one-off)",
+                "recurring": False, "provenance": "sourced", "source": PRICES["camera"]["source"], "note": PRICES["camera"]["note"],
             },
             {
                 "key": "guardrail", "title": "Second guardrail line",
                 "action": f"Add a double-rail steel guardrail along {frontage:.0f} m in front of the stands.",
-                "protects_against": "Slower cars and debris at ground level (a cheap stop-gap, not F1-grade on its own).",
+                "protects_against": "Slower cars and debris at ground level.",
                 "cost": _range(frontage * A["guardrail_rails"] * PRICES["guardrail"]["per_m"]),
                 "cost_basis": f"{frontage:.0f} m × {A['guardrail_rails']} rails × {PRICES['guardrail']['currency_note']} (one-off)",
-                "recurring": False, "provenance": PRICES["guardrail"]["provenance"], "source": PRICES["guardrail"]["source"],
-                "note": PRICES["guardrail"]["note"],
+                "recurring": False, "provenance": "sourced", "source": PRICES["guardrail"]["source"], "note": PRICES["guardrail"]["note"],
             },
         ]
-        rec = _recommend(z, tz["v_apex_kph"])
-        for o in options:
-            o["recommended"] = o["key"] == rec
-            o.setdefault("note", None)
         corners.append({
             "zone_id": z["zone_id"], "name": repository.short_name(tz["name"]), "full_name": tz["name"],
             "rank": z["rank"], "serious_per_weekend": z["serious_per_weekend"],
             "marshals_out_per_weekend": z["marshals_out_per_weekend"], "entry_speed_kph": z["entry_speed_kph"],
             "apex_speed_kph": tz["v_apex_kph"], "grandstands": stands, "frontage_m": frontage,
-            "why": _why(z, tz["v_apex_kph"], rec),
-            "options": sorted(options, key=lambda o: (not o["recommended"], o["cost"]["low"] if o["cost"] else 0)),
+            "why": _why(z, tz["v_apex_kph"]),
+            "options": options,
         })
+
+    # The report for the insurer: serious incidents at these corners, year by year (one race weekend a year).
+    picked = {c["zone_id"] for c in corners}
+    trend = [{"season": y, "count": sum(bs["count"] for z in e["zones"] if z["zone_id"] in picked
+                                        for bs in z["by_season"] if bs["season"] == y)}
+             for y in e["seasons"]]
 
     return {
         "circuit": circuit, "currency": "CAD", "corners": corners,
+        "report": {
+            "title": "Send your insurer the incident report every season",
+            "action": "Share it before each renewal: where incidents happen, how often marshals go out, and the "
+                      "year-by-year count at these corners. Once the fixes are in, a falling count is the proof they work.",
+            "cost": _range(0), "cost_basis": "Free: Circuit Guard builds it from your race control log",
+            "trend": trend,
+        },
         "assumptions": [
             {"label": "Track in front of one grandstand", "value": f"{A['frontage_per_stand_m']} m (assumed)"},
-            {"label": "Crowd moved back", "value": f"front {A['rows_closed']} rows × {A['seats_per_row']} seats per stand (assumed)"},
+            {"label": "Cameras per corner", "value": f"{A['cameras_per_corner']} (assumed)"},
             {"label": "Exchange rates", "value": f"Bank of Canada 2025: 1 USD = {FX['USD']}, 1 EUR = {FX['EUR']}, 1 GBP = {FX['GBP']} CAD",
              "source": FX_SOURCE},
         ],
-        "disclaimer": "Low-end estimates for comparing options, not quotes. F1-grade barriers and debris fences are priced by the supplier on request.",
+        "disclaimer": "Rough prices at the low end, to compare options. Not quotes.",
     }
 
 
-def _why(z: dict, apex_kph: float, rec: str) -> str:
+def _why(z: dict, apex_kph: float) -> str:
     busy = f"{z['serious_per_weekend']:.1f} serious incidents and {z['marshals_out_per_weekend']:.1f} marshal call-outs per weekend"
     speed = f"cars arrive at {z['entry_speed_kph']:.0f} km/h and are still at {apex_kph:.0f} km/h at the slowest point"
-    reason = {
-        "tecpro": "Cars stop at this barrier often, so softening the impacts comes first.",
-        "debris_fence": "Cars stay fast through here, so debris can clear the barrier (as a wheel did at Monza in 2000): the fence comes first.",
-        "close_rows": "It's a slow corner with fewer stops, so giving the crowd more distance is the quickest fix.",
-    }[rec]
-    return f"{busy}; {speed}. {reason}"
+    return f"{busy}; {speed}, right next to the crowd."

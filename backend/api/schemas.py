@@ -445,7 +445,7 @@ class CostRange(Contract):
 
 
 class SafetyOption(Contract):
-    key: Literal["close_rows", "tecpro", "debris_fence", "guardrail"]
+    key: Literal["crews", "marshal_training", "move_crowd", "cameras", "guardrail"]
     title: str
     action: str
     protects_against: str
@@ -455,7 +455,6 @@ class SafetyOption(Contract):
     provenance: str
     source: str | None
     note: str | None
-    recommended: bool
 
 
 class SafetyCorner(Contract):
@@ -479,9 +478,23 @@ class PlanAssumption(Contract):
     source: str | None = None
 
 
+class SeasonCount(Contract):
+    season: int
+    count: int
+
+
+class InsurerReport(Contract):
+    title: str
+    action: str
+    cost: CostRange
+    cost_basis: str
+    trend: list[SeasonCount]
+
+
 class SafetyPlan(Contract):
     circuit: str
     currency: Literal["CAD"]
     corners: list[SafetyCorner]
+    report: InsurerReport
     assumptions: list[PlanAssumption]
     disclaimer: str

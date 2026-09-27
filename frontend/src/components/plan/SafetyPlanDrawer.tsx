@@ -19,6 +19,7 @@ interface SafetyPlanDrawerProps {
 /** CAD 224k · CAD 1.04M */
 function cad(v: number): string {
   if (v >= 1e6) return `CAD ${(v / 1e6).toFixed(2)}M`;
+  if (v < 1e3) return `CAD ${Math.round(v)}`;
   return `CAD ${Math.round(v / 1e3)}k`;
 }
 
@@ -129,7 +130,7 @@ function Option({ option: o }: { option: SafetyOption }) {
           )}
         </span>
         <span className="text-right">
-          <span className="display text-[20px] font-semibold">{o.cost ? price(o.cost) : "—"}</span>{" "}
+          <span className="display text-[20px] font-semibold">{o.cost ? (o.cost.high === 0 ? "Free" : price(o.cost)) : "—"}</span>{" "}
           <span className="text-[11px] text-muted">{o.recurring ? "per race weekend" : "one-off"}</span>
         </span>
       </div>
