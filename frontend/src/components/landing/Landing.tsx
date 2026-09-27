@@ -12,7 +12,7 @@ import { useIngestionStream } from "@/hooks/ingestion/useIngestionStream";
 import { useExposure } from "@/hooks/insurance/useExposure";
 import { cn } from "@/lib/cn";
 import { formatFraction } from "@/lib/format";
-import { UPLOADS, checkUpload, type CheckResult, type UploadKey, type UploadSpec } from "@/lib/uploadFiles";
+import { UPLOADS, checkUpload, sortUploads, type CheckResult, type UploadKey, type UploadSpec } from "@/lib/uploadFiles";
 import { useUiStore } from "@/store/uiStore";
 import type { IngestStage } from "@/types/track";
 
@@ -39,6 +39,9 @@ export function Landing() {
   const [picked, setPicked] = useState<Partial<Record<UploadKey, Picked>>>({});
   const [target, setTarget] = useState<string | null>(null);
   const [unknown, setUnknown] = useState(false);
+  const [unmatched, setUnmatched] = useState<string[]>([]);
+  const allInput = useRef<HTMLInputElement>(null);
+  const [dragAll, setDragAll] = useState(false);
   const ingestion = useIngestionStream(target);
   const exposure = useExposure(ingestion.state.status === "succeeded" ? target : null);
 
@@ -80,6 +83,15 @@ export function Landing() {
     setUnknown(false);
     setShown(0);
     setTarget(match.id);
+  }
+
+  // Several files at once: each goes to the slot its columns (or its name) fit.
+  async function pickAll(list: FileList | null) {
+    if (!list?.length) return;
+    const files = await Promise.all([...list].map(async (f) => ({ name: f.name, text: await f.text() })));
+    const { matched, unmatched } = sortUploads(files);
+    setPicked((s) => ({ ...s, ...matched }));
+    setUnmatched(unmatched);
   }
 
   function open() {
@@ -164,6 +176,48 @@ export function Landing() {
                   <FileSlot key={u.key} spec={u} picked={picked[u.key]} onPick={(p) => setPicked((s) => ({ ...s, [u.key]: p }))} />
                 ))}
               </div>
+
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={() => allInput.current?.click()}
+                onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && allInput.current?.click()}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setDragAll(true);
+                }}
+                onDragLeave={() => setDragAll(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setDragAll(false);
+                  void pickAll(e.dataTransfer.files);
+                }}
+                className={cn(
+                  "grid cursor-pointer place-items-center gap-2 rounded-xl border-2 border-dashed px-4 py-5 text-center transition-colors",
+                  dragAll ? "border-accent bg-accent/10" : "border-line bg-bg/40 hover:border-accent/60 hover:bg-accent/5",
+                )}
+              >
+                <svg viewBox="0 0 24 24" className="size-7 text-accent" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M12 16V4M7 9l5-5 5 5M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" />
+                </svg>
+                <span className="text-[14px] font-medium">Drop all your files here</span>
+                <span className="text-[12px] text-muted">or click to choose them. Each file goes to the right slot above.</span>
+                <input
+                  ref={allInput}
+                  onClick={(e) => e.stopPropagation()}
+                  type="file"
+                  multiple
+                  accept=".csv,text/csv"
+                  className="hidden"
+                  onChange={(e) => {
+                    void pickAll(e.target.files);
+                    e.target.value = "";
+                  }}
+                />
+              </div>
+              {unmatched.length > 0 && (
+                <p className="-mt-2 text-[12px] text-risk-crit">Not sure what {unmatched.join(", ")} {unmatched.length > 1 ? "are" : "is"}: add {unmatched.length > 1 ? "them" : "it"} in the right slot above.</p>
+              )}
 
               {unknown && (
                 <StateMessage tone="info" title="Files look good">

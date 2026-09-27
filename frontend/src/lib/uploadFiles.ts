@@ -120,3 +120,36 @@ export function checkUpload(spec: UploadSpec, text: string): CheckResult {
       return { ok: true, summary: `${plural(body.length, "marshal post")}`, rows: body.length };
   }
 }
+
+/** Words in a file name that point to each upload, used when the columns alone don't decide. */
+const NAME_HINTS: Record<UploadKey, string[]> = {
+  track: ["track", "layout", "lap"],
+  corners: ["corner", "turn"],
+  incidents: ["incident", "log"],
+  spectators: ["spectator", "grandstand", "stand", "crowd"],
+  marshals: ["marshal", "post"],
+};
+
+/**
+ * Work out which upload each file is, for "upload all at once": the spec whose columns the file has
+ * (most columns wins), or failing that a word in the file name. Files that fit nothing are returned in `unmatched`.
+ */
+export function sortUploads(files: { name: string; text: string }[]): {
+  matched: Partial<Record<UploadKey, { fileName: string; result: CheckResult }>>;
+  unmatched: string[];
+} {
+  const matched: Partial<Record<UploadKey, { fileName: string; result: CheckResult }>> = {};
+  const unmatched: string[] = [];
+  for (const f of files) {
+    const cols = (parseCsv(f.text)[0] ?? []).map((h) => h.trim().toLowerCase());
+    const byColumns = UPLOADS.filter((u) => !matched[u.key] && u.columns.every((c) => cols.includes(c))).sort(
+      (a, b) => b.columns.length - a.columns.length,
+    )[0];
+    const lower = f.name.toLowerCase();
+    const byName = UPLOADS.find((u) => !matched[u.key] && NAME_HINTS[u.key].some((w) => lower.includes(w)));
+    const spec = byColumns ?? byName;
+    if (spec) matched[spec.key] = { fileName: f.name, result: checkUpload(spec, f.text) };
+    else unmatched.push(f.name);
+  }
+  return { matched, unmatched };
+}
