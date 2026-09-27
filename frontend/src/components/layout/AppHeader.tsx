@@ -23,7 +23,7 @@ interface AppHeaderProps {
 
 export function AppHeader(p: AppHeaderProps) {
   return (
-    <header className="flex flex-wrap items-center gap-x-5 gap-y-3 border-b border-line bg-panel px-4 py-3 lg:px-5">
+    <header className="speed-stripe carbon flex flex-wrap items-center gap-x-5 gap-y-3 border-b border-line bg-panel px-4 py-3 lg:px-5">
       <ThemeToggle />
       <div className="mr-auto flex min-w-0 items-center max-lg:w-full">
         <Brand />

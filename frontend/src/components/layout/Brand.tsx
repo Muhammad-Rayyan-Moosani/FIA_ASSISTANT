@@ -1,16 +1,16 @@
 import Link from "next/link";
 import { cn } from "@/lib/cn";
 
-/** Circuit Guard wordmark: a shield around a circuit outline, and the name in the brand font. */
+/** Circuit Guard wordmark: a shield around a circuit outline, and the name in the race-title face. */
 export function Brand({ href = "/", size = "md", className }: { href?: string; size?: "md" | "lg"; className?: string }) {
   const lg = size === "lg";
   return (
     <Link href={href} className={cn("group inline-flex items-center gap-2.5", className)} aria-label="Circuit Guard, home">
-      <svg viewBox="0 0 40 44" className={cn("shrink-0 drop-shadow-[0_2px_10px_rgba(217,119,87,0.35)]", lg ? "h-11 w-10" : "h-9 w-8")} aria-hidden="true">
+      <svg viewBox="0 0 40 44" className={cn("shrink-0 drop-shadow-[0_2px_12px_rgba(225,6,0,0.45)]", lg ? "h-11 w-10" : "h-9 w-8")} aria-hidden="true">
         <defs>
           <linearGradient id="cg-shield" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0" stopColor="var(--color-accent)" />
-            <stop offset="1" stopColor="var(--color-risk-high)" />
+            <stop offset="1" stopColor="var(--color-accent-2)" />
           </linearGradient>
         </defs>
         <path d="M20 2 L37 8 V21 C37 31 29.5 38.5 20 42 C10.5 38.5 3 31 3 21 V8 Z" fill="url(#cg-shield)" />
@@ -25,7 +25,7 @@ export function Brand({ href = "/", size = "md", className }: { href?: string; s
         />
         <circle cx="11" cy="21" r="1.8" fill="var(--color-ink)" />
       </svg>
-      <span className={cn("font-serif font-semibold leading-none tracking-[-0.01em]", lg ? "text-[28px]" : "text-[23px]")}>
+      <span className={cn("race-title leading-none", lg ? "text-[30px]" : "text-[25px]")}>
         <span className="text-ink">Circuit</span> <span className="text-accent">Guard</span>
       </span>
     </Link>

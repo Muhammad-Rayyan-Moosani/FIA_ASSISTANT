@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { ReplayIntro } from "@/components/intro/IntroSplash";
 import { Brand } from "@/components/layout/Brand";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { Button } from "@/components/ui/Button";
@@ -100,28 +101,39 @@ export function Landing() {
   }
 
   return (
-    <div className="relative min-h-full overflow-hidden bg-bg">
+    <div className="carbon relative min-h-full overflow-hidden bg-bg">
       <div
-        className="pointer-events-none absolute inset-0 -z-0 opacity-90"
+        className="pointer-events-none absolute inset-0 -z-0"
         aria-hidden="true"
         style={{
           background:
-            "radial-gradient(900px 420px at 12% -10%, color-mix(in srgb, var(--color-accent) 22%, transparent), transparent 70%)," +
-            "radial-gradient(700px 380px at 95% 15%, color-mix(in srgb, var(--color-risk-high) 16%, transparent), transparent 70%)",
+            "radial-gradient(900px 460px at 8% -12%, color-mix(in srgb, var(--color-accent) 26%, transparent), transparent 70%)," +
+            "radial-gradient(760px 420px at 100% 105%, color-mix(in srgb, var(--color-accent-2) 14%, transparent), transparent 70%)",
         }}
       />
-      <header className="relative z-10 flex items-center justify-between gap-4 border-b border-line/70 bg-panel/60 px-5 py-3 backdrop-blur">
+      <SpeedLines />
+      <header className="speed-stripe relative z-10 flex items-center justify-between gap-4 border-b border-line/70 bg-panel/70 px-5 py-3 backdrop-blur">
         <Brand size="lg" />
         <div className="flex items-center gap-2.5">
+          <ReplayIntro />
+          <Button variant="primary" onClick={() => router.push("/circuit")} title="Open the live map: race control and insurance">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true">
+              <path d="M3 3h8v8H3zM13 3h8v5h-8zM13 10h8v11h-8zM3 13h8v8H3z" />
+            </svg>
+            Dashboard
+          </Button>
           <ThemeToggle />
-          <Button onClick={() => router.push("/circuit")}>Open the live map</Button>
         </div>
       </header>
 
       <main className="relative z-10 mx-auto grid max-w-[1180px] gap-10 px-5 py-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:py-14">
         <section className="grid content-start gap-6 lg:content-center">
-          <h1 className="font-serif text-[clamp(38px,4.6vw,58px)] font-semibold leading-[1.02] tracking-[-0.015em]">
-            Find where your track is dangerous, and pay less to insure it.
+          <div className="flex items-center gap-3">
+            <span className="checker h-4 w-10 opacity-80" aria-hidden="true" />
+            <span className="eyebrow text-accent">Race control · Insurance · One live map</span>
+          </div>
+          <h1 className="race-title text-[clamp(44px,5.6vw,76px)]">
+            Find where your track is <span className="text-accent">dangerous</span>, and pay less to insure it.
           </h1>
           <p className="max-w-[46ch] text-[15px] leading-relaxed text-muted">
             See which corners put marshals and spectators at risk, and give your insurer the proof to help bring your premium down.
@@ -133,7 +145,7 @@ export function Landing() {
               ["Act", "Get the proof and a safety plan."],
             ].map(([t, d], i) => (
               <li key={t} className="grid grid-cols-[28px_1fr] gap-3">
-                <span className="display grid size-7 place-items-center rounded-full bg-accent/15 text-[14px] font-semibold text-accent">{i + 1}</span>
+                <span className="race-title grid size-7 -skew-x-12 place-items-center rounded-[4px] bg-accent text-[15px] text-accent-ink">{i + 1}</span>
                 <span>
                   <b className="text-ink">{t}.</b> <span className="text-muted">{d}</span>
                 </span>
@@ -142,11 +154,11 @@ export function Landing() {
           </ol>
         </section>
 
-        <section className="grid content-start gap-4 rounded-2xl border border-line bg-panel/90 p-5 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.45)] backdrop-blur lg:p-6" aria-label="Upload your circuit">
+        <section className="speed-stripe grid content-start gap-4 overflow-hidden rounded-xl border border-line bg-panel/92 p-5 shadow-[0_24px_70px_-24px_rgba(0,0,0,0.6)] backdrop-blur lg:p-6" aria-label="Upload your circuit">
           {!running ? (
             <>
               <header>
-                <h2 className="font-serif text-[26px] font-semibold leading-none">Upload your circuit</h2>
+                <h2 className="race-title text-[30px]">Upload your circuit</h2>
               </header>
 
               <label className="grid gap-1.5 text-[12.5px]">
@@ -155,7 +167,7 @@ export function Landing() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Autodromo Nazionale Monza"
-                  className="h-10 rounded-lg border border-line bg-bg px-3 text-[14px] outline-none focus:border-accent"
+                  className="h-10 rounded-md border border-line bg-bg px-3 text-[14px] outline-none transition-colors focus:border-accent focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-accent)_22%,transparent)]"
                 />
               </label>
 
@@ -265,8 +277,14 @@ function FileSlot({ spec, picked, onPick }: { spec: UploadSpec; picked: Picked |
         void read(e.dataTransfer.files[0]);
       }}
       className={cn(
-        "grid grid-cols-[1fr_auto] items-center gap-3 rounded-xl border px-3.5 py-3 transition-colors",
-        drag ? "border-accent bg-accent/10" : ok ? "border-risk-low/50 bg-risk-low/6" : picked ? "border-risk-crit/50 bg-risk-crit/6" : "border-line bg-bg/60",
+        "grid grid-cols-[1fr_auto] items-center gap-3 rounded-md border border-l-[3px] px-3.5 py-3 transition-colors",
+        drag
+          ? "border-accent border-l-accent bg-accent/10"
+          : ok
+            ? "border-risk-low/40 border-l-risk-low bg-risk-low/6"
+            : picked
+              ? "border-risk-crit/40 border-l-risk-crit bg-risk-crit/6"
+              : "border-line border-l-line bg-bg/60 hover:border-l-accent",
       )}
     >
       <div className="min-w-0">
@@ -314,14 +332,14 @@ function Generating({ circuitName, shown, failed, incidents, finished, exposure,
     <div className="grid gap-4" aria-live="polite">
       <header>
         <p className="eyebrow">{finished ? "Analysis ready" : "Analysing"}</p>
-        <h2 className="display mt-1 text-[26px] font-semibold leading-tight">{circuitName}</h2>
+        <h2 className="race-title mt-1 text-[30px]">{circuitName}</h2>
       </header>
 
       <ol className="grid gap-1.5">
         {STAGES.map((s, i) => {
           const state = i < shown ? "done" : i === shown && !finished && !failed ? "active" : "pending";
           return (
-            <li key={s.key} className="flex items-center gap-3 rounded-lg border border-line bg-bg/60 px-3 py-2 text-[13px]">
+            <li key={s.key} className="flex items-center gap-3 rounded-md border border-line bg-bg/60 px-3 py-2 text-[13px]">
               <span
                 className={cn(
                   "grid size-5 shrink-0 place-items-center rounded-full text-[11px] font-semibold",
@@ -364,9 +382,24 @@ function Generating({ circuitName, shown, failed, incidents, finished, exposure,
 
 function Teaser({ value, label }: { value: string; label: string }) {
   return (
-    <div className="rounded-lg border border-line bg-panel px-2 py-2.5">
-      <div className="display text-[26px] font-semibold leading-none">{value}</div>
+    <div className="rounded-md border border-line bg-panel px-2 py-2.5">
+      <div className="race-title text-[28px] text-accent">{value}</div>
       <div className="mt-1 text-[11px] leading-snug text-muted">{label}</div>
+    </div>
+  );
+}
+
+/** Faint red streaks sweeping across the page, like light trails down a straight. */
+function SpeedLines() {
+  return (
+    <div className="pointer-events-none absolute inset-0 -z-0 overflow-hidden opacity-60" aria-hidden="true">
+      {[18, 34, 57, 71, 86].map((top, i) => (
+        <span
+          key={top}
+          className="absolute left-0 h-px w-[38%] animate-streak bg-gradient-to-r from-transparent via-accent/60 to-transparent"
+          style={{ top: `${top}%`, animationDelay: `${i * 0.55}s`, animationDuration: `${2.4 + (i % 3) * 0.7}s` }}
+        />
+      ))}
     </div>
   );
 }
