@@ -168,6 +168,20 @@ def _ancestors(number: str) -> list[str]:
     return [".".join(parts[:i]) for i in range(1, len(parts))]
 
 
+def _window(body: str, start: int, max_chars: int) -> str:
+    """``body[start:start + max_chars]`` moved to word boundaries so a chunk never starts or ends mid-word."""
+    if start and body[start - 1] != " ":                    # began mid-word: skip to the next word
+        sp = body.find(" ", start)
+        if 0 <= sp - start < 40:
+            start = sp + 1
+    end = start + max_chars
+    if end < len(body) and body[end] != " ":                # would end mid-word: back up to the last space
+        sp = body.rfind(" ", start, end)
+        if sp > start:
+            end = sp
+    return body[start:end].strip()
+
+
 def chunk_pages(document: str, pages: list[str], max_chars: int, overlap: int) -> list[Chunk]:
     """Split on article numbers, then window long articles with overlap.
 
@@ -225,7 +239,7 @@ def chunk_pages(document: str, pages: list[str], max_chars: int, overlap: int) -
         head = " › ".join(c for c in crumbs if c) or None
         body = " ".join(lines)
         for start in range(0, max(len(body) - overlap, 1), step):
-            piece = body[start:start + max_chars].strip()
+            piece = _window(body, start, max_chars)
             if len(piece) >= 20:
                 chunks.append(Chunk(document, art, pno, piece, head))
     return chunks
