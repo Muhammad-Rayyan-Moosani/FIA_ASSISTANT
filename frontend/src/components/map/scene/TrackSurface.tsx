@@ -2,34 +2,18 @@
 
 import { useEffect, useMemo } from "react";
 import { BufferAttribute, BufferGeometry, DoubleSide } from "three";
-import { stripedStrip, stripMesh, toWorld, type MeshData, type Vec2 } from "@/lib/trackGeometry";
+import { polylineRibbon, stripedStrip, stripMesh, toWorld, type MeshData } from "@/lib/trackGeometry";
 import type { AssetContext } from "@/types/assets";
-import type { SceneData } from "./sceneTypes";
+import { TRACK_DRAW_SCALE, type SceneData } from "./sceneTypes";
 import { useMeshGeometry } from "./useMeshGeometry";
 
-const KERB_WIDTH_M = 1.5;
-const KERB_STRIPE_M = 3;
-const LINE_WIDTH_M = 0.8;
+// Kerbs and lines scale with the track, which is drawn TRACK_DRAW_SCALE× its real width.
+const KERB_WIDTH_M = 1.5 * TRACK_DRAW_SCALE;
+const KERB_STRIPE_M = 3 * TRACK_DRAW_SCALE;
+const LINE_WIDTH_M = 0.8 * TRACK_DRAW_SCALE;
 const PIT_LANE_WIDTH_M = 12;
 const OLD_RACEWAY_WIDTH_M = 12;
 const KERB_COLORS = [[0.78, 0.1, 0.12], [0.94, 0.94, 0.94]] as const;
-
-/** Open polyline -> flat ribbon of a given width (pit lane, old raceways from OpenStreetMap). */
-function polylineRibbon(points: Vec2[], width: number, y: number): MeshData {
-  const n = points.length;
-  const positions = new Float32Array(n * 6);
-  const indices: number[] = [];
-  points.forEach((p, i) => {
-    const a = points[Math.max(0, i - 1)]!;
-    const b = points[Math.min(n - 1, i + 1)]!;
-    const len = Math.hypot(b.x - a.x, b.z - a.z) || 1;
-    const nx = -(b.z - a.z) / len;
-    const nz = (b.x - a.x) / len;
-    positions.set([p.x + nx * width / 2, y, p.z + nz * width / 2, p.x - nx * width / 2, y, p.z - nz * width / 2], i * 6);
-    if (i < n - 1) indices.push(i * 2, i * 2 + 1, i * 2 + 2, i * 2 + 1, i * 2 + 3, i * 2 + 2);
-  });
-  return { positions, indices };
-}
 
 function Ribbon({ data, color, roughness = 0.9 }: { data: MeshData; color: string; roughness?: number }) {
   const g = useMeshGeometry(data);
@@ -84,7 +68,7 @@ function Kerbs({ scene }: { scene: SceneData }) {
   );
 }
 
-/** Asphalt at real width, white edge lines, start/finish line, kerbs at each real apex, pit lane and old raceways. */
+/** Asphalt (drawn 3× its real width), white edge lines, start/finish line, kerbs at each real apex, pit lane and old raceways. */
 export function TrackSurface({ scene, context }: { scene: SceneData; context: AssetContext | undefined }) {
   const { frame, scale } = scene;
   const n = frame.points.length;
@@ -117,7 +101,7 @@ export function TrackSurface({ scene, context }: { scene: SceneData; context: As
         <Ribbon key={`o${i}`} data={d} color="#7b7d80" roughness={1} />
       ))}
       <mesh position={[start.x, 0.04, start.z]} rotation={[0, -Math.atan2(t0.z, t0.x), 0]} raycast={() => null}>
-        <boxGeometry args={[1.2 * scale.u, 0.01, half * 2]} />
+        <boxGeometry args={[1.2 * TRACK_DRAW_SCALE * scale.u, 0.01, half * 2]} />
         <meshStandardMaterial color="#f5f5f5" />
       </mesh>
     </group>

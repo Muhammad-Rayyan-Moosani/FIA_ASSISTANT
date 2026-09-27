@@ -237,7 +237,8 @@ def assets(circuit: str) -> dict:
     return {
         **raw,
         "assets": [{**a, "points": move(a["points"])} for a in raw["assets"]],
-        "context": {k: [move(p) for p in v] for k, v in raw["context"].items()},
+        "context": {k: [{**p, "points": move(p["points"])} if isinstance(p, dict) else move(p) for p in v]
+                    for k, v in raw["context"].items()},
         "marshal_posts": sum(z["marshal_posts"] for z in d.track["zones"]),
     }
 

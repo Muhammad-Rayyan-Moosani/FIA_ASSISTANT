@@ -29,6 +29,8 @@ export type CoverageLine =
 
 export interface Asset {
   asset_id: string;
+  /** "osm": footprint mapped in OpenStreetMap. "official_list": temporary grandstand placed by the corner the official list names (footprint assumed). */
+  position_source: "osm" | "official_list";
   name: string | null;
   category: AssetCategory;
   osm_tag: string;
@@ -53,11 +55,34 @@ export interface CoverageSummary {
   high_exposure: number;
 }
 
+export type GroundKind = "water" | "land" | "wood" | "grass" | "beach" | "parking" | "pitch";
+
+export interface GroundArea {
+  kind: GroundKind;
+  points: [number, number][];
+}
+
+export interface ContextRoad {
+  kind: "major" | "minor" | "service" | "path" | "rail";
+  width_m: number;
+  bridge: boolean;
+  points: [number, number][];
+}
+
+export interface ContextBuilding {
+  height_m: number;
+  points: [number, number][];
+}
+
+/** Surroundings from OpenStreetMap (not insured), drawn for a true picture of the site. */
 export interface AssetContext {
   woods: [number, number][][];
-  water: [number, number][][];
   pit_lane: [number, number][][];
   other_raceways: [number, number][][];
+  /** Painter's order: draw first to last (largest areas first: river, islands, lakes, woods, ...). */
+  ground: GroundArea[];
+  roads: ContextRoad[];
+  buildings: ContextBuilding[];
 }
 
 export type AssetSourceKey = "structures" | "coverage" | "exposure";

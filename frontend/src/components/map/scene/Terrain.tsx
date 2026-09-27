@@ -1,39 +1,71 @@
 "use client";
 
 import { useEffect, useMemo, useRef } from "react";
-import { ConeGeometry, CylinderGeometry, InstancedMesh, Matrix4, Quaternion, Shape, ShapeGeometry, Vector2, Vector3 } from "three";
+import { BufferAttribute, BufferGeometry, Color, ConeGeometry, CylinderGeometry, DoubleSide, InstancedMesh, Matrix4, Quaternion, ShapeUtils, Vector2, Vector3 } from "three";
 import { hash01, insidePolygon, toWorld, type Vec2 } from "@/lib/trackGeometry";
-import type { AssetContext } from "@/types/assets";
+import type { AssetContext, GroundKind } from "@/types/assets";
 import type { SceneData } from "./sceneTypes";
 
 const TREE_SPACING_M = 22;
-const MAX_TREES = 5000;
+const MAX_TREES = 6000;
 const CLEAR_OF_TRACK_M = 45;          // keep trees off the track, run-off and barriers
-const REGION = 150;                   // world units from the centre (beyond this the camera rarely looks)
+const REGION = 170;                   // world units from the centre (beyond this the camera rarely looks)
+const GROUND_Y = -0.035;
 
-function shapeGeometry(poly: Vec2[]): ShapeGeometry {
-  const shape = new Shape(poly.map((p) => new Vector2(p.x, -p.z)));
-  const g = new ShapeGeometry(shape);
-  g.rotateX(-Math.PI / 2);
+/** Daylight ground colours, matched to aerial photos of the sites. */
+export const GROUND_COLOR: Record<GroundKind, string> = {
+  water: "#2e5a73",
+  land: "#6c8a4b",
+  wood: "#3e5c31",
+  grass: "#7b9853",
+  beach: "#d8c79c",
+  parking: "#8b8e91",
+  pitch: "#6e9f4c",
+};
+
+/**
+ * Every ground polygon in one mesh, triangles in the backend's painter's order (largest first), drawn without
+ * depth writes so later (smaller, nested) areas paint over earlier ones: river → islands → lakes → woods → ...
+ */
+function groundGeometry(ground: AssetContext["ground"]): BufferGeometry {
+  const pos: number[] = [];
+  const col: number[] = [];
+  const c = new Color();
+  for (const area of ground) {
+    const pts = area.points.map(([x, y]) => toWorld(x, y));
+    if (pts.length > 1 && pts[0]!.x === pts[pts.length - 1]!.x && pts[0]!.z === pts[pts.length - 1]!.z) pts.pop();
+    if (pts.length < 3) continue;
+    // (x, −z) so the triangles wind counter-clockwise seen from above (front faces up)
+    const faces = ShapeUtils.triangulateShape(pts.map((p) => new Vector2(p.x, -p.z)), []);
+    c.set(GROUND_COLOR[area.kind]);
+    for (const f of faces) {
+      for (const k of f) {
+        const p = pts[k]!;
+        pos.push(p.x, GROUND_Y, p.z);
+        col.push(c.r, c.g, c.b);
+      }
+    }
+  }
+  const g = new BufferGeometry();
+  g.setAttribute("position", new BufferAttribute(new Float32Array(pos), 3));
+  g.setAttribute("color", new BufferAttribute(new Float32Array(col), 3));
+  g.setAttribute("normal", new BufferAttribute(new Float32Array(pos.length).map((_, i) => (i % 3 === 1 ? 1 : 0)), 3));
   return g;
 }
 
-/** Woods (OSM natural=wood / landuse=forest) as darker ground with trees, and water (OSM water) polygons. */
-export function Terrain({ context, scene }: { context: AssetContext; scene: SceneData }) {
+/** Ground from OpenStreetMap (river, islands, lakes, woods, grass, beaches, parking) and trees in the woods. */
+export function Terrain({ context, scene, night }: { context: AssetContext; scene: SceneData; night: boolean }) {
   const { u, h } = scene.scale;
   const woods = useMemo(() => context.woods.map((p) => p.map(([x, y]) => toWorld(x, y))), [context.woods]);
-  const water = useMemo(() => context.water.map((p) => p.map(([x, y]) => toWorld(x, y))), [context.water]);
-
-  const woodGeoms = useMemo(() => woods.filter((p) => p.length > 3).map(shapeGeometry), [woods]);
-  const waterGeoms = useMemo(() => water.filter((p) => p.length > 3).map(shapeGeometry), [water]);
-  useEffect(() => () => [...woodGeoms, ...waterGeoms].forEach((g) => g.dispose()), [woodGeoms, waterGeoms]);
+  const ground = useMemo(() => groundGeometry(context.ground), [context.ground]);
+  useEffect(() => () => ground.dispose(), [ground]);
 
   const trees = useMemo(() => {
     const step = TREE_SPACING_M * u;
     const clear = CLEAR_OF_TRACK_M * u;
     const pts = scene.frame.points;
     const out: { x: number; z: number; s: number }[] = [];
-    for (const poly of woods) {
+    for (const poly of woods as Vec2[][]) {
       if (poly.length < 4) continue;
       const xs = poly.map((p) => p.x);
       const zs = poly.map((p) => p.z);
@@ -73,31 +105,29 @@ export function Terrain({ context, scene }: { context: AssetContext; scene: Scen
   useEffect(() => {
     const m = new Matrix4();
     const q = new Quaternion();
+    const tint = new Color();
     trees.forEach((t, i) => {
       m.compose(new Vector3(t.x, 0, t.z), q, new Vector3(t.s, t.s, t.s));
       crownRef.current?.setMatrixAt(i, m);
       trunkRef.current?.setMatrixAt(i, m);
+      crownRef.current?.setColorAt(i, tint.setHSL(0.26 + (t.s - 1) * 0.08, 0.42, 0.24 + (t.s - 0.75) * 0.12));
     });
-    if (crownRef.current) crownRef.current.instanceMatrix.needsUpdate = true;
+    if (crownRef.current) {
+      crownRef.current.instanceMatrix.needsUpdate = true;
+      if (crownRef.current.instanceColor) crownRef.current.instanceColor.needsUpdate = true;
+    }
     if (trunkRef.current) trunkRef.current.instanceMatrix.needsUpdate = true;
   }, [trees]);
 
   return (
     <group>
-      {woodGeoms.map((g, i) => (
-        <mesh key={`w${i}`} geometry={g} position={[0, -0.03, 0]} receiveShadow raycast={() => null}>
-          <meshStandardMaterial color="#4b6a36" roughness={1} />
-        </mesh>
-      ))}
-      {waterGeoms.map((g, i) => (
-        <mesh key={`h${i}`} geometry={g} position={[0, -0.02, 0]} raycast={() => null}>
-          <meshStandardMaterial color="#3d6f8e" roughness={0.15} metalness={0.1} />
-        </mesh>
-      ))}
+      <mesh geometry={ground} renderOrder={-1} receiveShadow raycast={() => null}>
+        <meshStandardMaterial vertexColors roughness={0.95} depthWrite={false} side={DoubleSide} emissive="#0c1a33" emissiveIntensity={night ? 0.9 : 0} />
+      </mesh>
       {trees.length > 0 && (
         <>
           <instancedMesh ref={crownRef} args={[geos.crown, undefined, trees.length]} castShadow raycast={() => null}>
-            <meshStandardMaterial color="#3f5f2e" roughness={0.95} flatShading />
+            <meshStandardMaterial color="#ffffff" roughness={0.95} flatShading />
           </instancedMesh>
           <instancedMesh ref={trunkRef} args={[geos.trunk, undefined, trees.length]} raycast={() => null}>
             <meshStandardMaterial color="#5a4632" roughness={1} />

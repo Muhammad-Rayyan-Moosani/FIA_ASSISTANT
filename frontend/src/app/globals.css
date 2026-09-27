@@ -40,9 +40,38 @@
   --font-mono: var(--font-plex-mono), ui-monospace, "SFMono-Regular", Menlo, monospace;
 }
 
+/* Day mode: the same tokens, light. Risk and source colours darkened for contrast on white. */
+:root[data-theme="light"] {
+  --color-bg: #eef2f6;
+  --color-panel: #ffffff;
+  --color-panel-2: #f4f7fa;
+  --color-line: #d5dde6;
+  --color-line-soft: #e4eaf0;
+  --color-ink: #0f1a24;
+  --color-muted: #536170;
+  --color-faint: #7d8a97;
+  --color-accent: #1f6fc2;
+  --color-accent-ink: #ffffff;
+  --color-risk-low: #1b9a66;
+  --color-risk-med: #b3820c;
+  --color-risk-high: #cf5b19;
+  --color-risk-crit: #cf3238;
+  --color-src-measured: #0e968c;
+  --color-src-assumed: #8656d4;
+  --color-src-modelled: #1f6fc2;
+  color-scheme: light;
+}
+
 @layer base {
   :root {
     color-scheme: dark;
+  }
+  :root[data-theme="light"] {
+    color-scheme: light;
+  }
+  html,
+  body {
+    transition: background-color 240ms ease, color 240ms ease;
   }
   html,
   body {

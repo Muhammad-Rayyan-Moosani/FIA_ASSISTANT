@@ -337,7 +337,11 @@ def asset_map(circuit: str, series: str, upgrades: dict[str, dict] | None = None
                                      + ", ".join(f"{v} {k.replace('_', ' ')}" for k, v in counts.items())
                                      + f". Aligned to the OpenF1 track by matching OSM's raceway to the real lap "
                                        f"(median error {data['alignment']['median_error_m']} m).\n\n"
-                                       "Heights come from OSM where mapped; otherwise a default by building type (labelled assumed)."},
+                                       "Heights come from OSM where mapped; otherwise a default by building type (labelled assumed)."
+                                     + (f"\n\n{official} temporary F1 grandstands are not in OpenStreetMap: each is placed beside the "
+                                        "corner the official grandstand list says it overlooks, on land and clear of the track. "
+                                        "Its footprint (20 m deep, up to 60 m long), seats and exact offset are assumed."
+                                        if (official := sum(a["position_source"] == "official_list" for a in out)) else "")},
             "coverage": {"provenance": "assumed", "title": "Coverage lines",
                          "detail": "Which insurance lines each structure type falls under follows common venue and event "
                                    "programmes (property, spectator liability, business interruption, broadcast equipment, "

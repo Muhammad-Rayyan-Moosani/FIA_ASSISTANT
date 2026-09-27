@@ -32,3 +32,26 @@ export function riskRgba(score: number, alpha: number): string {
 }
 
 export const TIER_ORDER: readonly RiskTier[] = ["LOW", "MEDIUM", "HIGH", "CRITICAL"];
+
+/** Saturated version of the risk scale for the daylight 3D scene (unlit, so it stays vivid on grass and asphalt). */
+const VIVID: readonly (readonly [number, RGB])[] = [
+  [0, [24, 214, 120]],
+  [45, [255, 204, 28]],
+  [75, [255, 122, 26]],
+  [100, [255, 38, 64]],
+];
+
+export function vividRiskHex(score: number): string {
+  const s = Math.min(100, Math.max(0, score));
+  let rgb: RGB = VIVID[VIVID.length - 1]![1];
+  for (let i = 1; i < VIVID.length; i++) {
+    const [b, cb] = VIVID[i]!;
+    if (s <= b) {
+      const [a, ca] = VIVID[i - 1]!;
+      const t = (s - a) / (b - a);
+      rgb = [0, 1, 2].map((k) => Math.round(ca[k]! + (cb[k]! - ca[k]!) * t)) as unknown as RGB;
+      break;
+    }
+  }
+  return `#${rgb.map((v) => v.toString(16).padStart(2, "0")).join("")}`;
+}
