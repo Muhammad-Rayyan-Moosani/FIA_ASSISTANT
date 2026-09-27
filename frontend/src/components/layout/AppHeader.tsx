@@ -16,6 +16,8 @@ interface AppHeaderProps {
   webgl: boolean | null;
   onOpenPlan: () => void;
   planDisabled: boolean;
+  /** Only on the Insurance tab. */
+  showPlan: boolean;
 }
 
 export function AppHeader(p: AppHeaderProps) {
@@ -29,9 +31,11 @@ export function AppHeader(p: AppHeaderProps) {
       <nav className="flex flex-wrap items-center gap-2.5" aria-label="View">
         <CircuitSelect circuits={p.circuits} value={p.circuitId} onChange={p.onCircuit} />
         <ViewToggle value={p.view} onChange={p.onView} webgl={p.webgl} />
-        <Button variant="primary" onClick={p.onOpenPlan} disabled={p.planDisabled}>
-          Safety plan
-        </Button>
+        {p.showPlan && (
+          <Button variant="primary" onClick={p.onOpenPlan} disabled={p.planDisabled}>
+            Safety plan
+          </Button>
+        )}
       </nav>
     </header>
   );
