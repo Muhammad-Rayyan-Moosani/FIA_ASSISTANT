@@ -42,7 +42,7 @@ export interface SceneData {
   scale: SceneScale;
   speedKph: number[];
   lengthM: number;
-  maxPremium: number;
+  maxWeight: number;
 }
 
 /** Per-zone flash level (0..1), written on a severe crash, read by the barrier visuals. */

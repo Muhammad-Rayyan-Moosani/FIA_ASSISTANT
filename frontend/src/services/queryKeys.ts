@@ -9,6 +9,8 @@ export const queryKeys = {
   track: (circuit: string) => ["track", circuit] as const,
   incidents: (q: IncidentQuery) => ["incidents", q.circuit, q.zone_id ?? null, q.season ?? null] as const,
   incidentsForCircuit: (circuit: string) => ["incidents", circuit] as const,
+  exposure: (circuit: string) => ["exposure", circuit] as const,
+  safetyPlan: (circuit: string) => ["safety-plan", circuit] as const,
   riskMap: (circuit: string, series: Series, upgrades?: UpgradeSet) =>
     ["risk-map", circuit, series, serializeUpgrades(upgrades) ?? ""] as const,
   riskMapsForCircuit: (circuit: string) => ["risk-map", circuit] as const,

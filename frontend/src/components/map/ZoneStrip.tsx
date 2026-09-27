@@ -2,7 +2,6 @@
 
 import { useEffect, useRef } from "react";
 import { cn } from "@/lib/cn";
-import { formatEur } from "@/lib/format";
 import { ZONE_TYPE_LABEL } from "@/lib/labels";
 import { riskHex } from "@/lib/riskColor";
 import type { ZoneView } from "@/lib/zoneView";
@@ -14,7 +13,7 @@ interface ZoneStripProps {
   onSelect: (zoneId: string) => void;
 }
 
-/** Every zone in lap order with its risk colour and premium; doubles as the legend and a keyboard-friendly selector. */
+/** Every zone in lap order with its colour and serious incidents per weekend; doubles as the legend and a keyboard-friendly selector. */
 export function ZoneStrip({ zones, selectedZoneId, onSelect }: ZoneStripProps) {
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -43,7 +42,7 @@ export function ZoneStrip({ zones, selectedZoneId, onSelect }: ZoneStripProps) {
               <b className="display truncate text-[15px] font-semibold leading-tight tracking-[0.03em]">{zone.short_name}</b>
               <span className="flex justify-between gap-1.5 text-[11px] text-muted">
                 <span className="truncate">{zone.turn_number ? `T${zone.turn_number}` : ZONE_TYPE_LABEL[zone.zone_type]}</span>
-                <span className="num">{risk ? formatEur(risk.premium_eur) : "…"}</span>
+                <span className="num">{risk ? risk.label.replace(" / weekend", "/wkd") : "…"}</span>
               </span>
             </button>
           );

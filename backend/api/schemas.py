@@ -367,3 +367,121 @@ class AssetMap(Contract):
     assets: list[Asset]
     context: AssetContext
     sources: dict[AssetSourceKey, SourceInfo]
+
+
+# ------------------------------------------------------------------ third-party exposure (exposure.ts)
+class SeasonCount(Contract):
+    season: int
+    count: int
+
+
+class ZoneExposure(Contract):
+    zone_id: str
+    rank: int
+    serious_total: int
+    serious_per_weekend: float
+    marshals_out_total: int
+    marshals_out_per_weekend: float
+    near_crowd: bool
+    grandstands: list[str]
+    entry_speed_kph: float
+    by_season: list[SeasonCount]
+    score: int = Field(ge=0, le=100)
+    tier: RiskTier
+
+
+class BacktestYear(Contract):
+    season: int
+    trained_on: str
+    predicted: list[str]
+    hits: int
+    total: int
+
+
+class Backtest(Contract):
+    top_k: int
+    years: list[BacktestYear]
+    hits: int
+    total: int
+    share: float
+    chance_share: float
+    lift: float
+
+
+class ExposureContext(Contract):
+    attendance: int | None
+    attendance_year: int | None
+    attendance_source: str | None
+    history_year: int | None
+    history: str | None
+    history_source: str | None
+    task_force: str
+    task_force_source: str
+
+
+class ExposureMap(Contract):
+    circuit: str
+    weekends: int
+    sessions: int
+    seasons: list[int]
+    serious_total: int
+    serious_per_weekend: float
+    marshals_out_total: int
+    marshals_out_per_weekend: float
+    near_crowd_total: int
+    near_crowd_share: float
+    crowd_lap_share: float
+    backtest: Backtest
+    top_zones: list[str]
+    zones: list[ZoneExposure]
+    context: ExposureContext
+    sources: dict[str, SourceInfo | None]
+
+
+# ------------------------------------------------------------------ safety plan (safetyPlan.ts)
+class CostRange(Contract):
+    low: float
+    high: float
+
+
+class SafetyOption(Contract):
+    key: Literal["close_rows", "tecpro", "debris_fence", "guardrail"]
+    title: str
+    action: str
+    protects_against: str
+    cost: CostRange | None
+    cost_basis: str
+    recurring: bool
+    provenance: str
+    source: str | None
+    note: str | None
+    recommended: bool
+
+
+class SafetyCorner(Contract):
+    zone_id: str
+    name: str
+    full_name: str
+    rank: int
+    serious_per_weekend: float
+    marshals_out_per_weekend: float
+    entry_speed_kph: float
+    apex_speed_kph: float
+    grandstands: list[str]
+    frontage_m: float
+    why: str
+    options: list[SafetyOption]
+
+
+class PlanAssumption(Contract):
+    label: str
+    value: str
+    source: str | None = None
+
+
+class SafetyPlan(Contract):
+    circuit: str
+    currency: Literal["CAD"]
+    corners: list[SafetyCorner]
+    assumptions: list[PlanAssumption]
+    disclaimer: str

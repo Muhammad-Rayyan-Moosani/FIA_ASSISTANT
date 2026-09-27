@@ -3,7 +3,6 @@
 import { useFrame } from "@react-three/fiber";
 import { useMemo, type RefObject } from "react";
 import { Vector3 } from "three";
-import { formatEur } from "@/lib/format";
 import type { SceneData } from "./sceneTypes";
 
 const TOP_N = 3;
@@ -48,12 +47,12 @@ export function ZoneLabelProjector({ anchors, nodes }: { anchors: LabelAnchor[];
   return null;
 }
 
-/** Outside the Canvas: the label elements. The most expensive zones, plus selected and hovered, are shown. */
+/** Outside the Canvas: the label elements. The busiest zones, plus selected and hovered, are shown. */
 export function ZoneLabelLayer({ scene, nodes, selectedZoneId, hoveredZoneId }: { scene: SceneData; nodes: LabelNodes; selectedZoneId: string | null; hoveredZoneId: string | null }) {
   const top = new Set(
     scene.zones
       .filter((z) => z.view.risk)
-      .sort((a, b) => b.view.risk!.premium_eur - a.view.risk!.premium_eur)
+      .sort((a, b) => b.view.risk!.weight - a.view.risk!.weight)
       .slice(0, TOP_N)
       .map((z) => z.view.zone.zone_id),
   );
@@ -76,7 +75,7 @@ export function ZoneLabelLayer({ scene, nodes, selectedZoneId, hoveredZoneId }: 
           >
             <b className="display block text-[13px] font-semibold tracking-wide">{view.zone.short_name}</b>
             <span className="num text-[11px] text-muted">
-              {formatEur(view.risk.premium_eur)} · {view.risk.risk_tier.toLowerCase()}
+              {view.risk.label}
             </span>
           </div>
         );
