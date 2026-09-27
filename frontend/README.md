@@ -95,3 +95,27 @@ When the stream sends `done`, the frontend refetches circuits, the track, incide
 - **`sources`** (`provenance: measured | assumed | modelled`) drives the Real / Assumed / Calculated tags. Set it honestly per field.
 - **Errors** use the envelope `{"error": {"code", "message", "detail"}}`. The `message` is shown to users.
 - **CORS** must allow the frontend origin for `GET`/`POST` with `Content-Type`.
+
+## Page 2 · FIA (race control)
+
+The app has two pages, switched with the **Insurance | FIA** tabs (`components/layout/PageTabs.tsx`) at the top-left of each header:
+
+1. **Insurance** (`/insurance`, and `/` redirects here): everything above, served by `backend/` on port 8000.
+2. **FIA** (`/fia`): served by the separate FIA service in `../FIA` on port **8100**. It shows:
+   - μMap live grip map
+   - plain-language Race director messages
+   - the `/ws/alerts` alert feed
+   - camera check (homography and segmentation)
+   - search over the real FIA 2026 Sporting Regulations
+   - team-radio → rules
+
+```bash
+cd ../FIA && .venv\Scripts\python -m uvicorn app.main:app --port 8100   # see ../FIA/README.md for setup
+```
+
+The FIA page follows the same layering:
+
+- `types/fia.ts` → `services/fia.service.ts` → `hooks/fia/*` (`useFiaFeed` WebSocket, TanStack Query actions)
+- `lib/fiaFeed.ts` (pure reducer, unit-tested) → `components/fia/*` + `components/workspace/FiaWorkspace.tsx`
+
+It reads `NEXT_PUBLIC_FIA_API_URL` (default `http://localhost:8100`). Unlike the insurance page, its race scenario is synthetic demo data (telemetry, camera frame, radio clip) and is labelled as such on screen. The rulebook is the real regulations PDF. If the FIA service is down, only the FIA page shows a connection message; the Insurance page does not depend on it.

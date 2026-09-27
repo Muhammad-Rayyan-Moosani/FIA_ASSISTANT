@@ -4,6 +4,7 @@ import { IconReport } from "@/assets/icons";
 import { CircuitSelect } from "@/components/controls/CircuitSelect";
 import { SeriesToggle } from "@/components/controls/SeriesToggle";
 import { ViewToggle } from "@/components/controls/ViewToggle";
+import { PageTabs } from "@/components/layout/PageTabs";
 import { Button } from "@/components/ui/Button";
 import type { MapView } from "@/store/uiStore";
 import type { Series } from "@/types/api";
@@ -25,6 +26,7 @@ interface AppHeaderProps {
 export function AppHeader(p: AppHeaderProps) {
   return (
     <header className="flex flex-wrap items-center gap-x-5 gap-y-3 border-b border-line bg-panel px-4 py-3 lg:px-5">
+      <PageTabs active="insurance" />
       <div className="mr-auto flex min-w-0 flex-col max-lg:w-full">
         <span className="display text-[22px] font-bold uppercase leading-none tracking-[0.06em]">Circuit Risk Twin</span>
         <span className="text-xs text-muted">FIA Assistant · zone-based motorsport insurance</span>
