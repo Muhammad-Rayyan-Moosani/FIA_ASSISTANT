@@ -10,7 +10,7 @@ import type { Asset, AssetMap } from "@/types/assets";
 import { CameraRig } from "./CameraRig";
 import { CrashEffects } from "./CrashEffects";
 import { SceneEnvironment } from "./SceneEnvironment";
-import { TRACK_WIDTH_M, VERTICAL_EXAGGERATION, type FlashMap, type SceneData } from "./sceneTypes";
+import { DRAWN_TRACK_WIDTH_M, VERTICAL_EXAGGERATION, type FlashMap, type SceneData, type SceneTheme } from "./sceneTypes";
 import { Structures, type StructureEvents } from "./Structures";
 import { Surroundings } from "./Surroundings";
 import { Terrain } from "./Terrain";
@@ -34,6 +34,7 @@ export interface TrackSceneProps {
   riskOverlay: boolean;
   showTraffic: boolean;
   reducedMotion: boolean;
+  theme: SceneTheme;
 }
 
 /** The 3D digital twin at real scale: track, run-off, barriers, OSM structures, woods and water, live cars. */
@@ -48,7 +49,7 @@ export default function TrackScene3D(p: TrackSceneProps) {
   const scene: SceneData = useMemo(() => {
     const n = frame.points.length;
     const u = unitsPerMetre(p.extentM);
-    const trackHalf = (TRACK_WIDTH_M / 2) * u;
+    const trackHalf = (DRAWN_TRACK_WIDTH_M / 2) * u;
     // The run-off depth per zone is a placeholder; where a real (OSM) structure stands on the outside of a zone,
     // the barrier is drawn just in front of it instead of through it.
     const nearestOutside = (zoneId: string, side: 1 | -1): number => {
@@ -75,7 +76,7 @@ export default function TrackScene3D(p: TrackSceneProps) {
         let apex = range[0];
         for (let i = range[0]; i <= range[1]; i++) if ((p.speedKph[i] ?? 999) < (p.speedKph[apex] ?? 999)) apex = i;
         const side = outwardSign(frame, range[0], range[1]);
-        const runoffM = Math.max(3, Math.min(view.zone.runoff_depth_m, nearestOutside(view.zone.zone_id, side) - TRACK_WIDTH_M / 2 - 3));
+        const runoffM = Math.max(3, Math.min(view.zone.runoff_depth_m, nearestOutside(view.zone.zone_id, side) - DRAWN_TRACK_WIDTH_M / 2 - 3));
         return {
           view,
           range,
@@ -104,19 +105,26 @@ export default function TrackScene3D(p: TrackSceneProps) {
   const onZoneHover = useCallback((id: string | null) => setHoveredZone(id), []);
 
   const cursor = hover || hoveredZone ? "pointer" : "grab";
+  const night = p.theme === "night";
+  // OSM barrier lines that now fall on the (widened) asphalt would stand in the cars' way; the zone barriers replace them.
+  const visibleAssets = useMemo(
+    () => p.assets?.assets.filter((a) => a.category !== "barrier" || a.distance_to_track_m > DRAWN_TRACK_WIDTH_M / 2 + 2),
+    [p.assets],
+  );
 
   return (
     <div className="absolute inset-0">
       <Canvas
         shadows
         dpr={[1, 2]}
-        camera={{ fov: 38, near: 0.3, far: 3000, position: [150, 120, 110] }}
+        gl={{ logarithmicDepthBuffer: true, antialias: true }}
+        camera={{ fov: 38, near: 0.5, far: 4000, position: [150, 120, 110] }}
         style={{ cursor, touchAction: "none" }}
         aria-label="3D model of the circuit with its structures, coloured by insurance risk"
       >
-        <SceneEnvironment />
-        {p.assets && <Terrain context={p.assets.context} scene={scene} />}
-        {p.assets && <Surroundings context={p.assets.context} scene={scene} />}
+        <SceneEnvironment theme={p.theme} />
+        {p.assets && <Terrain context={p.assets.context} scene={scene} night={night} />}
+        {p.assets && <Surroundings context={p.assets.context} scene={scene} night={night} />}
         <TrackSurface scene={scene} context={p.assets?.context} />
         {scene.zones.map((placed) => (
           <ZoneSafety
@@ -125,15 +133,16 @@ export default function TrackScene3D(p: TrackSceneProps) {
             placed={placed}
             selected={placed.view.zone.zone_id === p.selectedZoneId}
             hovered={placed.view.zone.zone_id === hoveredZone}
+            night={night}
             riskOverlay={p.riskOverlay}
             flash={flash}
             onSelect={p.onSelectZone}
             onHover={onZoneHover}
           />
         ))}
-        {p.assets && (
+        {visibleAssets && (
           <Structures
-            assets={p.assets.assets}
+            assets={visibleAssets}
             track={frame.points}
             scale={scene.scale}
             riskOverlay={p.riskOverlay}
@@ -142,8 +151,8 @@ export default function TrackScene3D(p: TrackSceneProps) {
             events={structureEvents}
           />
         )}
-        <Traffic scene={scene} visible={p.showTraffic} />
-        <CrashEffects scene={scene} flash={flash} reducedMotion={p.reducedMotion} />
+        <Traffic scene={scene} visible={p.showTraffic} night={night} />
+        <CrashEffects scene={scene} flash={flash} reducedMotion={p.reducedMotion} night={night} />
         <ZoneLabelProjector anchors={anchors} nodes={labelNodes} />
         <CameraRig focus={focus} resetKey={p.circuitId} reducedMotion={p.reducedMotion} />
       </Canvas>

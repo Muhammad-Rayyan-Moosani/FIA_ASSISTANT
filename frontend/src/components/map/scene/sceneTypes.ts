@@ -2,12 +2,17 @@ import type { TrackFrame } from "@/lib/trackGeometry";
 import type { ZoneView } from "@/lib/zoneView";
 import type { RunoffType } from "@/types/track";
 
-/** Real track width; lateral distances in the scene are true to scale. */
+/** Assumed real track width (no open source publishes it per section). */
 export const TRACK_WIDTH_M = 14;
+/** The track is drawn 3× its real width so the racing surface and its risk lights read from the overview camera. */
+export const TRACK_DRAW_SCALE = 3;
+export const DRAWN_TRACK_WIDTH_M = TRACK_WIDTH_M * TRACK_DRAW_SCALE;
 /** Heights (structures, barriers, fences, trees) are drawn ×2 so they read from the overview camera. */
 export const VERTICAL_EXAGGERATION = 2;
-/** Cars are drawn ×3 so they are visible at circuit scale. */
-export const CAR_SCALE = 3;
+/** Cars are drawn ×6 so they are visible at circuit scale. */
+export const CAR_SCALE = 6;
+
+export type SceneTheme = "day" | "night";
 
 export interface SceneScale {
   /** World units per metre. */

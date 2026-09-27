@@ -647,13 +647,14 @@ Location: `frontend/` · Stack: **Next.js 16 (App Router) · React 19 · TypeScr
 
 | Element | Implementation |
 |---|---|
-| Scale | True-scale plan from `TrackGeometry.extent_m` (14 m track width); heights ×2 and cars ×3 so they read from the overview camera |
+| Scale | True-scale plan from `TrackGeometry.extent_m`; the track is drawn 3× its (assumed 14 m) width, heights ×2 and cars ×6 so they read from the overview camera. Logarithmic depth buffer, so layered surfaces don't flicker when zoomed out |
+| Day / night | One app-wide switch (`store/themeStore.ts`, remembered per browser, no flash on load): light UI + daylight sky and sun, or dark UI + night sky with stars, moonlight, lit windows, street lamps along roads and bridges, glowing cars |
 | Environment | Physical sky, sun with soft shadows, grass ground; OSM woods (instanced trees) and water |
 | Geometry | Pure functions in `lib/trackGeometry.ts` (unit-tested): outline → track frame, zone index ranges, outside-of-corner side, ribbon/wall meshes, striped kerbs |
 | Track | `TrackSurface`: asphalt at real width, white lines, start line, red/white kerbs at each real apex (slowest point of the reference lap), OSM pit lane and old raceways |
 | Structures | `Structures`: every OSM structure extruded at its real footprint (grandstands as raked seating that rises away from the track), coloured by type, tinted by exposure in risk view, hover tooltip and click-to-select |
-| Cars | `Traffic`: cars lapping at the real reference-lap speed |
-| Zones | `ZoneSafety`: run-off surface by type, barrier by type (tyre wall, guardrail, concrete, TecPro, SAFER), catch fence by grandstands. In risk view: a glow band brightest at the track edge fading across the run-off, a solid risk-coloured edge line, a light asphalt tint, a glowing barrier cap and a white gate where each zone starts (selected zone pulses). The barrier is drawn in front of any real structure the placeholder run-off would cross |
+| Cars | `Traffic`: a field of 10 cars at the real reference-lap speed on a racing line built from the track curvature (outside–apex–outside), following and pulling out to overtake, with traction and braking limits, body roll and pitch, spinning and steering wheels and a rain light that flashes under braking |
+| Zones | `ZoneSafety`: run-off surface by type, barrier by type (tyre wall, guardrail, concrete, TecPro, SAFER), catch fence by grandstands. In risk view the zone's colour is light coming out of the track: additive light curtains rising from both track edges with pulses flowing in the race direction (`zoneLight.ts` shader), light pooling on the asphalt and spilling across the run-off, a glowing barrier cap and a white gate where each zone starts (selected zone pulses). The barrier is drawn in front of any real structure the placeholder run-off would cross |
 | Surroundings | `Terrain` (river, islands, lakes, woods with trees, grass, beaches, parking) and `Surroundings` (roads, rail, bridges on piers, city buildings), all from OSM |
 | Effects | `CrashEffects`: each simulated crash is replayed as a car leaving the racing line at its impact speed, sliding across the run-off (dust by surface) and stopping or hitting the barrier (debris; barrier flash on a severe crash). Ingested incidents rise as pins |
 | Labels | DOM overlay positioned every frame by `ZoneLabelProjector` (top 3 zones + selected + hovered) |

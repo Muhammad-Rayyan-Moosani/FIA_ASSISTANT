@@ -54,7 +54,7 @@ function groundGeometry(ground: AssetContext["ground"]): BufferGeometry {
 }
 
 /** Ground from OpenStreetMap (river, islands, lakes, woods, grass, beaches, parking) and trees in the woods. */
-export function Terrain({ context, scene }: { context: AssetContext; scene: SceneData }) {
+export function Terrain({ context, scene, night }: { context: AssetContext; scene: SceneData; night: boolean }) {
   const { u, h } = scene.scale;
   const woods = useMemo(() => context.woods.map((p) => p.map(([x, y]) => toWorld(x, y))), [context.woods]);
   const ground = useMemo(() => groundGeometry(context.ground), [context.ground]);
@@ -122,7 +122,7 @@ export function Terrain({ context, scene }: { context: AssetContext; scene: Scen
   return (
     <group>
       <mesh geometry={ground} renderOrder={-1} receiveShadow raycast={() => null}>
-        <meshStandardMaterial vertexColors roughness={0.95} depthWrite={false} side={DoubleSide} />
+        <meshStandardMaterial vertexColors roughness={0.95} depthWrite={false} side={DoubleSide} emissive="#0c1a33" emissiveIntensity={night ? 0.9 : 0} />
       </mesh>
       {trees.length > 0 && (
         <>

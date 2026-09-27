@@ -289,3 +289,36 @@ export function crossLine(frame: TrackFrame, i: number, from: number, to: number
   const at = (off: number, s: number) => [p.x + q.x * off + t.x * s, y, p.z + q.z * off + t.z * s];
   return { positions: new Float32Array([...at(from, -w), ...at(from, w), ...at(to, -w), ...at(to, w)]), indices: [0, 2, 1, 1, 2, 3] };
 }
+
+/**
+ * A vertical curtain of light standing on the track at a lateral offset, with per-vertex attributes for a shader:
+ * `aH` 0 at the ground → 1 at the top, `aT` 0 → 1 along the zone, `aS` distance along the zone (world units).
+ */
+export function lightCurtain(frame: TrackFrame, a: number, b: number, offset: number, height: number): MeshData & { aH: Float32Array; aT: Float32Array; aS: Float32Array } {
+  const list = indexList(a, b, frame.points.length, false);
+  const positions = new Float32Array(list.length * 6);
+  const aH = new Float32Array(list.length * 2);
+  const aT = new Float32Array(list.length * 2);
+  const aS = new Float32Array(list.length * 2);
+  const indices: number[] = [];
+  let s = 0;
+  list.forEach((i, k) => {
+    const p = frame.points[i]!;
+    const q = frame.normals[i]!;
+    if (k > 0) {
+      const prev = frame.points[list[k - 1]!]!;
+      s += Math.hypot(p.x - prev.x, p.z - prev.z);
+    }
+    const x = p.x + q.x * offset;
+    const z = p.z + q.z * offset;
+    positions.set([x, 0.02, z, x, height, z], k * 6);
+    aH.set([0, 1], k * 2);
+    aT.set([k / Math.max(1, list.length - 1), k / Math.max(1, list.length - 1)], k * 2);
+    aS.set([s, s], k * 2);
+    if (k < list.length - 1) {
+      const o = k * 2;
+      indices.push(o, o + 2, o + 1, o + 1, o + 2, o + 3);
+    }
+  });
+  return { positions, indices, aH, aT, aS };
+}

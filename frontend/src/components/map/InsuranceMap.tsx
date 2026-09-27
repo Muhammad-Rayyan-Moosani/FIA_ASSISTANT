@@ -6,6 +6,7 @@ import { StateMessage } from "@/components/ui/StateMessage";
 import { Button } from "@/components/ui/Button";
 import { SAMPLE_SEASONS, type SimulationState } from "@/hooks/insurance/useSimulationStream";
 import type { ZoneView } from "@/lib/zoneView";
+import { useThemeStore } from "@/store/themeStore";
 import type { MapView } from "@/store/uiStore";
 import type { AssetMap } from "@/types/assets";
 import type { TrackGeometry } from "@/types/track";
@@ -60,6 +61,7 @@ function Toggle({ on, onChange, children }: { on: boolean; onChange: (on: boolea
 
 /** The map column: 3D twin or 2D fallback, overlays, and the zone strip. */
 export function InsuranceMap(p: InsuranceMapProps) {
+  const theme = useThemeStore((s) => s.theme);
   return (
     <section className="grid min-h-0 min-w-0 grid-cols-1 grid-rows-[1fr_auto] bg-bg max-lg:h-[min(68vh,580px)] max-lg:min-h-[420px]" aria-label="Circuit risk map">
       <div className="relative min-h-0 min-w-0 overflow-hidden">
@@ -81,6 +83,7 @@ export function InsuranceMap(p: InsuranceMapProps) {
                 riskOverlay={p.riskOverlay}
                 showTraffic={p.showTraffic}
                 reducedMotion={p.reducedMotion}
+                theme={theme}
               />
             ) : (
               <TrackMap2D outline={p.track.outline} zones={p.zones} assets={p.assets} selectedZoneId={p.selectedZoneId} onSelectZone={p.onSelectZone} reducedMotion={p.reducedMotion} />
@@ -106,7 +109,7 @@ export function InsuranceMap(p: InsuranceMapProps) {
               <p className="pointer-events-none hidden text-right text-[11px] leading-snug text-white/80 [text-shadow:0_1px_2px_rgba(0,0,0,0.6)] lg:block">
                 {p.view === "3d" ? "Drag to orbit · scroll to zoom · click a zone or building" : "Click a zone"}
                 <br />
-                {p.view === "3d" && "True-scale plan · track width 14 m (assumed) · heights ×2 · cars ×3 · "}
+                {p.view === "3d" && "True-scale plan · track drawn 3× wide · heights ×2 · cars ×6 · "}
                 {p.assets?.attribution ?? ""}
               </p>
             </div>
