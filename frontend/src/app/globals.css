@@ -1,25 +1,26 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg: #0b1117;
-  --color-panel: #121a22;
-  --color-panel-2: #17212b;
-  --color-line: #233140;
-  --color-line-soft: #1b2733;
-  --color-ink: #e3e9ef;
-  --color-muted: #8b9bab;
-  --color-faint: #5d6e7f;
-  --color-accent: #86b7e8;
-  --color-accent-ink: #0b1117;
+  /* Claude-style palette: warm charcoal, ivory text, clay accent. */
+  --color-bg: #1f1e1d;
+  --color-panel: #262624;
+  --color-panel-2: #30302e;
+  --color-line: #3d3c38;
+  --color-line-soft: #33322f;
+  --color-ink: #f4f2ea;
+  --color-muted: #b9b6aa;
+  --color-faint: #86847b;
+  --color-accent: #d97757;
+  --color-accent-ink: #1f1e1d;
 
-  --color-risk-low: #3fbf8a;
-  --color-risk-med: #e8b23a;
-  --color-risk-high: #f07a3a;
-  --color-risk-crit: #e5484d;
+  --color-risk-low: #7fb069;
+  --color-risk-med: #e3b04b;
+  --color-risk-high: #ec8a3c;
+  --color-risk-crit: #e0584f;
 
-  --color-src-measured: #4fd1c5;
-  --color-src-assumed: #c9a0ff;
-  --color-src-modelled: #86b7e8;
+  --color-src-measured: #7fb8a8;
+  --color-src-assumed: #b89cf0;
+  --color-src-modelled: #d97757;
 
   --animate-fade-in: fade-in 180ms ease-out;
   --animate-slide-in: slide-in 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -38,27 +39,28 @@
   --font-display: var(--font-barlow), "Arial Narrow", "Roboto Condensed", sans-serif;
   --font-sans: var(--font-plex-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: var(--font-plex-mono), ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --font-serif: var(--font-source-serif), Georgia, "Times New Roman", serif;
 }
 
 /* Day mode: the same tokens, light. Risk and source colours darkened for contrast on white. */
 :root[data-theme="light"] {
-  --color-bg: #eef2f6;
-  --color-panel: #ffffff;
-  --color-panel-2: #f4f7fa;
-  --color-line: #d5dde6;
-  --color-line-soft: #e4eaf0;
-  --color-ink: #0f1a24;
-  --color-muted: #536170;
-  --color-faint: #7d8a97;
-  --color-accent: #1f6fc2;
+  --color-bg: #f5f4ed;
+  --color-panel: #faf9f5;
+  --color-panel-2: #f0eee6;
+  --color-line: #e2ded2;
+  --color-line-soft: #ebe8de;
+  --color-ink: #1f1e1d;
+  --color-muted: #5e5d59;
+  --color-faint: #8b897f;
+  --color-accent: #c15f3c;
   --color-accent-ink: #ffffff;
-  --color-risk-low: #1b9a66;
-  --color-risk-med: #b3820c;
-  --color-risk-high: #cf5b19;
-  --color-risk-crit: #cf3238;
-  --color-src-measured: #0e968c;
-  --color-src-assumed: #8656d4;
-  --color-src-modelled: #1f6fc2;
+  --color-risk-low: #4f8a3c;
+  --color-risk-med: #b07d12;
+  --color-risk-high: #c8621b;
+  --color-risk-crit: #c23b33;
+  --color-src-measured: #3f8a78;
+  --color-src-assumed: #7d58c4;
+  --color-src-modelled: #c15f3c;
   color-scheme: light;
 }
 
