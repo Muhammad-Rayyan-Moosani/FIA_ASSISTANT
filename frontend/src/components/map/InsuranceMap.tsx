@@ -9,7 +9,7 @@ import { useThemeStore } from "@/store/themeStore";
 import type { MapView } from "@/store/uiStore";
 import type { ReactNode } from "react";
 import type { AssetMap } from "@/types/assets";
-import type { Deployment, Mast } from "@/types/raceControl";
+import type { Deployment, Mast, StoryInput } from "@/types/raceControl";
 import type { TrackGeometry } from "@/types/track";
 import { cn } from "@/lib/cn";
 import { TrackMap2D } from "./fallback/TrackMap2D";
@@ -46,6 +46,8 @@ interface InsuranceMapProps {
     replayActive: boolean;
     focusPoint: { x: number; y: number } | null;
     onSelectMast: (sector: number) => void;
+    story: StoryInput;
+    onCinematic: (on: boolean) => void;
   };
   /** Overlays drawn over the map (cockpit warning, replay bar). */
   overlay?: ReactNode;
@@ -98,6 +100,7 @@ export function InsuranceMap(p: InsuranceMapProps) {
                 deployment={p.raceControl.deployment}
                 replayActive={p.raceControl.replayActive}
                 focusPoint={p.raceControl.focusPoint}
+                story={p.raceControl.story}
               />
             ) : (
               <TrackMap2D
@@ -123,6 +126,7 @@ export function InsuranceMap(p: InsuranceMapProps) {
               <div className="flex gap-1.5">
                 <Toggle on={p.riskOverlay} onChange={p.onRiskOverlay}>Incident view</Toggle>
                 {p.view === "3d" && <Toggle on={p.showTraffic} onChange={p.onShowTraffic}>Live cars</Toggle>}
+                {p.view === "3d" && <Toggle on={p.raceControl.story.cinematic} onChange={p.raceControl.onCinematic}>Cinematic replay</Toggle>}
               </div>
               <p className="pointer-events-none hidden text-right text-[11px] leading-snug text-white/80 [text-shadow:0_1px_2px_rgba(0,0,0,0.6)] lg:block">
                 {p.view === "3d" ? "Drag to orbit · scroll to zoom · click a zone, building or marshal mast" : "Click a zone or marshal mast"}

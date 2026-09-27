@@ -1,4 +1,5 @@
 import { cn } from "@/lib/cn";
+import { useStoryStore } from "@/store/storyStore";
 import type { DriverWarning } from "@/types/raceControl";
 
 const TONE: Record<DriverWarning["tone"], { led: string; text: string; ring: string }> = {
@@ -16,7 +17,9 @@ const LEDS = 15;
  * system would flash to that driver. Car and distance come from the real replay positions.
  */
 export function DriverHud({ warning }: { warning: DriverWarning | null }) {
-  if (!warning) return null;
+  // during the cinematic replay the display appears with the "cars behind are warned" shot, not over the crash
+  const stage = useStoryStore((s) => s.stage);
+  if (!warning || stage === "approach" || stage === "impact" || stage === "race_control") return null;
   const tone = TONE[warning.tone];
   const blink = warning.tone === "double_yellow" || warning.tone === "sc" || warning.tone === "red";
   return (

@@ -34,6 +34,7 @@ import { heatFromExposure, joinZones, topZoneId } from "@/lib/zoneView";
 import { describeError } from "@/services/http/errors";
 import { useUiStore } from "@/store/uiStore";
 import type { AssetMap } from "@/types/assets";
+import type { StoryInput } from "@/types/raceControl";
 import type { RiskTier } from "@/types/risk";
 
 type SideTab = "race" | "insurance";
@@ -58,7 +59,8 @@ export function UnifiedTrackView() {
   const riskOverlay = useUiStore((s) => s.riskOverlay);
   const showTraffic = useUiStore((s) => s.showTraffic);
   const selectedAssetId = useUiStore((s) => s.selectedAssetId);
-  const { setCircuit, setView, selectZone, setRiskOverlay, setShowTraffic, selectAsset } = useUiStore.getState();
+  const cinematic = useUiStore((s) => s.cinematic);
+  const { setCircuit, setView, selectZone, setRiskOverlay, setShowTraffic, selectAsset, setCinematic } = useUiStore.getState();
 
   const webgl = useWebGLSupport();
   const reducedMotion = usePrefersReducedMotion();
@@ -124,7 +126,15 @@ export function UnifiedTrackView() {
 
   const incX = rc.incident?.x;
   const incY = rc.incident?.y;
-  const focusPoint = useMemo(() => (incX !== undefined && incY !== undefined ? { x: incX, y: incY } : null), [incX, incY]);
+  // with the cinematic replay on, the director flies the camera; otherwise just fly to the crash
+  const focusPoint = useMemo(() => (!cinematic && incX !== undefined && incY !== undefined ? { x: incX, y: incY } : null), [cinematic, incX, incY]);
+  const story = useMemo<StoryInput>(
+    () => ({
+      cinematic, replaySeq: rc.replaySeq, incidentSeq: rc.incidentSeq, replayIncident: rc.replayIncident, incident: rc.incident,
+      warning: rc.warning, deployment: rc.deployment, masts: rc.masts,
+    }),
+    [cinematic, rc.replaySeq, rc.incidentSeq, rc.replayIncident, rc.incident, rc.warning, rc.deployment, rc.masts],
+  );
   const busy = actions.replay.isPending || actions.evaluate.isPending;
   const actionError = actions.error ? describeError(actions.error) : null;
   const replayingSummary = incidents.data?.incidents.find((i) => i.incident_id === rc.replay?.incident_id) ?? null;
@@ -176,6 +186,8 @@ export function UnifiedTrackView() {
             replayActive: Boolean(rc.replay),
             focusPoint,
             onSelectMast: (sector) => actions.evaluate.mutate({ target: { marshal_sector: sector }, speed }),
+            story,
+            onCinematic: setCinematic,
           }}
           overlay={
             <>

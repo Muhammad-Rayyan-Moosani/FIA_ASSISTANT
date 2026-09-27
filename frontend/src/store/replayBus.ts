@@ -22,3 +22,12 @@ export const replayBus = {
     };
   },
 };
+
+/** Where each replay car is drawn right now (world units), written by the 3D replay layer every frame. */
+export interface CarPose {
+  x: number;
+  z: number;
+  yaw: number;
+  speed: number;
+}
+export const replayPositions = new Map<string, CarPose>();

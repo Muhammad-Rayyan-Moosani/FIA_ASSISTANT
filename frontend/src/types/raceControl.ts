@@ -243,3 +243,15 @@ export type RaceControlEvent =
   | { type: "replay_start"; data: ReplayState & { incident: IncidentSummary } }
   | { type: "replay_end"; data: ReplayState }
   | { type: "stream_error"; data: { message: string } };
+
+/** What the cinematic replay needs from race-control state (passed down to the 3D scene). */
+export interface StoryInput {
+  cinematic: boolean;
+  replaySeq: number;
+  incidentSeq: number;
+  replayIncident: IncidentSummary | null;
+  incident: ActiveIncident | null;
+  warning: DriverWarning | null;
+  deployment: Deployment;
+  masts: Mast[];
+}

@@ -1,10 +1,14 @@
-import type { RaceControlEvent, RaceControlSnapshot } from "@/types/raceControl";
+import type { IncidentSummary, RaceControlEvent, RaceControlSnapshot } from "@/types/raceControl";
 
 /** Everything the race-control UI shows, folded from the SSE stream. Car frames bypass this (see replayBus). */
 export interface RaceControlState extends RaceControlSnapshot {
   streamError: string | null;
   /** Bumps on each new incident so the map can fly to it once. */
   incidentSeq: number;
+  /** Bumps on each replay start (restarts the cinematic camera). */
+  replaySeq: number;
+  /** The incident being replayed (known before the impact, for the approach shot). */
+  replayIncident: IncidentSummary | null;
 }
 
 export const initialRaceControlState: RaceControlState = {
@@ -19,6 +23,8 @@ export const initialRaceControlState: RaceControlState = {
   hazards: [],
   streamError: null,
   incidentSeq: 0,
+  replaySeq: 0,
+  replayIncident: null,
 };
 
 const LOG_LIMIT = 60;
@@ -54,8 +60,10 @@ export function raceControlReducer(state: RaceControlState, event: RaceControlEv
       const h = { segment: event.data.segment, level: event.data.level, sector: event.data.sector, zone_name: "", cars: event.data.cars, min_residual: event.data.min_residual, lap_frac: 0 };
       return { ...state, hazards: [...rest, h] };
     }
-    case "replay_start":
-      return { ...state, replay: { ...event.data, running: true }, streamError: null };
+    case "replay_start": {
+      const { incident, ...replay } = event.data;
+      return { ...state, replay: { ...replay, running: true }, replayIncident: incident, replaySeq: state.replaySeq + 1, streamError: null };
+    }
     case "replay_end":
       return { ...state, replay: event.data };
     case "stream_error":

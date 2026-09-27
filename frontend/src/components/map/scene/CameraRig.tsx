@@ -14,10 +14,12 @@ interface CameraRigProps {
   /** Changes when the circuit changes; resets the camera. */
   resetKey: string;
   reducedMotion: boolean;
+  /** Called when the user starts dragging / zooming. */
+  onUserInput?: () => void;
 }
 
 /** Orbit camera: slow auto-rotation until the user takes over, and a smooth fly-in to the selected zone. */
-export function CameraRig({ focus, resetKey, reducedMotion }: CameraRigProps) {
+export function CameraRig({ focus, resetKey, reducedMotion, onUserInput }: CameraRigProps) {
   const controls = useRef<ComponentRef<typeof OrbitControls>>(null);
   const camera = useThree((s) => s.camera);
   const size = useThree((s) => s.size);
@@ -60,11 +62,12 @@ export function CameraRig({ focus, resetKey, reducedMotion }: CameraRigProps) {
       dampingFactor={0.08}
       autoRotate={!reducedMotion}
       autoRotateSpeed={0.35}
-      minDistance={8}
+      minDistance={3}
       maxDistance={320}
       minPolarAngle={0.28}
       maxPolarAngle={1.38}
       onStart={() => {
+        onUserInput?.();
         goal.current = null;
         if (controls.current) controls.current.autoRotate = false;
       }}

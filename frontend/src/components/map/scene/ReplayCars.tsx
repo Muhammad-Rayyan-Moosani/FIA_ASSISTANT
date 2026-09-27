@@ -4,7 +4,7 @@ import { useFrame } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
 import { Group, Mesh, MeshBasicMaterial, RingGeometry } from "three";
 import { toWorld } from "@/lib/trackGeometry";
-import { replayBus } from "@/store/replayBus";
+import { replayBus, replayPositions } from "@/store/replayBus";
 import type { CarsFrame } from "@/types/raceControl";
 import { carParts, createCar, disposeCar, WHEEL_RADIUS_M } from "./carModel";
 import { CAR_SCALE, type SceneData } from "./sceneTypes";
@@ -43,6 +43,7 @@ class ReplayField {
     const live = new Set(frame?.cars.map((c) => c.n) ?? []);
     for (const [n, c] of this.cars) {
       if (!live.has(n)) {
+        replayPositions.delete(n);
         this.group.remove(c.car);
         disposeCar(c.car);
         this.cars.delete(n);
@@ -77,7 +78,7 @@ class ReplayField {
 
   tick(dt: number, t: number): void {
     const k = 1 - Math.exp(-dt * SMOOTH);
-    for (const c of this.cars.values()) {
+    for (const [n, c] of this.cars) {
       const dx = c.tx - c.x;
       const dz = c.tz - c.z;
       if (Math.hypot(dx, dz) > 1e-4) {
@@ -90,6 +91,7 @@ class ReplayField {
       c.z += dz * k;
       c.car.position.set(c.x, 0.02, c.z);
       c.car.rotation.y = c.yaw;
+      replayPositions.set(n, { x: c.x, z: c.z, yaw: c.yaw, speed: c.speed });
       const parts = carParts(c.car);
       c.spin = (c.spin + Math.min(MAX_SPIN, c.speed / 3.6 / WHEEL_RADIUS_M) * dt) % (Math.PI * 2);
       parts.wheels.forEach((w) => (w.rotation.x = c.spin));
@@ -98,6 +100,7 @@ class ReplayField {
   }
 
   dispose(): void {
+    replayPositions.clear();
     for (const c of this.cars.values()) {
       this.group.remove(c.car);
       disposeCar(c.car);
