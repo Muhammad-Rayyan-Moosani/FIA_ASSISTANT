@@ -10,7 +10,7 @@ import type { RaceControlEvent } from "@/types/raceControl";
 export type StreamConnection = "connecting" | "live" | "offline";
 
 const EVENTS: RaceControlEvent["type"][] = [
-  "snapshot", "reset", "cars", "masts", "incident", "rules", "advisory", "severity", "driver_warning", "deployment", "log", "grip",
+  "snapshot", "reset", "cars", "masts", "incident", "rules", "advisory", "escalation", "slow_car", "severity", "driver_warning", "deployment", "log", "grip",
   "replay_start", "replay_end", "stream_error",
 ];
 

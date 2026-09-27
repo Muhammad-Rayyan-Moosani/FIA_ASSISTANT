@@ -180,6 +180,21 @@ def _ancestors(number: str) -> list[str]:
     return [".".join(parts[:i]) for i in range(1, len(parts))]
 
 
+def _window(body: str, start: int, max_chars: int) -> str:
+    """``body[start:start + max_chars]`` moved to word boundaries so a chunk never starts or ends mid-word
+    (from Yash's fix to FIA/app/services/rag.py)."""
+    if start and body[start - 1] != " ":                    # began mid-word: skip to the next word
+        sp = body.find(" ", start)
+        if 0 <= sp - start < 40:
+            start = sp + 1
+    end = start + max_chars
+    if end < len(body) and body[end] != " ":                # would end mid-word: back up to the last space
+        sp = body.rfind(" ", start, end)
+        if sp > start:
+            end = sp
+    return body[start:end].strip()
+
+
 def chunk_pages(document: str, pages: list[str], max_chars: int, overlap: int) -> list[Chunk]:
     """Split on article numbers, then window long articles with overlap.
 
@@ -237,7 +252,7 @@ def chunk_pages(document: str, pages: list[str], max_chars: int, overlap: int) -
         head = " › ".join(c for c in crumbs if c) or None
         body = " ".join(lines)
         for start in range(0, max(len(body) - overlap, 1), step):
-            piece = body[start:start + max_chars].strip()
+            piece = _window(body, start, max_chars)
             if len(piece) >= 20:
                 chunks.append(Chunk(document, art, pno, piece, head))
     return chunks
@@ -394,3 +409,36 @@ def cite(chunk: Chunk, score: float) -> dict:
 
 def search(query: str, top_k: int = 3, min_score: float = 0.2) -> list[dict]:
     return [cite(c, s) for c, s in get_index().search(query, top_k) if s >= min_score]
+
+
+# Stage -> queries in the regulations' own vocabulary (Yash, FIA/app/services/incident_query.py): "Car stationary on
+# the track" finds the right articles, our words ("driver not responding") do not.
+STAGE_QUERIES: dict[str, list[str]] = {
+    "slow": ["Drivers must slow down and be prepared to change direction when a yellow flag is shown"],
+    "crash": ["Car stationary on the track, marshals must remove it",
+              "Safety Car deployed to neutralise the session on the order of the Race Director"],
+    "stopped": ["Car stationary on the track, marshals must remove it",
+                "Virtual Safety Car procedure and speed requirements"],
+    "red": ["Race Director suspends the session with a red flag"],
+}
+FLAG_STAGE = {"SC": "crash", "VSC": "stopped", "DOUBLE_YELLOW": "crash", "YELLOW": "slow", "SLIPPERY": "slow", "RED": "red"}
+
+
+def rules_for_flag(flag: str, top_k: int = 3, per_query: int = 3, min_score: float = 0.55) -> list[dict]:
+    """The best articles for an incident stage, one entry per article, best first. ``min_score`` is a MiniLM
+    cosine: the right articles score ~0.57-0.69, unrelated ones 0.47-0.52 (not comparable across embedders,
+    so the hashing fallback uses a lower floor)."""
+    index = get_index()
+    floor = min_score if index.embedder.name.startswith("sentence-transformers") else 0.1
+    best: dict[str | None, dict] = {}
+    for q in STAGE_QUERIES.get(FLAG_STAGE.get(flag, "slow"), []):
+        seen: set[str | None] = set()
+        for chunk, score in index.search(q, per_query * 4):
+            if chunk.article in seen:
+                continue
+            seen.add(chunk.article)
+            if len(seen) > per_query:
+                break
+            if score >= floor and (chunk.article not in best or score > best[chunk.article]["score"]):
+                best[chunk.article] = cite(chunk, score)
+    return sorted(best.values(), key=lambda r: -r["score"])[:top_k]

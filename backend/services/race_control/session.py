@@ -27,7 +27,12 @@ from services import multimodal_severity as ms
 from services import repository
 from services.race_control import alerts, impact, packs, rulebook, steward_agent
 from services.race_control import frame as fr
+from services.race_control.escalation import IncidentTracker
 from services.race_control.grip import GripEngine
+from services.race_control.samples import Sample
+from services.race_control.slow_car import ReferenceLine, RelativeSpeedDetector
+from services.race_control.turns import TurnLocator
+from services.data_loader import RAW_DIR, ROOT_DIR
 
 log = logging.getLogger(__name__)
 
@@ -38,14 +43,6 @@ QUEUE_SIZE = 400
 MAST_ORDER = {s: i for i, s in enumerate(alerts.MAST_STATES)}
 DEPLOY_LABEL = {"sc": "Safety Car deployed", "vsc": "Virtual Safety Car deployed", "red": "Red flag",
                 "green": "Track clear"}
-RULE_QUERY = {
-    "SC": "When is the safety car deployed and what must drivers do behind it?",
-    "VSC": "Virtual safety car procedure: when it is used and the delta time drivers must keep",
-    "DOUBLE_YELLOW": "Double waved yellow flags: drivers must slow significantly and be prepared to stop, no overtaking",
-    "YELLOW": "Single waved yellow flag: reduce speed, no overtaking in the sector",
-    "SLIPPERY": "Slippery surface flag and deteriorated grip on the track",
-    "RED": "Red flag: suspending a session, cars return slowly to the pit lane",
-}
 
 
 def _now() -> str:
@@ -155,7 +152,7 @@ class RaceControlSession:
             mx, my = zip(*(f.centre(float(x), float(y)) for x, y in zip(nx, ny)))
             _, idx = f.tree.query(a[:, 4:6])
             d = pack["drivers"].get(n) or {}
-            cars[n] = {"t": a[:, 0], "v": a[:, 1], "brake": a[:, 3], "x": np.array(mx), "y": np.array(my),
+            cars[n] = {"t": a[:, 0], "v": a[:, 1], "brake": a[:, 3], "x": np.array(mx), "y": np.array(my), "rx": a[:, 4], "ry": a[:, 5],
                        "frac": f.frac[idx], "code": d.get("code"), "colour": d.get("colour"),
                        "involved": n in pack["involved"]}
         return cars
@@ -172,6 +169,7 @@ class RaceControlSession:
             self.publish("replay_start", {"incident": summary, **self.replay})
             self.note(f"Replaying {summary['session_type']} {summary['season']}: {summary['raw_message']}")
             fed = {n: int(np.searchsorted(c["t"], t0)) for n, c in cars.items()}
+            det, tracker, turns = await asyncio.to_thread(self._slow_car_detector, cars, t0)
             triggered, last_hud = False, -1e9
             T = t0
             while T <= t1:
@@ -183,6 +181,8 @@ class RaceControlSession:
                         for ev in self.grip.ingest(n, float(c["t"][i]), float(c["v"][i]), float(c["brake"][i]),
                                                    float(c["frac"][i])):
                             self._on_grip(ev)
+                        if det is not None:
+                            self._on_sample(det, tracker, turns, pack, n, c, i)
                         fed[n] += 1
                     if c["t"][0] <= T <= c["t"][-1] + 1.0:
                         i = max(0, fed[n] - 1)
@@ -206,6 +206,66 @@ class RaceControlSession:
         except Exception as exc:                  # never leave the map hanging on a broken replay
             log.exception("replay failed")
             self.publish("stream_error", {"message": f"Replay failed: {exc}"})
+
+    # ------------------------------------------------------------------ Yash's detectors
+    def _slow_car_detector(self, cars: dict, t0: float):
+        """Relative-speed detector + escalation ladder (Yash), warmed up on the replay window before it starts."""
+        try:
+            f = fr.frame(self.circuit)
+            ref = ReferenceLine(f.xy, self.grip.lap_length_m)
+            det = RelativeSpeedDetector(ref)
+            warm = [Sample(float(c["t"][i]), int(n), float(c["v"][i]), float(c["rx"][i]), float(c["ry"][i]))
+                    for n, c in cars.items() for i in range(int(np.searchsorted(c["t"], t0)))]
+            det.fit(warm)
+            turns = None
+            pts, trk = RAW_DIR / f"{self.circuit}_track_points.json", ROOT_DIR / "tracks" / f"{self.circuit}.json"
+            if pts.exists():
+                turns = TurnLocator.from_files(ref, pts, trk)
+            return det, IncidentTracker(), turns
+        except (ValueError, KeyError) as exc:           # too little warm-up data in this window
+            log.info("slow-car detector off for this replay: %s", exc)
+            return None, None, None
+
+    def _on_sample(self, det, tracker, turns, pack: dict, n: str, c: dict, i: int) -> None:
+        det.set_neutralised(self.deployment in ("sc", "vsc", "red"))
+        s = Sample(float(c["t"][i]), int(n), float(c["v"][i]), float(c["rx"][i]), float(c["ry"][i]))
+        who = alerts.driver_label(pack["drivers"], n)
+        ev = det.update(s)
+        if ev is not None:
+            where = turns.locate(ev.progress).label if turns else f"{ev.progress:.0%} round the lap"
+            sector = fr.sector_for_frac(self.circuit, ev.progress)
+            behind = det.warn_behind(ev)
+            if ev.kind == "crash":
+                self.note(f"Relative-speed detector: {who} stopped dead near {where} (about {ev.peak_decel_g:.0f} g).", "alert")
+            else:
+                self.hazards[f"slow-{n}"] = {"segment": f"slow-{n}", "level": "WATCH", "sector": sector, "zone_name": where,
+                                             "cars": [n], "min_residual": round(ev.relative, 2), "lap_frac": round(ev.progress, 4)}
+                self._recompute_masts()
+                self.note(f"SLOW CAR · {who} at {ev.speed_kph:.0f} km/h near {where}, where cars do {ev.expected_kph:.0f}.", "warn")
+            if behind:
+                names = ", ".join(f"{alerts.driver_label(pack['drivers'], str(w.car))} {w.gap_m:.0f} m" for w in behind[:3])
+                self.note(f"Warned behind: {names}.", "info")
+            self.publish("slow_car", {"car": n, "kind": ev.kind, "where": where, "sector": sector,
+                                      "speed_kph": round(ev.speed_kph), "expected_kph": round(ev.expected_kph),
+                                      "behind": [{"car": str(w.car), "gap_m": round(w.gap_m)} for w in behind[:5]]})
+            if not tracker.is_open(int(n)):
+                self._escalate(tracker.open(ev), who)
+        if tracker.is_open(int(n)):
+            upd = tracker.update(s)
+            if upd is not None:
+                if upd.stage == "moving_again":
+                    self.hazards.pop(f"slow-{n}", None)
+                    self._recompute_masts()
+                self._escalate(upd, who)
+
+    def _escalate(self, upd, who: str) -> None:
+        live = {"car": str(upd.car), "stage": upd.stage, "flag": upd.flag, "reason": upd.reason,
+                "stopped_for_s": round(upd.stopped_for_s, 1)}
+        if self.incident and self.incident.get("collision") and self.incident["collision"]["driver"] == live["car"]:
+            self.incident["live"] = live
+        self.publish("escalation", live)
+        label = {"SC": "Safety Car", "VSC": "VSC", "DOUBLE_YELLOW": "double yellow", "YELLOW": "yellow"}.get(upd.flag, upd.flag)
+        self.note(f"Escalation · {who}: {upd.reason} → {label}.", "action" if upd.flag in ("SC", "VSC") else "warn")
 
     def _on_grip(self, ev) -> None:
         f = fr.frame(self.circuit)
@@ -235,7 +295,7 @@ class RaceControlSession:
             impact.crash_impact, self.circuit, summary["zone_id"], summary["x"], summary["y"],
             imp["impact_speed_kph"] if imp else None)
         cars_behind = self._cars_behind(summary, cars, T, exclude=set(pack["involved"]))
-        self.incident = {**summary, "advice": advice, "collision": imp, "insurance": loss, "rules": [],
+        self.incident = {**summary, "advice": advice, "collision": imp, "insurance": loss, "rules": [], "live": None,
                          "cars_behind": cars_behind, "advisory": None, "detected_at": _now()}
         self._recompute_masts()
         self.publish("incident", self.incident)
@@ -273,7 +333,7 @@ class RaceControlSession:
         if not inc:
             return
         try:
-            cites = await asyncio.to_thread(rulebook.search, RULE_QUERY.get(flag, RULE_QUERY["YELLOW"]), 3)
+            cites = await asyncio.to_thread(rulebook.rules_for_flag, flag, 3)
         except Exception as exc:
             log.warning("rulebook search failed: %s", exc)
             cites = []

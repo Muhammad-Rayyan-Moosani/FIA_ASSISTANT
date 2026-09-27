@@ -147,8 +147,18 @@ export interface CarBehind {
   speed_kph: number;
 }
 
+/** Live escalation ladder for the incident car (Yash's tracker): slow -> stopped -> VSC / SC, as it happens. */
+export interface LiveEscalation {
+  car: string;
+  stage: "slow" | "crash" | "stopped" | "engine_off" | "moving_again";
+  flag: SuggestedFlag;
+  reason: string;
+  stopped_for_s: number;
+}
+
 export interface ActiveIncident extends IncidentSummary {
   advice: Advice;
+  live: LiveEscalation | null;
   cars_behind: CarBehind[];
   advisory: StewardAdvisory | null;
   collision: CollisionEstimate | null;
@@ -267,6 +277,8 @@ export type RaceControlEvent =
   | { type: "incident"; data: ActiveIncident }
   | { type: "rules"; data: { incident_id: string; rules: RuleCitation[] } }
   | { type: "advisory"; data: { incident_id: string; advisory: StewardAdvisory } }
+  | { type: "escalation"; data: LiveEscalation }
+  | { type: "slow_car"; data: { car: string; kind: string; where: string; sector: number | null; speed_kph: number; expected_kph: number; behind: { car: string; gap_m: number }[] } }
   | { type: "severity"; data: SeverityResult }
   | { type: "driver_warning"; data: DriverWarning }
   | { type: "deployment"; data: { deployment: Deployment; label: string; at: string } }

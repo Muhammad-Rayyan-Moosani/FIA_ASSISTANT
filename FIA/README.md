@@ -1,6 +1,6 @@
 # μMap & FIA Assist — Backend
 
-> **Merged into `backend/`.** Race control now runs in the main API (`backend/api/race_control.py`, `backend/services/race_control/`) on real OpenF1 replays, and the frontend shows it on the unified map. This folder is kept for reference; the frontend no longer calls it.
+> **Merged into `backend/`.** Race control now runs in the main API (`backend/api/race_control.py`, `backend/services/race_control/`) on real OpenF1 replays, and the frontend shows it on the unified map. This folder is kept for reference; the frontend no longer calls it. Yash's relative-speed detector, escalation ladder, window loader, turn locator, chunking fix and eval harness are ported into `backend/services/race_control/` and `backend/scripts/` with their tests.
 
 FastAPI service for the μMap real-time grip-anomaly engine, the actuarial track-risk model and the FIA rulebook / team-radio assistant.
 

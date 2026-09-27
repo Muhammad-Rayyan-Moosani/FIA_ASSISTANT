@@ -44,6 +44,8 @@ export function raceControlReducer(state: RaceControlState, event: RaceControlEv
       return state.incident?.incident_id === event.data.incident_id ? { ...state, incident: { ...state.incident, rules: event.data.rules } } : state;
     case "advisory":
       return state.incident?.incident_id === event.data.incident_id ? { ...state, incident: { ...state.incident, advisory: event.data.advisory } } : state;
+    case "escalation":
+      return state.incident?.collision?.driver === event.data.car ? { ...state, incident: { ...state.incident, live: event.data } } : state;
     case "severity":
       return { ...state, severity: event.data };
     case "driver_warning":

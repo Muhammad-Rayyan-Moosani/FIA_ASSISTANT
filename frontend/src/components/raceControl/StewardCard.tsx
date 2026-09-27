@@ -95,6 +95,17 @@ export function StewardCard({ incident, deployment, onDeploy, busy }: StewardCar
         )}
       </div>
 
+      {incident.live && (
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-line-soft bg-bg px-2.5 py-2 text-[12.5px]">
+          <span className="size-2 animate-pulse rounded-full bg-risk-crit" />
+          <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">Live</span>
+          <span>{incident.live.reason}</span>
+          <span className="text-faint">→</span>
+          <FlagChip flag={incident.live.flag} />
+          <span className="text-[11px] text-faint">escalation ladder, from the car&apos;s telemetry as it happens</span>
+        </div>
+      )}
+
       {adv && adv.driver_messages.length > 0 && (
         <div className="grid gap-1.5">
           <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">Sent to the cars behind</p>
