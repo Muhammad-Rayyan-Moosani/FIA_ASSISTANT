@@ -1,0 +1,27 @@
+[
+  {"query": "Car exceeded the pit lane speed limit", "expected": ["B1.6.3"], "split": "dev",
+   "note": "anchor from DEMO.md (B1.6.3, p. 10, 80 km/h pit lane limit)"},
+  {"query": "When can the safety car be deployed?", "expected": ["B5.13"], "split": "dev",
+   "note": "anchor from DEMO.md (B5.13.1, p. 43); section-level match"},
+  {"query": "Driver left the track and gained a lasting advantage", "expected": ["B1.8.6"], "split": "dev",
+   "note": "anchor from test_rulebook_parsing.py (B1.8.6 'use the track at all times')"},
+  {"query": "Car stationary on the track, marshals must remove it", "expected": ["B1.5.2"], "split": "dev",
+   "note": "TODO confirm in the PDF (p. 6): seen in search output, not yet read in the document"},
+  {"query": "Race Director suspends the session with a red flag", "expected": ["B5.14"], "split": "dev",
+   "note": "TODO confirm in the PDF: seen as 'B5.14.2 Suspension of a TTCS' in search output"},
+  {"query": "A driver abandons the car on the circuit", "expected": ["B1.8.8", "B1.8.9"], "split": "test",
+   "note": "TODO confirm in the PDF (p. 13)"},
+
+  {"query": "Car stopped on the racing line after contact at a corner and the driver is not responding on the radio", "expected": [], "split": "test", "note": "TODO"},
+  {"query": "Debris on the track after a collision between two cars", "expected": [], "split": "dev", "note": "TODO"},
+  {"query": "Virtual safety car procedure and speed requirements", "expected": [], "split": "dev", "note": "TODO"},
+  {"query": "Car slowing on track with a suspected mechanical problem", "expected": [], "split": "dev", "note": "TODO"},
+  {"query": "A driver leaving the car after an accident", "expected": [], "split": "dev", "note": "TODO"},
+  {"query": "Overtaking while the safety car is on track", "expected": [], "split": "test", "note": "TODO"},
+  {"query": "Pit lane status during a safety car period or red flag", "expected": [], "split": "dev", "note": "TODO"},
+  {"query": "Medical intervention and examination of a driver after an accident", "expected": [], "split": "dev", "note": "TODO: may not be in Section B; search the PDF for 'medical'"},
+  {"query": "A driver causing a collision, and the penalties", "expected": [], "split": "test", "note": "TODO"},
+  {"query": "Waved yellow and double yellow flag requirements for drivers", "expected": [], "split": "dev", "note": "TODO"},
+  {"query": "Driving unnecessarily slowly or erratically", "expected": [], "split": "test", "note": "TODO"},
+  {"query": "Procedure to restart the race after a red flag", "expected": [], "split": "dev", "note": "TODO"}
+]

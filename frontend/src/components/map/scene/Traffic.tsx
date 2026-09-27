@@ -2,7 +2,8 @@
 
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
-import type { Group } from "three";
+import { BoxGeometry, type Group, Mesh, MeshBasicMaterial } from "three";
+import type { Deployment } from "@/types/raceControl";
 import { sampleAlong } from "@/lib/trackGeometry";
 import { carParts, createCar, disposeCar, LIVERIES, WHEEL_RADIUS_M, type CarParts } from "./carModel";
 import { CAR_SCALE, type SceneData } from "./sceneTypes";
@@ -15,6 +16,9 @@ const MIN_GAP_M = 22;
 const LATERAL_SPEED = 9;      // m/s, how fast a car changes line
 const MAX_SPIN = 28;          // rad/s shown on the wheels (faster reads as strobing)
 const G = 9.81;
+/** Share of the reference speed the field may run under each race-control state (visual pacing, not a delta). */
+const MODE_PACE: Record<Deployment, number> = { green: 1, vsc: 0.6, sc: 0.42, red: 0.3 };
+const SC_GAP_M = 70;
 
 /** Signed curvature per outline point (1/m, + = turning towards the left normal), lightly smoothed. */
 function curvature(scene: SceneData, segM: number): number[] {
@@ -76,6 +80,9 @@ class TrafficSim {
   private readonly kappa: number[];
   private readonly line: number[];
   private clock = 0;
+  private readonly safetyCar: Group;
+  private readonly lightBar: MeshBasicMaterial;
+  private readonly lightGeo = new BoxGeometry(0.9, 0.12, 0.25);
 
   constructor(private readonly group: Group, private readonly scene: SceneData) {
     const n = scene.frame.points.length;
@@ -91,6 +98,14 @@ class TrafficSim {
         pace: 1 - i * 0.0035, yaw: 0, x: 0, z: 0, spin: 0, accel: 0,
       };
     });
+    // the Safety Car: silver, with a light bar that flashes amber while it is out
+    this.safetyCar = createCar("#c9ced4", scene.scale.u * CAR_SCALE);
+    this.lightBar = new MeshBasicMaterial({ color: "#ffb000", toneMapped: false });
+    const bar = new Mesh(this.lightGeo, this.lightBar);
+    bar.position.set(0, 1.05, 0.2);
+    carParts(this.safetyCar).body.add(bar);
+    this.safetyCar.visible = false;
+    group.add(this.safetyCar);
   }
 
   private speedAt(f: number): number {
@@ -115,19 +130,21 @@ class TrafficSim {
     return best;
   }
 
-  tick(rawDt: number, night: boolean): void {
+  tick(rawDt: number, night: boolean, mode: Deployment): void {
     const dt = Math.min(rawDt, 0.05);
     this.clock += dt;
     const n = this.scene.frame.points.length;
     const { u, trackHalf } = this.scene.scale;
     const carWidth = 2 * CAR_SCALE * u;
+    const modePace = MODE_PACE[mode];
+    const neutralised = mode !== "green";
     this.racers.forEach((r, i) => {
       // longitudinal: chase the reference speed with traction / braking limits, back off behind a slower car
-      let target = this.speedAt(r.f + 1.5) * r.pace;
+      let target = this.speedAt(r.f + 1.5) * r.pace * modePace;
       const front = this.ahead(i);
       if (front && front.gapM < FOLLOW_GAP_M && Math.abs(front.r.w - r.w) < carWidth * 1.3) {
         target = Math.min(target, front.r.v + (front.gapM - MIN_GAP_M) * 0.6);
-        if (r.passT <= 0 && front.gapM < FOLLOW_GAP_M * 0.8) {
+        if (!neutralised && r.passT <= 0 && front.gapM < FOLLOW_GAP_M * 0.8) {
           // pull out to the side with more room and try a pass
           const room = front.r.w >= 0 ? -1 : 1;
           r.pass = room * trackHalf * 0.55;
@@ -177,6 +194,21 @@ class TrafficSim {
       r.parts.rainLight.color.setRGB(blink, blink * 0.08, blink * 0.1);
       r.parts.paint.emissiveIntensity = night ? 0.28 : 0;
     });
+    this.tickSafetyCar(mode, night);
+  }
+
+  private tickSafetyCar(mode: Deployment, night: boolean): void {
+    this.safetyCar.visible = mode === "sc";
+    if (mode !== "sc") return;
+    const lead = this.racers[0]!;
+    const n = this.scene.frame.points.length;
+    const f = (lead.f + SC_GAP_M / this.segM) % n;
+    const p = sampleAlong(this.scene.frame, f, this.line[Math.floor(f) % n]! * 0.5);
+    this.safetyCar.position.set(p.x, 0.02, p.z);
+    this.safetyCar.rotation.y = p.heading;
+    const on = Math.sin(this.clock * 18) > 0;
+    this.lightBar.color.setRGB(on ? 3 : 0.4, on ? 1.6 : 0.2, 0);
+    carParts(this.safetyCar).paint.emissiveIntensity = night ? 0.3 : 0;
   }
 
   dispose(): void {
@@ -184,11 +216,14 @@ class TrafficSim {
       this.group.remove(r.car);
       disposeCar(r.car);
     });
+    this.group.remove(this.safetyCar);
+    disposeCar(this.safetyCar);
+    this.lightGeo.dispose();
   }
 }
 
 /** Cars lapping at the real reference-lap speed (real time): flat out on the straights, braking into each corner. */
-export function Traffic({ scene, visible, night }: { scene: SceneData; visible: boolean; night: boolean }) {
+export function Traffic({ scene, visible, night, mode }: { scene: SceneData; visible: boolean; night: boolean; mode: Deployment }) {
   const groupRef = useRef<Group>(null);
   const simRef = useRef<TrafficSim | null>(null);
 
@@ -203,7 +238,7 @@ export function Traffic({ scene, visible, night }: { scene: SceneData; visible: 
   }, [scene]);
 
   useFrame((_, dt) => {
-    if (visible) simRef.current?.tick(dt, night);
+    if (visible) simRef.current?.tick(dt, night, mode);
   });
 
   return <group ref={groupRef} visible={visible} />;

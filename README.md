@@ -168,6 +168,8 @@ npm run dev                          # → http://localhost:3000
 - [x] Insurance API (risk map · simulate · what-if · report), wired to the frontend
 - [x] Frontend app: 3D digital twin, panels, API + streaming service layer
 - [x] Real structures from OpenStreetMap (grandstands, pit building, bridges, towers, barriers) mapped to insurance coverage lines
+- [x] Unified map: race control and insurance together. Real OpenF1 incident replays, marshal light panels, driver cockpit warning, steward card with SC / VSC / red flag, FIA regulation citations
+- [x] Multimodal severity: collision physics + real team radio through local Hugging Face models (Whisper + emotion classifier)
 - [x] Crash counting limited to physical events (double yellows, confirmed collisions)
 - [x] Underwriter report (template + PDF) · [ ] Claude-written narrative
 

@@ -490,6 +490,42 @@ class UnderwriterReport(BaseModel):
 
 ---
 
+## 6b. Race Control (the FIA safety loop)
+
+Merged from the separate FIA service (`FIA/`, kept for reference) into `backend/`, so the unified map talks to one API.
+Everything replays **real** data; the old synthetic Monza T1 scenario, rendered camera frame and canned radio are gone.
+
+```
+data/race_control/{circuit}_incidents.json   <- scripts/build_incident_packs.py (OpenF1: car_data, location, team_radio, drivers)
+        │  12 counted crashes per circuit (crash_filter, 2023+): every car's telemetry from 45 s before the
+        │  race-control message to 20 s after, the detected impact, radio clip URLs
+        ▼
+services/race_control/session.py   replay at 1-4× real time, per tick:
+   cars ─────────► SSE `cars` (real positions)                    -> 3D replay cars (team colours)
+   grip.py ──────► braking events vs peers in the same 100 m zone -> WATCH/ALERT -> yellow / slippery masts
+   impact ───────► collision.py (physics) + alerts.py             -> steward card (suggested flag), masts
+                   (double yellow in the sector, yellow before), cockpit warning for the car closest behind,
+                   impact.py (insurance: model cost, structures in reach), rulebook.py (FIA articles),
+                   multimodal_severity.py (telemetry now, radio when the local models finish)
+   steward ──────► POST /deploy sc | vsc | red | clear            -> all masts, cockpit display, map traffic
+```
+
+| Piece | What it does |
+| --- | --- |
+| Marshal masts | Real MultiViewer marshal-sector positions, placed on the OpenF1 reference lap; FIA light-panel states `clear · green · yellow · double_yellow · slippery · vsc · sc · red` |
+| Collision estimator | Longitudinal g from Δv/Δt, lateral g from v²κ of the car's own path, impacts from the Step 1 detector (10 s / 2.5 g stop window so a car sliding along a wall still counts), recovering one-sample dips discarded as glitches, ½mv² energy. Levels `incident` / `crash`. Lower bounds at 3.7 Hz |
+| Grip engine (μMap) | Ported residual engine, but scored per braking event against the other cars' events in the same zone (the physics curve over-flagged every zone on OpenF1's binary brake at 3.7 Hz) |
+| Multimodal severity | `POST /api/fia/multimodal-severity`: telemetry 60 % + voice 25 % (Hugging Face, local CPU: `openai/whisper-base.en` transcript -> `j-hartmann/emotion-english-distilroberta-base` distress + crash/reassurance keywords) + audio 15 % (loudness, vocal strain, transients). Low slip < 0.35 ≤ Medium incident < 0.65 ≤ Critical crash. Radio fetched only from livetiming.formula1.com |
+| Rulebook | Ported RAG over the real FIA 2026 Sporting Regulations PDF (`data/rulebooks/`), all-MiniLM-L6-v2 embeddings, word-boundary chunks and stage queries in the regulations' own vocabulary (Yash). `python -m scripts.eval_rulebook`: hit@3 100 %, MRR 0.92 on the labelled queries (n = 6) |
+| Steward agent (LLM) | `steward_agent.py`: Claude (`claude-opus-5`, low effort, structured output, server-side refusal fallbacks) turns the incident facts + retrieved articles into the card: recommended call, reasoning citing only retrieved articles, a message and avoidance step per car behind, steward steps, marshal and spectator notes. The rule-engine card shows instantly and is used, labelled, without `ANTHROPIC_API_KEY`, on timeout or refusal |
+| Slow-car detector + escalation (Yash) | `slow_car.py`: speed vs the field's median at the same 50 m slice, adjusted for field pace (no flags under SC/VSC), plus a violent-stop check; `escalation.py`: follows a flagged car causally, slow -> yellow, crash -> double yellow, stationary -> VSC / SC, moving again -> yellow. Runs live in every replay |
+| Insurance coupling | Each incident selects its zone on the map, and the steward view shows the Step 2 cost of this impact, the zone's mean, the coverage lines engaged and the OSM structures within 200 m |
+
+Endpoints (all under `/api/fia`): `GET {circuit}/marshal-sectors · {circuit}/incidents · {circuit}/state · {circuit}/stream (SSE)`,
+`POST {circuit}/replay · {circuit}/evaluate (marshal_sector | zone_id) · {circuit}/deploy · {circuit}/reset`,
+`POST multimodal-severity · multimodal-severity/upload · collision-estimate · rules/query`, `GET models`.
+Optional models: `pip install -r backend/requirements-ml.txt` (without them the voice leg is reported unavailable, never faked).
+
 ## 7. API Specification
 
 Owner: **R3** · Files: `backend/main.py` (app factory, CORS, router mount), `backend/api/insurance.py` (routes), `backend/api/schemas.py` (Pydantic models)

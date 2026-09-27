@@ -1,8 +1,6 @@
-import type { Metadata } from "next";
-import { FiaWorkspace } from "@/components/workspace/FiaWorkspace";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = { title: "FIA" };
-
-export default function FiaPage() {
-  return <FiaWorkspace />;
+/** Race control and insurance share one map now. */
+export default function LegacyPage() {
+  redirect("/");
 }

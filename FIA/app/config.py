@@ -63,7 +63,7 @@ _PROJECT_DIR = Path(__file__).resolve().parent.parent
 class RagConfig:
     index_dir: Path = field(default_factory=lambda: Path(_env_str("UMAP_RAG_INDEX_DIR", str(_PROJECT_DIR / "data" / "rag_index"))))
     # Every PDF in this folder is ingested at start-up if it is not already in the index.
-    rulebook_dir: Path = field(default_factory=lambda: Path(_env_str("UMAP_RULEBOOK_DIR", str(_PROJECT_DIR / "data" / "rulebooks"))))
+    rulebook_dir: Path = field(default_factory=lambda: Path(_env_str("UMAP_RULEBOOK_DIR", str(_PROJECT_DIR.parent / "data" / "rulebooks"))))
     embedding_model: str = field(default_factory=lambda: _env_str("UMAP_EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2"))
     # "auto" -> sentence-transformers if installed, else hashing fallback.
     embedding_backend: str = field(default_factory=lambda: _env_str("UMAP_EMBEDDING_BACKEND", "auto"))

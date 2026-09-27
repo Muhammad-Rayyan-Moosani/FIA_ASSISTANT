@@ -1,0 +1,8 @@
+# Optional: local models for race control (CPU is fine). Without them the API still runs:
+# the multimodal severity reports the voice leg as unavailable and the rulebook uses a hashing embedder.
+-r requirements.txt
+torch>=2.3
+transformers>=4.44              # Whisper (openai/whisper-base.en) + emotion classifier (j-hartmann/emotion-english-distilroberta-base)
+sentence-transformers>=3.0      # rulebook embeddings (all-MiniLM-L6-v2)
+soundfile>=0.12                 # decode F1 team-radio mp3s
+pdfplumber>=0.11                # parse the FIA Sporting Regulations PDF

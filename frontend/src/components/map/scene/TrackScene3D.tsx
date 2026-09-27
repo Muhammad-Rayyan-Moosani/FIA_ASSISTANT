@@ -7,8 +7,19 @@ import { ASSET_CATEGORY_LABEL } from "@/lib/assetLabels";
 import { buildTrackFrame, outwardSign, unitsPerMetre, WORLD_SCALE, zoneIndexRange } from "@/lib/trackGeometry";
 import type { ZoneView } from "@/lib/zoneView";
 import type { Asset, AssetMap } from "@/types/assets";
+import { useStoryStore } from "@/store/storyStore";
+import type { Deployment, Mast, StoryInput } from "@/types/raceControl";
 import { CameraRig } from "./CameraRig";
 import { CrashEffects } from "./CrashEffects";
+import { CinematicDirector } from "./CinematicDirector";
+import { MarshalMasts } from "./MarshalMasts";
+import { RaceControlTower } from "./RaceControlTower";
+import { SignalArcs } from "./SignalArcs";
+import { StoryCaption } from "./StoryCaption";
+import { StoryCalloutLayer, StoryCalloutProjector } from "./StoryCallouts";
+import { raceControlSite } from "./storyAnchors";
+import { storyCallouts } from "./calloutRules";
+import { ReplayCars } from "./ReplayCars";
 import { SceneEnvironment } from "./SceneEnvironment";
 import { DRAWN_TRACK_WIDTH_M, VERTICAL_EXAGGERATION, type FlashMap, type SceneData, type SceneTheme } from "./sceneTypes";
 import { Structures, type StructureEvents } from "./Structures";
@@ -35,6 +46,15 @@ export interface TrackSceneProps {
   showTraffic: boolean;
   reducedMotion: boolean;
   theme: SceneTheme;
+  /** Race control: marshal light panels, the neutralisation state and whether a real replay is running. */
+  masts: Mast[];
+  onSelectMast: (sector: number) => void;
+  deployment: Deployment;
+  replayActive: boolean;
+  /** Fly the camera here (a replayed crash) instead of the selected zone. */
+  focusPoint: { x: number; y: number } | null;
+  /** Race-control state for the cinematic replay (camera shots, arrow callouts). */
+  story: StoryInput;
 }
 
 /** The 3D digital twin at real scale: track, run-off, barriers, OSM structures, woods and water, live cars. */
@@ -43,6 +63,8 @@ export default function TrackScene3D(p: TrackSceneProps) {
   const [hover, setHover] = useState<{ asset: Asset; x: number; y: number } | null>(null);
   const flash = useRef<FlashMap>(new Map());
   const labelNodes = useRef(new Map<string, HTMLDivElement>());
+  const calloutNodes = useRef(new Map<string, HTMLDivElement>());
+  const stage = useStoryStore((s) => s.stage);
 
   const frame = useMemo(() => buildTrackFrame(p.outline), [p.outline]);
   const assetList = p.assets?.assets;
@@ -90,12 +112,19 @@ export default function TrackScene3D(p: TrackSceneProps) {
   }, [frame, p.outline, p.speedKph, p.lengthM, p.extentM, p.zones, assetList]);
 
   const anchors = useLabelAnchors(scene);
+  const site = useMemo(() => raceControlSite(assetList, frame, scene.scale), [assetList, frame, scene.scale]);
+  const callouts = useMemo(() => storyCallouts(stage, p.story, site?.position ?? null, site?.basis ?? null), [stage, p.story, site]);
+  const storyRunning = stage !== "idle";
+  const towerActive = stage === "race_control" || stage === "drivers" || stage === "overview" || p.deployment !== "green";
+  const focusX = p.focusPoint?.x;
+  const focusY = p.focusPoint?.y;
   const focus = useMemo(() => {
+    if (focusX !== undefined && focusY !== undefined) return new Vector3(focusX * WORLD_SCALE, 0, -focusY * WORLD_SCALE);
     const z = scene.zones.find((q) => q.view.zone.zone_id === p.selectedZoneId);
     if (!z) return null;
     const pt = frame.points[z.mid]!;
     return new Vector3(pt.x, 0, pt.z);
-  }, [scene.zones, p.selectedZoneId, frame]);
+  }, [scene.zones, p.selectedZoneId, frame, focusX, focusY]);
 
   const { onSelectAsset } = p;
   const structureEvents: StructureEvents = useMemo(() => ({
@@ -103,6 +132,10 @@ export default function TrackScene3D(p: TrackSceneProps) {
     onSelect: (asset) => onSelectAsset(asset.asset_id),
   }), [onSelectAsset]);
   const onZoneHover = useCallback((id: string | null) => setHoveredZone(id), []);
+  // dragging the map during a cinematic replay hands the camera back at once
+  const onUserInput = useCallback(() => {
+    if (useStoryStore.getState().stage !== "idle") useStoryStore.getState().skip();
+  }, []);
 
   const cursor = hover || hoveredZone ? "pointer" : "grab";
   const night = p.theme === "night";
@@ -151,12 +184,20 @@ export default function TrackScene3D(p: TrackSceneProps) {
             events={structureEvents}
           />
         )}
-        <Traffic scene={scene} visible={p.showTraffic} night={night} />
+        <Traffic scene={scene} visible={p.showTraffic && !p.replayActive} night={night} mode={p.deployment} />
+        <ReplayCars scene={scene} />
+        <MarshalMasts masts={p.masts} scene={scene} onSelect={p.onSelectMast} />
         <CrashEffects scene={scene} flash={flash} reducedMotion={p.reducedMotion} night={night} />
         <ZoneLabelProjector anchors={anchors} nodes={labelNodes} />
-        <CameraRig focus={focus} resetKey={p.circuitId} reducedMotion={p.reducedMotion} />
+        {site && <RaceControlTower position={site.position} scale={scene.scale} active={towerActive} />}
+        <SignalArcs input={p.story} stage={stage} scale={scene.scale} tower={site?.position ?? null} />
+        <StoryCalloutProjector specs={callouts} nodes={calloutNodes} scale={scene.scale} />
+        <CameraRig focus={storyRunning ? null : focus} resetKey={p.circuitId} reducedMotion={p.reducedMotion} onUserInput={onUserInput} />
+        <CinematicDirector input={p.story} scale={scene.scale} tower={site?.position ?? null} />
       </Canvas>
-      {p.riskOverlay && <ZoneLabelLayer scene={scene} nodes={labelNodes} selectedZoneId={p.selectedZoneId} hoveredZoneId={hoveredZone} />}
+      <StoryCalloutLayer specs={callouts} nodes={calloutNodes} />
+      <StoryCaption />
+      {p.riskOverlay && !storyRunning && <ZoneLabelLayer scene={scene} nodes={labelNodes} selectedZoneId={p.selectedZoneId} hoveredZoneId={hoveredZone} />}
       {hover && (
         <div
           className="pointer-events-none fixed z-30 -translate-x-1/2 -translate-y-[calc(100%+12px)] whitespace-nowrap rounded-md border border-line bg-bg/90 px-2.5 py-1.5 text-xs backdrop-blur"

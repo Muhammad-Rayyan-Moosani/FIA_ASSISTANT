@@ -1,8 +1,6 @@
-import type { Metadata } from "next";
-import { InsuranceWorkspace } from "@/components/workspace/InsuranceWorkspace";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = { title: "Insurance risk map" };
-
-export default function InsurancePage() {
-  return <InsuranceWorkspace />;
+/** Race control and insurance share one map now. */
+export default function LegacyPage() {
+  redirect("/");
 }

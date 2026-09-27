@@ -5,7 +5,11 @@ import type { Incident } from "@/types/track";
  * Fire-and-forget channel for high-frequency map effects (simulated crashes, freshly ingested incidents).
  * The 3D scene animates these imperatively, so they bypass React state and never trigger re-renders.
  */
-export type MapEffect = { kind: "crash"; crash: SimulationCrash } | { kind: "incident"; incident: Incident };
+export type MapEffect =
+  | { kind: "crash"; crash: SimulationCrash }
+  | { kind: "incident"; incident: Incident }
+  /** A real crash being replayed: debris and dust at the impact point (the real car's positions show the rest). */
+  | { kind: "impact"; x: number; y: number; zoneId: string; severe: boolean };
 
 type Listener = (effect: MapEffect) => void;
 

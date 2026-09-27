@@ -5,10 +5,18 @@ import { riskHex } from "@/lib/riskColor";
 import { zoneIndexRange } from "@/lib/trackGeometry";
 import type { ZoneView } from "@/lib/zoneView";
 import type { AssetMap, GroundKind } from "@/types/assets";
+import type { Mast, MastState } from "@/types/raceControl";
+import { replayBus } from "@/store/replayBus";
 import { mapEffects } from "@/store/crashBus";
 import { NEUTRAL_ZONE } from "../scene/sceneTypes";
 
+const MAST_FILL: Record<MastState, string> = {
+  clear: "#3a4652", green: "#1ee36b", yellow: "#ffcc12", double_yellow: "#ffcc12", slippery: "#ff7a1a", vsc: "#ffcc12", sc: "#ffcc12", red: "#ff2a2a",
+};
+
 interface TrackMap2DProps {
+  masts?: Mast[];
+  onSelectMast?: (sector: number) => void;
   outline: [number, number][];
   zones: ZoneView[];
   assets?: AssetMap;
@@ -25,8 +33,31 @@ const GROUND_2D: Record<GroundKind, string> = {
 const toPath = (pts: [number, number][]) => pts.map(([x, y], i) => `${i ? "L" : "M"}${x.toFixed(4)} ${(-y).toFixed(4)}`).join("");
 
 /** Flat SVG map with the same props as the 3D scene. Used without WebGL or on request. */
-export function TrackMap2D({ outline, zones, assets, selectedZoneId, onSelectZone, reducedMotion }: TrackMap2DProps) {
+export function TrackMap2D({ outline, zones, assets, selectedZoneId, onSelectZone, reducedMotion, masts = [], onSelectMast }: TrackMap2DProps) {
   const effectsRef = useRef<SVGGElement>(null);
+  const carsRef = useRef<SVGGElement>(null);
+
+  // real replay cars, drawn imperatively from the replay bus
+  useEffect(
+    () =>
+      replayBus.subscribe((frame) => {
+        const g = carsRef.current;
+        if (!g) return;
+        g.replaceChildren(
+          ...(frame?.cars ?? []).map((c) => {
+            const dot = document.createElementNS(SVG_NS, "circle");
+            dot.setAttribute("cx", String(c.x));
+            dot.setAttribute("cy", String(-c.y));
+            dot.setAttribute("r", c.involved ? "0.011" : "0.007");
+            dot.setAttribute("fill", c.colour ? `#${c.colour}` : "#ccc");
+            dot.setAttribute("stroke", c.involved ? "#ff2b3e" : "#0b1117");
+            dot.setAttribute("stroke-width", c.involved ? "0.004" : "0.0015");
+            return dot;
+          }),
+        );
+      }),
+    [],
+  );
   const trackPath = useMemo(() => `${toPath(outline)}Z`, [outline]);
   const maxWeight = Math.max(0, ...zones.map((z) => z.risk?.weight ?? 0));
 
@@ -35,9 +66,9 @@ export function TrackMap2D({ outline, zones, assets, selectedZoneId, onSelectZon
       mapEffects.subscribe((effect) => {
         const g = effectsRef.current;
         if (!g) return;
-        const x = effect.kind === "crash" ? effect.crash.x : effect.incident.x;
-        const y = effect.kind === "crash" ? effect.crash.y : effect.incident.y;
-        const severe = effect.kind === "crash" && effect.crash.severe;
+        const x = effect.kind === "crash" ? effect.crash.x : effect.kind === "impact" ? effect.x : effect.incident.x;
+        const y = effect.kind === "crash" ? effect.crash.y : effect.kind === "impact" ? effect.y : effect.incident.y;
+        const severe = (effect.kind === "crash" && effect.crash.severe) || (effect.kind === "impact" && effect.severe);
         const dot = document.createElementNS(SVG_NS, "circle");
         dot.setAttribute("cx", String(x));
         dot.setAttribute("cy", String(-y));
@@ -92,6 +123,15 @@ export function TrackMap2D({ outline, zones, assets, selectedZoneId, onSelectZon
         );
       })}
       <g ref={effectsRef} />
+          {masts.map((m) => (
+        <g key={m.sector} role="button" tabIndex={0} aria-label={`Marshal sector ${m.sector}: ${m.state.replace("_", " ")}`} className="cursor-pointer outline-none"
+          onClick={() => onSelectMast?.(m.sector)} onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onSelectMast?.(m.sector)}>
+          <rect x={m.x - 0.009} y={-m.y - 0.009} width={0.018} height={0.018} rx={0.003} fill={MAST_FILL[m.state]} stroke="#0b1117" strokeWidth={0.002}
+            className={m.state === "double_yellow" || m.state === "sc" ? "animate-pulse" : undefined} />
+          <text x={m.x} y={-m.y + 0.0035} fontSize={0.011} textAnchor="middle" fill="#0b1117" fontWeight={700}>{m.sector}</text>
+        </g>
+      ))}
+      <g ref={carsRef} />
     </svg>
   );
 }

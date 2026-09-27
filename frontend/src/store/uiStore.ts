@@ -18,6 +18,8 @@ interface UiState {
   /** Cars lapping at the real reference-lap speed. */
   showTraffic: boolean;
   selectedAssetId: string | null;
+  /** Replays play as a broadcast: camera shots and arrow callouts. */
+  cinematic: boolean;
 
   setCircuit: (id: string) => void;
   setSeries: (series: Series) => void;
@@ -30,6 +32,7 @@ interface UiState {
   setRiskOverlay: (on: boolean) => void;
   setShowTraffic: (on: boolean) => void;
   selectAsset: (assetId: string | null) => void;
+  setCinematic: (on: boolean) => void;
 }
 
 export const useUiStore = create<UiState>()((set) => ({
@@ -42,6 +45,7 @@ export const useUiStore = create<UiState>()((set) => ({
   riskOverlay: true,
   showTraffic: true,
   selectedAssetId: null,
+  cinematic: true,
 
   setCircuit: (id) => set((s) => (s.circuitId === id ? s : { circuitId: id, selectedZoneId: null, selectedAssetId: null })),
   setSeries: (series) => set({ series }),
@@ -62,6 +66,7 @@ export const useUiStore = create<UiState>()((set) => ({
   setReportOpen: (reportOpen) => set({ reportOpen }),
   setRiskOverlay: (riskOverlay) => set({ riskOverlay }),
   setShowTraffic: (showTraffic) => set({ showTraffic }),
+  setCinematic: (cinematic) => set({ cinematic }),
   selectAsset: (selectedAssetId) => set({ selectedAssetId }),
 }));
 

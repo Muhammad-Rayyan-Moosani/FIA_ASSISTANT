@@ -106,6 +106,13 @@ class CrashSim {
       pin.t = 0;
       return;
     }
+    if (effect.kind === "impact") {
+      const p = sampleAlong(this.scene.frame, nearestIndex(this.scene.outline, effect.x, effect.y));
+      this.emit(p.x, 0.9 * u, p.z, effect.severe ? 90 : 45, [0.12, 0.12, 0.13], (effect.severe ? 22 : 13) * u, -9.81 * u * 0.9);
+      this.emit(p.x, 0.1, p.z, 50, [0.8, 0.74, 0.62], 7 * u, -0.3 * u);
+      if (effect.severe) this.flash.set(effect.zoneId, 1);
+      return;
+    }
     const crash = effect.crash;
     const zone = this.zoneById.get(crash.zone_id);
     const c = this.cars.find((x) => !x.active);
