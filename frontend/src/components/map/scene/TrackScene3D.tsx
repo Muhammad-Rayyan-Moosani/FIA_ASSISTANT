@@ -12,6 +12,7 @@ import type { Deployment, Mast, StoryInput } from "@/types/raceControl";
 import { CameraRig } from "./CameraRig";
 import { CrashEffects } from "./CrashEffects";
 import { CinematicDirector } from "./CinematicDirector";
+import { DemoCars } from "./DemoCars";
 import { MarshalMasts } from "./MarshalMasts";
 import { RaceControlTower } from "./RaceControlTower";
 import { SignalArcs } from "./SignalArcs";
@@ -186,6 +187,7 @@ export default function TrackScene3D(p: TrackSceneProps) {
         )}
         <Traffic scene={scene} visible={p.showTraffic && !p.replayActive} night={night} mode={p.deployment} />
         <ReplayCars scene={scene} />
+        <DemoCars scene={scene} />
         <MarshalMasts masts={p.masts} scene={scene} onSelect={p.onSelectMast} />
         <CrashEffects scene={scene} flash={flash} reducedMotion={p.reducedMotion} night={night} />
         <ZoneLabelProjector anchors={anchors} nodes={labelNodes} />

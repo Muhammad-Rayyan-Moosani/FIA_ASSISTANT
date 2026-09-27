@@ -19,7 +19,8 @@ export function crashSubject(input: StoryInput): { car: string | null; point: Ve
   const inc = input.incident;
   if (!inc) return null;
   const w = toWorld(inc.x, inc.y);
-  return { car: inc.collision?.driver ?? null, point: new Vector3(w.x, 0, w.z) };
+  // the demo's car is on screen from the first slip, before any impact
+  return { car: inc.collision?.driver ?? (inc.demo ? inc.involved[0]?.number ?? null : null), point: new Vector3(w.x, 0, w.z) };
 }
 
 /** A replay car's live position, or `fallback` when it is not on screen. */

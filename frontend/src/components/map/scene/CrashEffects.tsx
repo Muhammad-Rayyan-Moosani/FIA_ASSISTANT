@@ -3,7 +3,7 @@
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
 import { BufferAttribute, BufferGeometry, CylinderGeometry, Group, Mesh, MeshStandardMaterial, Points, PointsMaterial, SphereGeometry } from "three";
-import { nearestIndex, sampleAlong } from "@/lib/trackGeometry";
+import { nearestIndex, sampleAlong, WORLD_SCALE } from "@/lib/trackGeometry";
 import { mapEffects, type MapEffect } from "@/store/crashBus";
 import type { RunoffType } from "@/types/track";
 import { carParts, createCar, disposeCar, LIVERIES, WHEEL_RADIUS_M } from "./carModel";
@@ -106,8 +106,16 @@ class CrashSim {
       pin.t = 0;
       return;
     }
+    if (effect.kind === "smoke") {
+      const w = { x: effect.x * WORLD_SCALE, z: -effect.y * WORLD_SCALE };
+      if (effect.dust) this.emit(w.x, 0.05, w.z, 4, DUST.asphalt, 4.2 * u, -0.5 * u);
+      else this.emit(w.x, 0.15 * u, w.z, 3, [0.86, 0.87, 0.9], 1.6 * u, 0.6 * u);
+      return;
+    }
     if (effect.kind === "impact") {
-      const p = sampleAlong(this.scene.frame, nearestIndex(this.scene.outline, effect.x, effect.y));
+      const p = effect.exact
+        ? { x: effect.x * WORLD_SCALE, z: -effect.y * WORLD_SCALE }
+        : sampleAlong(this.scene.frame, nearestIndex(this.scene.outline, effect.x, effect.y));
       this.emit(p.x, 0.9 * u, p.z, effect.severe ? 90 : 45, [0.12, 0.12, 0.13], (effect.severe ? 22 : 13) * u, -9.81 * u * 0.9);
       this.emit(p.x, 0.1, p.z, 50, [0.8, 0.74, 0.62], 7 * u, -0.3 * u);
       if (effect.severe) this.flash.set(effect.zoneId, 1);

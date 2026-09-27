@@ -111,6 +111,52 @@ def test_replay_runs_the_whole_safety_loop(monkeypatch):
     asyncio.run(run())
 
 
+def test_wet_hairpin_demo_drives_the_safety_loop(monkeypatch):
+    async def offline(*_):
+        return None
+    monkeypatch.setattr(RaceControlSession, "_rules_then_advisory", offline)
+
+    async def run():
+        s = RaceControlSession("montreal")
+        q = s.subscribe()
+        zone = next(z for z in fr.frame("montreal").zones if z["zone_id"] == "montreal-z10")
+        frac = (zone["start_frac"] + zone["end_frac"]) / 2
+        summary = await s.start_demo("montreal-z10", 0.1, 0.1, frac)
+        assert summary["session_type"] == "Demo" and summary["raw_message"].startswith("Simulated")
+        await s.demo_event({"kind": "slip", "t": 4.5, "speed_kph": 264, "measured_g": 1.1, "expected_g": 2.85,
+                            "distance_m": 480, "b_speed_kph": 176})
+        assert s.incident["advice"]["flag"] == "SLIPPERY" and s.incident["demo"]
+        assert s.masts[summary["marshal_sector"]] == "slippery"
+        assert s.warning["driver"] == "B" and s.warning["distance_m"] == 480 and s.warning["demo"]
+        card = alerts.rules_advisory(s.incident, s.incident["cars_behind"], "no key")
+        assert card["driver_messages"][0]["message"].startswith("STANDING WATER") and "slippery" in card["steward_steps"][0]
+        await s.demo_event({"kind": "spin", "t": 5.0, "speed_kph": 210, "slide_deg": 21})
+        assert "sideways" in s.log[0]["text"]
+        await s.demo_event({"kind": "impact", "t": 6.9, "speed_kph": 146, "impact_speed_kph": 146, "entry_speed_kph": 171, "peak_g": 30})
+        assert s.incident["collision"]["impact_speed_kph"] == 146 and s.incident["insurance"]["impact_speed_source"] == "simulated"
+        assert s.incident["advice"]["flag"] == "DOUBLE_YELLOW" and s.warning["tone"] == "double_yellow"
+        await s.demo_event({"kind": "stopped", "t": 8.4, "peak_g": 57})
+        assert s.incident["advice"]["flag"] == "SC" and s.incident["collision"]["stopped"]
+        assert s.severity["score"] > 0.5
+        await s.demo_event({"kind": "passed", "t": 23.7, "speed_kph": 113, "min_speed_kph": 39})
+        await s.demo_event({"kind": "end", "t": 26})
+        assert not s.replay["running"]
+        kinds = []
+        while not q.empty():
+            kinds.append(q.get_nowait()["type"])
+        assert kinds.count("incident") == 1 and "incident_update" in kinds and kinds[-1] == "replay_end"
+        await s.reset()
+        assert not await s.demo_event({"kind": "tick", "t": 1})
+
+    asyncio.run(run())
+
+
+def test_demo_api_validates_events():
+    assert client.post(f"{API}/montreal/demo/start", json={"zone_id": "montreal-nowhere", "x": 0, "y": 0, "lap_frac": 0.5}).status_code == 404
+    assert client.post(f"{API}/montreal/demo/event", json={"kind": "slip", "t": 1}).status_code == 422
+    assert client.post(f"{API}/montreal/demo/event", json={"kind": "warp"}).status_code == 422
+
+
 def test_evaluate_without_an_incident_in_the_sector_is_a_404():
     body = client.post(f"{API}/montreal/evaluate", json={"zone_id": "montreal-nowhere"})
     assert body.status_code == 404 and body.json()["error"]["code"] == "NO_INCIDENT_HERE"

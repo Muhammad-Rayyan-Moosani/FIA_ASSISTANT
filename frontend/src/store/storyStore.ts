@@ -28,3 +28,12 @@ export const STAGE_CAPTION: Record<Exclude<StoryStage, "idle">, { step: string; 
   drivers: { step: "4", title: "Cars behind are warned" },
   overview: { step: "5", title: "Race control view" },
 };
+
+/** Captions for the wet-hairpin demo (simulated physics), in its shot order. */
+export const DEMO_STAGE_CAPTION: Record<Exclude<StoryStage, "idle">, { step: string; title: string }> = {
+  approach: { step: "1", title: "Car A braking into standing water" },
+  impact: { step: "2", title: "Aquaplaning: sideways into the fence" },
+  drivers: { step: "3", title: "Car B warned: slows, passes the wreck" },
+  race_control: { step: "4", title: "Race control: the full picture" },
+  overview: { step: "5", title: "Race control view" },
+};

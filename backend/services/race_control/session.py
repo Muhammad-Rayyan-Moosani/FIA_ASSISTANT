@@ -25,7 +25,7 @@ import numpy as np
 
 from services import multimodal_severity as ms
 from services import repository
-from services.race_control import alerts, impact, packs, rulebook, steward_agent
+from services.race_control import alerts, demo, impact, packs, rulebook, steward_agent
 from services.race_control import frame as fr
 from services.race_control.escalation import IncidentTracker
 from services.race_control.grip import GripEngine
@@ -65,6 +65,7 @@ class RaceControlSession:
         self._task: asyncio.Task | None = None
         self._side: set[asyncio.Task] = set()
         self._green_until = 0.0
+        self.demo: demo.DemoRun | None = None
         self.grip = GripEngine(repository.load(circuit).cfg.length_m)
 
     # ------------------------------------------------------------------ pub/sub
@@ -128,6 +129,7 @@ class RaceControlSession:
 
     async def reset(self) -> None:
         self._cancel()
+        self.demo = None
         self.grip.reset()
         self.deployment, self.incident, self.severity, self.warning, self.replay = "green", None, None, None, None
         self.hazards.clear()
@@ -142,6 +144,23 @@ class RaceControlSession:
         summary = packs.summary(self.circuit, pack)
         self._task = asyncio.create_task(self._run(pack, summary, speed, lead_s))
         return summary
+
+    # ------------------------------------------------------------------ wet-hairpin demo (simulated physics)
+    async def start_demo(self, zone_id: str, x: float, y: float, lap_frac: float) -> dict:
+        await self.reset()
+        run = demo.DemoRun(self, zone_id, x, y, lap_frac)
+        self.demo = run
+        self.replay = {"incident_id": demo.DEMO_ID, "t": 0.0, "t_start": 0.0, "t_end": demo.MAX_DEMO_S,
+                       "speed": 1.0, "running": True, "demo": True}
+        self.publish("replay_start", {"incident": run.summary, **self.replay})
+        self.note(f"{demo.LABEL}: two cars, standing water in the braking zone of the {run.summary['zone_name']}.")
+        return run.summary
+
+    async def demo_event(self, event: dict) -> bool:
+        if self.demo is None:
+            return False
+        await self.demo.event(event)
+        return True
 
     def _prepare(self, pack: dict) -> dict[str, dict]:
         f = fr.frame(self.circuit)

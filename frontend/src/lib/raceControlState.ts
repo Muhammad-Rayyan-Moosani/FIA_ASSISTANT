@@ -40,6 +40,8 @@ export function raceControlReducer(state: RaceControlState, event: RaceControlEv
       return { ...state, masts: event.data.masts };
     case "incident":
       return { ...state, incident: event.data, incidentSeq: state.incidentSeq + 1 };
+    case "incident_update":
+      return state.incident?.incident_id === event.data.incident_id ? { ...state, incident: event.data } : state;
     case "rules":
       return state.incident?.incident_id === event.data.incident_id ? { ...state, incident: { ...state.incident, rules: event.data.rules } } : state;
     case "advisory":

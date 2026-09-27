@@ -65,7 +65,7 @@ export function TrackMap2D({ outline, zones, assets, selectedZoneId, onSelectZon
     () =>
       mapEffects.subscribe((effect) => {
         const g = effectsRef.current;
-        if (!g) return;
+        if (!g || effect.kind === "smoke") return;
         const x = effect.kind === "crash" ? effect.crash.x : effect.kind === "impact" ? effect.x : effect.incident.x;
         const y = effect.kind === "crash" ? effect.crash.y : effect.kind === "impact" ? effect.y : effect.incident.y;
         const severe = (effect.kind === "crash" && effect.crash.severe) || (effect.kind === "impact" && effect.severe);

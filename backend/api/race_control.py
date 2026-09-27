@@ -119,6 +119,47 @@ async def evaluate(circuit: str, body: EvaluateRequest) -> dict:
     return await session(circuit).start_replay(best["incident_id"], body.speed)
 
 
+class DemoStart(BaseModel):
+    zone_id: str
+    x: float = Field(..., ge=-1, le=1)
+    y: float = Field(..., ge=-1, le=1)
+    lap_frac: float = Field(..., ge=0, le=1)
+
+
+class DemoEvent(BaseModel):
+    kind: Literal["tick", "slip", "spin", "off", "impact", "stopped", "reacted", "passed", "end"]
+    t: float = Field(0.0, ge=0, le=600)
+    speed_kph: float = Field(0.0, ge=0, le=450)
+    distance_m: float | None = Field(None, ge=-5000, le=10000, description="car B's distance to the slip point")
+    b_speed_kph: float | None = Field(None, ge=0, le=450)
+    measured_g: float | None = Field(None, ge=0, le=10)
+    expected_g: float | None = Field(None, gt=0, le=10)
+    impact_speed_kph: float | None = Field(None, ge=0, le=450)
+    entry_speed_kph: float | None = Field(None, ge=0, le=450)
+    peak_g: float | None = Field(None, ge=0, le=500)
+    min_speed_kph: float | None = Field(None, ge=0, le=450)
+    slide_deg: float | None = Field(None, ge=0, le=180)
+
+
+@router.post("/{circuit}/demo/start", summary="Start the wet-hairpin demo (simulated physics, real safety loop)")
+async def demo_start(circuit: str, body: DemoStart) -> dict:
+    zones = {z["zone_id"] for z in repository.load(_circuit(circuit)).track["zones"]}
+    if body.zone_id not in zones:
+        raise _not_found("UNKNOWN_ZONE", f"No zone {body.zone_id} at {circuit}.")
+    return await session(circuit).start_demo(body.zone_id, body.x, body.y, body.lap_frac)
+
+
+@router.post("/{circuit}/demo/event", summary="A physics event from the running demo (slip, impact, car B passing...)")
+async def demo_event(circuit: str, body: DemoEvent) -> dict:
+    e = body.model_dump(exclude_none=True)
+    need = {"slip": ("measured_g", "expected_g"), "impact": ("impact_speed_kph",)}.get(body.kind, ())
+    if missing := [k for k in need if k not in e]:
+        raise HTTPException(422, {"code": "INVALID_REQUEST", "message": f"{body.kind} needs {', '.join(missing)}."})
+    if not await session(_circuit(circuit)).demo_event(e):
+        raise HTTPException(409, {"code": "NO_DEMO", "message": "No demo is running (start one first)."})
+    return {"ok": True}
+
+
 @router.post("/{circuit}/deploy", summary="Steward action: deploy SC / VSC / red flag, or clear the track")
 async def deploy(circuit: str, body: DeployRequest) -> dict:
     return await session(_circuit(circuit)).deploy(body.action)

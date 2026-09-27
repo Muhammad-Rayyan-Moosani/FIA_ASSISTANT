@@ -77,6 +77,8 @@ STEPS_FOR_FLAG = {
     "VSC": ["Show double yellow in the sector now", "Deploy the VSC", "Marshals recover the car from the run-off", "End VSC once the track is clear"],
     "DOUBLE_YELLOW": ["Show double yellow in the sector", "Watch the car: be ready for the VSC", "Marshals check the barrier and track"],
     "YELLOW": ["Show yellow in the sector", "Watch the next cars through the corner"],
+    "SLIPPERY": ["Show the slippery-surface flag in the sector now", "Warn every car approaching: brake early, avoid the water",
+                 "Marshals report standing water; be ready for the VSC"],
 }
 
 
@@ -84,9 +86,12 @@ def rules_advisory(incident: dict, cars_behind: list[dict], reason: str) -> dict
     """The deterministic card in the same shape as the Claude advisory (used without the agent)."""
     a = incident["advice"]
     sec = incident.get("marshal_sector")
+    hint = incident.get("driver_hint")           # what the detector knows the car behind must avoid (the demo's water)
+    caution = {"YELLOW": f"CAUTION · SECTOR {sec}", "SLIPPERY": f"SLIPPERY SURFACE · SECTOR {sec}"}
     msgs = [{"driver": c["driver"],
-             "message": f"CAUTION · SECTOR {sec}" if a["flag"] == "YELLOW" else f"CRASH AHEAD · SECTOR {sec}",
-             "avoidance": "Reduce speed through the sector, no overtaking" if c["distance_m"] > 800 else "Lift now, avoid the scene, be ready to stop"}
+             "message": hint["message"] if hint else caution.get(a["flag"], f"CRASH AHEAD · SECTOR {sec}"),
+             "avoidance": hint["avoidance"] if hint else
+             "Reduce speed through the sector, no overtaking" if c["distance_m"] > 800 else "Lift now, avoid the scene, be ready to stop"}
             for c in cars_behind]
     return {"source": "rules", "reason": reason, "headline": a["headline"][:60], "recommended_action": ACTION_FOR_FLAG.get(a["flag"], "MONITOR"),
             "reasoning": f"{a['why']} {a['action']}", "citations": [], "driver_messages": msgs,

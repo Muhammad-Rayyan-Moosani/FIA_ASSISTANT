@@ -11,6 +11,10 @@ import { carPoint, carYaw, crashSubject, subjectCar } from "./storyAnchors";
 
 /** Seconds each stage holds before the next (the approach lasts until the impact arrives). */
 const HOLD: Partial<Record<StoryStage, number>> = { approach: 60, impact: 4.5, race_control: 4.5, drivers: 4.5, overview: 3.5 };
+const DRIVERS_HOLD_MAX_S = 30;
+/** The demo: stay on the spinning car until just after it hits the fence, then cut to the car behind while it is
+ * still flat out (it got the message at the slip), hold it until it is past the wreck, then race control. */
+const DEMO_HOLD: Partial<Record<StoryStage, number>> = { approach: 60, impact: 3.8, drivers: 4.5, race_control: 3.5, overview: 3.5 };
 /** Shot distances in metres (converted with the scene scale). */
 const SHOT = {
   follow: { back: 150, up: 70 },
@@ -85,10 +89,14 @@ export class Director {
     if (this.stage === "idle" || !controls) return;
 
     const e = clock - this.t0;
-    const hold = HOLD[this.stage];
-    if (hold !== undefined && e > hold) {
-      const next: StoryStage =
-        this.stage === "impact" ? (tower ? "race_control" : input.warning?.driver ? "drivers" : "overview")
+    const demo = input.holdDrivers !== undefined;
+    const hold = (demo ? DEMO_HOLD : HOLD)[this.stage];
+    // the demo stays on the warned car until it is through the corner
+    const held = this.stage === "drivers" && input.holdDrivers === true && e < DRIVERS_HOLD_MAX_S;
+    if (hold !== undefined && e > hold && !held) {
+      const next: StoryStage = demo
+        ? this.stage === "impact" ? "drivers" : this.stage === "drivers" ? (tower ? "race_control" : "overview") : this.stage === "race_control" ? "overview" : "idle"
+        : this.stage === "impact" ? (tower ? "race_control" : input.warning?.driver ? "drivers" : "overview")
         : this.stage === "race_control" ? (input.warning?.driver ? "drivers" : "overview")
         : this.stage === "drivers" ? "overview" : "idle";          // (an approach with no impact times out)
       this.go(next, clock);
