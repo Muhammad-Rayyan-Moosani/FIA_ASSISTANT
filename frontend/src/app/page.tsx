@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { UnifiedTrackView } from "@/components/workspace/UnifiedTrackView";
+import { Landing } from "@/components/landing/Landing";
 
-export const metadata: Metadata = { title: "Race control & insurance" };
+export const metadata: Metadata = { title: "Upload your circuit" };
 
 export default function Home() {
-  return <UnifiedTrackView />;
+  return <Landing />;
 }
