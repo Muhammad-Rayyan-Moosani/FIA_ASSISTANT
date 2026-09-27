@@ -25,7 +25,7 @@ import numpy as np
 
 from services import multimodal_severity as ms
 from services import repository
-from services.race_control import alerts, impact, packs, rulebook
+from services.race_control import alerts, impact, packs, rulebook, steward_agent
 from services.race_control import frame as fr
 from services.race_control.grip import GripEngine
 
@@ -234,8 +234,9 @@ class RaceControlSession:
         loss = await asyncio.to_thread(
             impact.crash_impact, self.circuit, summary["zone_id"], summary["x"], summary["y"],
             imp["impact_speed_kph"] if imp else None)
+        cars_behind = self._cars_behind(summary, cars, T, exclude=set(pack["involved"]))
         self.incident = {**summary, "advice": advice, "collision": imp, "insurance": loss, "rules": [],
-                         "detected_at": _now()}
+                         "cars_behind": cars_behind, "advisory": None, "detected_at": _now()}
         self._recompute_masts()
         self.publish("incident", self.incident)
         self.note(f"{advice['headline']}: {advice['why']}", "alert")
@@ -249,7 +250,7 @@ class RaceControlSession:
         self.severity = {**ms.fuse(imp["telemetry_score"] if imp else None, None, None), "telemetry": imp,
                          "radio": None, "radio_pending": radio is not None, "models": ms.status()}
         self.publish("severity", self.severity)
-        self._spawn(self._rules(advice["flag"]))
+        self._spawn(self._rules_then_advisory(advice["flag"], radio is not None))
         if radio:
             self._spawn(self._severity_with_radio(imp, radio, pack))
 
@@ -265,15 +266,51 @@ class RaceControlSession:
         self._side.add(task)
         task.add_done_callback(self._side.discard)
 
-    async def _rules(self, flag: str) -> None:
+    async def _rules_then_advisory(self, flag: str, radio_coming: bool) -> None:
+        """Retrieve the regulations, then ask the steward agent (Claude) for the card. The rule-engine card
+        is published first so the steward sees something at once; Claude's replaces it when it lands."""
+        inc = self.incident
+        if not inc:
+            return
         try:
             cites = await asyncio.to_thread(rulebook.search, RULE_QUERY.get(flag, RULE_QUERY["YELLOW"]), 3)
         except Exception as exc:
             log.warning("rulebook search failed: %s", exc)
+            cites = []
+        inc["rules"] = cites
+        self.publish("rules", {"incident_id": inc["incident_id"], "rules": cites})
+        pending = "Claude steward agent is writing the card…" if steward_agent.configured() else "ANTHROPIC_API_KEY not set: rule engine card"
+        self._publish_advisory(inc, alerts.rules_advisory(inc, inc["cars_behind"], pending),
+                               pending=steward_agent.configured())
+        result = await asyncio.to_thread(steward_agent.advise, inc, self.severity, inc["cars_behind"], cites)
+        if self.incident is not inc:          # a newer incident or a reset arrived meanwhile
             return
-        if self.incident:
-            self.incident["rules"] = cites
-            self.publish("rules", {"incident_id": self.incident["incident_id"], "rules": cites})
+        card = result if result["source"] == "claude" else alerts.rules_advisory(inc, inc["cars_behind"], result["reason"])
+        self._publish_advisory(inc, card, pending=False)
+        if card["source"] == "claude":
+            self.note(f"Claude steward agent ({card['latency_ms']} ms): {card['headline']} → {card['recommended_action'].replace('_', ' ').title()}", "action")
+
+    def _publish_advisory(self, inc: dict, card: dict, pending: bool) -> None:
+        inc["advisory"] = {**card, "pending": pending}
+        self.publish("advisory", {"incident_id": inc["incident_id"], "advisory": inc["advisory"]})
+        # the car being warned gets the agent's own words on its display
+        w = self.warning
+        msg = next((m for m in card.get("driver_messages", []) if w and m["driver"] == w["driver"]), None)
+        if w and msg and self.deployment == "green":
+            self.warning = {**w, "lines": [msg["message"].upper()[:40], msg["avoidance"], f"{w['distance_m']} m to the incident"],
+                            "source": card["source"]}
+            self.publish("driver_warning", self.warning)
+
+    def _cars_behind(self, summary: dict, cars: dict, T: float, exclude: set, limit: int = 3) -> list[dict]:
+        out = []
+        for n, c in cars.items():
+            if n in exclude or not (c["t"][0] <= T <= c["t"][-1]):
+                continue
+            i = int(np.clip(np.searchsorted(c["t"], T), 0, len(c["t"]) - 1))
+            dist = ((summary["lap_frac"] - c["frac"][i]) % 1.0) * self.grip.lap_length_m
+            if 0 < dist <= WARNING_RANGE_M:
+                out.append({"driver": n, "code": c["code"], "distance_m": round(dist), "speed_kph": round(float(c["v"][i]))})
+        return sorted(out, key=lambda x: x["distance_m"])[:limit]
 
     async def _severity_with_radio(self, imp: dict | None, clip: dict, pack: dict) -> None:
         try:

@@ -118,8 +118,39 @@ export interface RuleCitation {
   text: string;
 }
 
+export type AdvisoryAction = "SAFETY_CAR" | "VSC" | "RED_FLAG" | "DOUBLE_YELLOW" | "YELLOW" | "MONITOR";
+
+/** The steward advisory card: written by the Claude steward agent, or by the rule engine without it. */
+export interface StewardAdvisory {
+  source: "claude" | "rules";
+  pending: boolean;
+  reason?: string;
+  model?: string;
+  latency_ms?: number;
+  within_budget?: boolean;
+  budget_ms?: number;
+  headline: string;
+  recommended_action: AdvisoryAction;
+  reasoning: string;
+  citations: string[];
+  driver_messages: { driver: string; message: string; avoidance: string }[];
+  steward_steps: string[];
+  marshal_instructions: string;
+  spectator_safety: string;
+  confidence: "low" | "medium" | "high";
+}
+
+export interface CarBehind {
+  driver: string;
+  code: string | null;
+  distance_m: number;
+  speed_kph: number;
+}
+
 export interface ActiveIncident extends IncidentSummary {
   advice: Advice;
+  cars_behind: CarBehind[];
+  advisory: StewardAdvisory | null;
   collision: CollisionEstimate | null;
   insurance: InsuranceImpact;
   rules: RuleCitation[];
@@ -235,6 +266,7 @@ export type RaceControlEvent =
   | { type: "masts"; data: { masts: Mast[] } }
   | { type: "incident"; data: ActiveIncident }
   | { type: "rules"; data: { incident_id: string; rules: RuleCitation[] } }
+  | { type: "advisory"; data: { incident_id: string; advisory: StewardAdvisory } }
   | { type: "severity"; data: SeverityResult }
   | { type: "driver_warning"; data: DriverWarning }
   | { type: "deployment"; data: { deployment: Deployment; label: string; at: string } }

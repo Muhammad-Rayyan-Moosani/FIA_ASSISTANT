@@ -85,4 +85,5 @@ def health() -> dict:
         data_loaded = True
     except repository.UnknownCircuit:
         data_loaded = False
-    return {"status": "ok", "data_loaded": data_loaded, "llm_configured": False}
+    from services.race_control import steward_agent
+    return {"status": "ok", "data_loaded": data_loaded, "llm_configured": steward_agent.configured()}

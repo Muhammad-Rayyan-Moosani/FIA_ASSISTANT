@@ -68,3 +68,27 @@ def driver_warning(kind: str, sector: int | None, where: str, deployment: str) -
     if kind == "slip":
         return {"tone": "yellow", "title": "CAUTION", "lines": [f"CAUTION · {sec}", "LOW GRIP AHEAD", "REDUCE SPEED"]}
     return {"tone": "double_yellow", "title": "CRASH AHEAD", "lines": [f"CRASH AHEAD · {sec}", "REDUCE SPEED", "BE PREPARED TO STOP"]}
+
+
+ACTION_FOR_FLAG = {"SC": "SAFETY_CAR", "VSC": "VSC", "RED": "RED_FLAG", "DOUBLE_YELLOW": "DOUBLE_YELLOW", "YELLOW": "YELLOW",
+                   "SLIPPERY": "YELLOW", "CLEAR": "MONITOR"}
+STEPS_FOR_FLAG = {
+    "SC": ["Show double yellow in the sector now", "Deploy the Safety Car", "Send recovery vehicle and medical car", "Check the barrier before green"],
+    "VSC": ["Show double yellow in the sector now", "Deploy the VSC", "Marshals recover the car from the run-off", "End VSC once the track is clear"],
+    "DOUBLE_YELLOW": ["Show double yellow in the sector", "Watch the car: be ready for the VSC", "Marshals check the barrier and track"],
+    "YELLOW": ["Show yellow in the sector", "Watch the next cars through the corner"],
+}
+
+
+def rules_advisory(incident: dict, cars_behind: list[dict], reason: str) -> dict:
+    """The deterministic card in the same shape as the Claude advisory (used without the agent)."""
+    a = incident["advice"]
+    sec = incident.get("marshal_sector")
+    msgs = [{"driver": c["driver"],
+             "message": f"CAUTION · SECTOR {sec}" if a["flag"] == "YELLOW" else f"CRASH AHEAD · SECTOR {sec}",
+             "avoidance": "Reduce speed through the sector, no overtaking" if c["distance_m"] > 800 else "Lift now, avoid the scene, be ready to stop"}
+            for c in cars_behind]
+    return {"source": "rules", "reason": reason, "headline": a["headline"][:60], "recommended_action": ACTION_FOR_FLAG.get(a["flag"], "MONITOR"),
+            "reasoning": f"{a['why']} {a['action']}", "citations": [], "driver_messages": msgs,
+            "steward_steps": STEPS_FOR_FLAG.get(a["flag"], STEPS_FOR_FLAG["YELLOW"]), "marshal_instructions": "Check the barrier and the car; report driver status.",
+            "spectator_safety": "", "confidence": "medium"}

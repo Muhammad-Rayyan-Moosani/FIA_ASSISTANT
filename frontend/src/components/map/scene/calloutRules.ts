@@ -60,7 +60,11 @@ export function storyCallouts(stage: StoryStage, input: StoryInput, tower: Vecto
       lines: [
         input.deployment !== "green" ? DEPLOYED[input.deployment]! : "Signal received from the track",
         masts.length ? `Masts: ${masts.join(" · ")}` : "",
-        input.deployment === "green" ? `Suggests: ${FLAG_WORDS[inc.advice.flag] ?? inc.advice.flag}` : "",
+        input.deployment === "green"
+          ? inc.advisory && !inc.advisory.pending
+            ? `${inc.advisory.source === "claude" ? "Claude advises" : "Rule engine advises"}: ${inc.advisory.recommended_action.replace("_", " ").toLowerCase()}`
+            : `Suggests: ${FLAG_WORDS[inc.advice.flag] ?? inc.advice.flag}`
+          : "",
         towerBasis ?? "",
       ].filter(Boolean),
     });

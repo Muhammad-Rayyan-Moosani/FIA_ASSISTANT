@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 
 import numpy as np
 import pytest
@@ -85,7 +86,7 @@ def test_replay_runs_the_whole_safety_loop(monkeypatch):
     async def no_radio(*_):                                 # keep the test offline
         return None
     monkeypatch.setattr(RaceControlSession, "_severity_with_radio", no_radio)
-    monkeypatch.setattr(RaceControlSession, "_rules", no_radio)
+    monkeypatch.setattr(RaceControlSession, "_rules_then_advisory", no_radio)
 
     async def run():
         s = RaceControlSession("montreal")
@@ -117,3 +118,62 @@ def test_evaluate_without_an_incident_in_the_sector_is_a_404():
 
 def test_deploy_rejects_unknown_actions():
     assert client.post(f"{API}/montreal/deploy", json={"action": "launch"}).status_code == 422
+
+
+# ----------------------------------------------------------------------------- Claude steward agent
+from types import SimpleNamespace
+
+from config.settings import settings
+from services.race_control import steward_agent
+
+
+def _incident() -> dict:
+    pack = packs.get("montreal", NORRIS)
+    imp = packs.primary_impact(pack)
+    summary = packs.summary("montreal", pack)
+    advice = alerts.crash_advice(imp, "Car 4 (NOR)", summary["zone_name"], summary["marshal_sector"], pack["raw_message"])
+    return {**summary, "advice": advice, "collision": imp,
+            "insurance": {"structures_at_risk": [{"name": "Grandstand 1", "category": "grandstand", "distance_m": 98}]}}
+
+
+CARS_BEHIND = [{"driver": "30", "code": "LAW", "distance_m": 235, "speed_kph": 290}, {"driver": "16", "code": "LEC", "distance_m": 1400, "speed_kph": 300}]
+RULES = [{"article": "B5.13.1", "text": "The Safety Car may be used..."}, {"article": "B5.12.1", "text": "VSC..."}]
+
+
+def test_steward_agent_without_a_key_falls_back_to_the_rule_engine(monkeypatch):
+    monkeypatch.setattr(settings, "anthropic_api_key", None)
+    out = steward_agent.advise(_incident(), None, CARS_BEHIND, RULES)
+    assert out["source"] == "rules" and "ANTHROPIC_API_KEY" in out["reason"]
+    card = alerts.rules_advisory(_incident(), CARS_BEHIND, out["reason"])
+    assert card["recommended_action"] == "SAFETY_CAR" and [m["driver"] for m in card["driver_messages"]] == ["30", "16"]
+
+
+def test_steward_agent_sends_only_real_facts_and_keeps_only_retrieved_articles(monkeypatch):
+    sent = {}
+    card = {"headline": "Stopped car on the pit straight", "recommended_action": "SAFETY_CAR",
+            "reasoning": "Car 4 stopped at 286 km/h impact; B5.13.1 allows the Safety Car.", "citations": ["B5.13.1", "B99.9"],
+            "driver_messages": [{"driver": "30", "message": "CRASH AHEAD S1", "avoidance": "Lift now, keep left"}],
+            "steward_steps": ["Deploy SC"], "marshal_instructions": "Recover car 4", "spectator_safety": "Grandstand 1 is 98 m away",
+            "confidence": "high"}
+
+    def create(**kw):
+        sent.update(kw)
+        return SimpleNamespace(stop_reason="end_turn", model="claude-opus-5", content=[SimpleNamespace(type="text", text=json.dumps(card))])
+
+    monkeypatch.setattr(settings, "anthropic_api_key", "test")
+    monkeypatch.setattr(steward_agent, "_get_client", lambda: SimpleNamespace(beta=SimpleNamespace(messages=SimpleNamespace(create=create))))
+    out = steward_agent.advise(_incident(), {"label": "Medium incident", "score": 0.55, "radio": None}, CARS_BEHIND, RULES)
+    assert out["source"] == "claude" and out["recommended_action"] == "SAFETY_CAR"
+    assert out["citations"] == ["B5.13.1"]                         # an article we did not retrieve is dropped
+    facts = json.loads(sent["messages"][0]["content"].split("\n", 1)[1])
+    assert facts["telemetry"]["impact_speed_kph"] == 286 and facts["cars_behind"] == CARS_BEHIND
+    assert [r["article"] for r in facts["regulation_excerpts"]] == ["B5.13.1", "B5.12.1"]
+    assert sent["model"] == settings.anthropic_model and sent["output_config"]["format"]["type"] == "json_schema"
+    assert sent["fallbacks"] == "default"
+
+
+def test_steward_agent_refusal_falls_back(monkeypatch):
+    monkeypatch.setattr(settings, "anthropic_api_key", "test")
+    refused = SimpleNamespace(stop_reason="refusal", model="claude-opus-5", content=[])
+    monkeypatch.setattr(steward_agent, "_get_client", lambda: SimpleNamespace(beta=SimpleNamespace(messages=SimpleNamespace(create=lambda **_: refused))))
+    assert steward_agent.advise(_incident(), None, CARS_BEHIND, RULES)["source"] == "rules"
