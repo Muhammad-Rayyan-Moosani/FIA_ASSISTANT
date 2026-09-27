@@ -1,6 +1,6 @@
 import { env } from "@/config/env";
 import { apiClient } from "@/services/http/apiClient";
-import type { DeployAction, IncidentList, IncidentSummary, MarshalSector, RaceControlSnapshot, RuleCitation } from "@/types/raceControl";
+import type { DemoEventPayload, DemoStartPayload, DeployAction, IncidentList, IncidentSummary, MarshalSector, RaceControlSnapshot, RuleCitation } from "@/types/raceControl";
 
 /** Race control lives in the same backend as insurance (merged from the old FIA service). */
 export const RACE_CONTROL_ENDPOINTS = {
@@ -12,6 +12,8 @@ export const RACE_CONTROL_ENDPOINTS = {
   evaluate: (c: string) => `/api/fia/${encodeURIComponent(c)}/evaluate`,
   deploy: (c: string) => `/api/fia/${encodeURIComponent(c)}/deploy`,
   reset: (c: string) => `/api/fia/${encodeURIComponent(c)}/reset`,
+  demoStart: (c: string) => `/api/fia/${encodeURIComponent(c)}/demo/start`,
+  demoEvent: (c: string) => `/api/fia/${encodeURIComponent(c)}/demo/event`,
   rules: "/api/fia/rules/query",
 };
 
@@ -26,6 +28,8 @@ export const raceControlService = {
     apiClient.post<IncidentSummary>(RACE_CONTROL_ENDPOINTS.evaluate(circuit), { ...target, speed }),
   deploy: (circuit: string, action: DeployAction) => apiClient.post<RaceControlSnapshot>(RACE_CONTROL_ENDPOINTS.deploy(circuit), { action }),
   reset: (circuit: string) => apiClient.post<RaceControlSnapshot>(RACE_CONTROL_ENDPOINTS.reset(circuit), {}),
+  demoStart: (circuit: string, body: DemoStartPayload) => apiClient.post<IncidentSummary>(RACE_CONTROL_ENDPOINTS.demoStart(circuit), body),
+  demoEvent: (circuit: string, body: DemoEventPayload) => apiClient.post<{ ok: boolean }>(RACE_CONTROL_ENDPOINTS.demoEvent(circuit), body),
   queryRules: (query: string) =>
     apiClient.post<{ query: string; citations: RuleCitation[]; documents: string[] }>(RACE_CONTROL_ENDPOINTS.rules, { query, top_k: 3 }, { timeoutMs: 60_000 }),
 };

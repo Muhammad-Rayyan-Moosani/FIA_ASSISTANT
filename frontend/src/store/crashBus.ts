@@ -9,7 +9,9 @@ export type MapEffect =
   | { kind: "crash"; crash: SimulationCrash }
   | { kind: "incident"; incident: Incident }
   /** A real crash being replayed: debris and dust at the impact point (the real car's positions show the rest). */
-  | { kind: "impact"; x: number; y: number; zoneId: string; severe: boolean };
+  | { kind: "impact"; x: number; y: number; zoneId: string; severe: boolean; exact?: boolean }
+  /** A puff of tyre smoke (locked wheels) or run-off dust, at a map point. */
+  | { kind: "smoke"; x: number; y: number; dust?: boolean };
 
 type Listener = (effect: MapEffect) => void;
 

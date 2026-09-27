@@ -34,7 +34,9 @@ export function storyCallouts(stage: StoryStage, input: StoryInput, tower: Vecto
       const w = toWorld(r.x, r.y);
       out.push({
         id: "subject", tone: "car", title: driverName(input, n), anchor: { car: n, point: new Vector3(w.x, 0, w.z) }, offset: [-150, -90], liveSpeed: n,
-        lines: [d?.team ?? "", `Real OpenF1 position · ${r.session_type} ${r.season}`].filter(Boolean),
+        lines: r.session_type === "Demo"
+          ? ["Simulated physics · wet track, intermediates", "Standing water in the braking zone ahead"]
+          : [d?.team ?? "", `Real OpenF1 position · ${r.session_type} ${r.season}`].filter(Boolean),
       });
     }
   }
@@ -44,8 +46,9 @@ export function storyCallouts(stage: StoryStage, input: StoryInput, tower: Vecto
     const c = inc.collision;
     const who = driverName(input, c?.driver ?? inc.involved[0]?.number ?? null);
     out.push({
-      id: "crash", tone: "crash", anchor: { car: c?.driver ?? null, point: new Vector3(w.x, 0, w.z) }, offset: story ? [-170, -110] : [-120, -70],
-      title: c ? `${c.level === "crash" ? "Crash" : "Impact"} · ${who}` : `Incident · ${inc.zone_name}`,
+      id: "crash", tone: "crash", anchor: { car: c?.driver ?? (inc.demo ? inc.involved[0]?.number ?? null : null), point: new Vector3(w.x, 0, w.z) },
+      offset: story ? [-170, -110] : [-120, -70],
+      title: c ? `${c.level === "crash" ? "Crash" : "Impact"} · ${who}` : inc.demo ? `Aquaplaning · ${who}` : `Incident · ${inc.zone_name}`,
       lines: c
         ? [`${Math.round(c.impact_speed_kph)} km/h impact · ${c.peak_long_g.toFixed(1)} g`, c.stopped ? "Stopped at the track side" : "Still moving", `Sector ${inc.marshal_sector ?? "?"} · ${inc.zone_name}`]
         : [inc.raw_message, `Sector ${inc.marshal_sector ?? "?"}`],

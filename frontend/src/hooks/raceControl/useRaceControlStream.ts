@@ -10,7 +10,7 @@ import type { RaceControlEvent } from "@/types/raceControl";
 export type StreamConnection = "connecting" | "live" | "offline";
 
 const EVENTS: RaceControlEvent["type"][] = [
-  "snapshot", "reset", "cars", "masts", "incident", "rules", "advisory", "escalation", "slow_car", "severity", "driver_warning", "deployment", "log", "grip",
+  "snapshot", "reset", "cars", "masts", "incident", "incident_update", "rules", "advisory", "escalation", "slow_car", "severity", "driver_warning", "deployment", "log", "grip",
   "replay_start", "replay_end", "stream_error",
 ];
 
@@ -39,7 +39,8 @@ export function useRaceControlStream(circuitId: string | null) {
       }
       if (ev.type === "cars") replayBus.push(ev.data);
       if (ev.type === "reset" || ev.type === "replay_start") replayBus.push(null);
-      if (ev.type === "incident") {
+      // the demo draws its own impact where the simulated car hits the barrier
+      if (ev.type === "incident" && !ev.data.demo) {
         const hard = ev.data.collision?.level === "crash";
         mapEffects.emit({ kind: "impact", x: ev.data.x, y: ev.data.y, zoneId: ev.data.zone_id, severe: hard });
       }

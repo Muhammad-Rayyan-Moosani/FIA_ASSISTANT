@@ -10,6 +10,7 @@ import { TopCorners } from "@/components/panels/TopCorners";
 import { WhyItMatters } from "@/components/panels/WhyItMatters";
 import { ZoneExposurePanel } from "@/components/panels/ZoneExposurePanel";
 import { SafetyPlanDrawer } from "@/components/plan/SafetyPlanDrawer";
+import { DemoHud } from "@/components/raceControl/DemoHud";
 import { DriverHud } from "@/components/raceControl/DriverHud";
 import { IncidentPicker, type ReplaySpeed } from "@/components/raceControl/IncidentPicker";
 import { InsuranceImpactCard } from "@/components/raceControl/InsuranceImpactCard";
@@ -27,6 +28,7 @@ import { useAssets } from "@/hooks/insurance/useAssets";
 import { useExposure } from "@/hooks/insurance/useExposure";
 import { useRiskMap } from "@/hooks/insurance/useRiskMap";
 import { useSafetyPlan } from "@/hooks/insurance/useSafetyPlan";
+import { useDemoRaceControl } from "@/hooks/raceControl/useDemo";
 import { useRaceControlActions, useReplayableIncidents, useRuleSearch } from "@/hooks/raceControl/useRaceControlData";
 import { useRaceControlStream } from "@/hooks/raceControl/useRaceControlStream";
 import { usePrefersReducedMotion } from "@/hooks/ui/useMediaQuery";
@@ -34,6 +36,7 @@ import { useWebGLSupport } from "@/hooks/ui/useWebGLSupport";
 import { cn } from "@/lib/cn";
 import { heatFromExposure, joinZones, topZoneId } from "@/lib/zoneView";
 import { describeError } from "@/services/http/errors";
+import { DEMO_CIRCUIT, useDemoStore } from "@/store/demoStore";
 import { useUiStore } from "@/store/uiStore";
 import type { AssetMap } from "@/types/assets";
 import type { StoryInput } from "@/types/raceControl";
@@ -84,6 +87,13 @@ export function UnifiedTrackView() {
   const setTab = (t: SideTab) => setTabChoice({ tab: t, seq: rc.incidentSeq });
   const plan = useSafetyPlan(circuitId, planOpen || tab === "insurance");
   const [speed, setSpeed] = useState<ReplaySpeed>(2);
+  const demo = useDemoRaceControl(circuitId, rc.warning, rc.replay);
+  const demoRunning = demo.phase === "starting" || demo.phase === "running" || demo.phase === "passed";
+  const startDemo = () => {
+    if (circuitId !== DEMO_CIRCUIT) setCircuit(DEMO_CIRCUIT);
+    if (view !== "3d" && webgl !== false) setView("3d");
+    useDemoStore.getState().start();
+  };
 
   useEffect(() => {
     const first = circuits.data?.[0];
@@ -134,12 +144,12 @@ export function UnifiedTrackView() {
   const story = useMemo<StoryInput>(
     () => ({
       cinematic, replaySeq: rc.replaySeq, incidentSeq: rc.incidentSeq, replayIncident: rc.replayIncident, incident: rc.incident,
-      warning: rc.warning, deployment: rc.deployment, masts: rc.masts,
+      warning: rc.warning, deployment: rc.deployment, masts: rc.masts, holdDrivers: demo.phase === "idle" ? undefined : demo.phase === "running",
     }),
-    [cinematic, rc.replaySeq, rc.incidentSeq, rc.replayIncident, rc.incident, rc.warning, rc.deployment, rc.masts],
+    [cinematic, rc.replaySeq, rc.incidentSeq, rc.replayIncident, rc.incident, rc.warning, rc.deployment, rc.masts, demo.phase],
   );
   const busy = actions.replay.isPending || actions.evaluate.isPending;
-  const actionError = actions.error ? describeError(actions.error) : null;
+  const actionError = actions.error ? describeError(actions.error) : demo.error;
   const replayingSummary = incidents.data?.incidents.find((i) => i.incident_id === rc.replay?.incident_id) ?? null;
 
   if (circuits.error) {
@@ -191,11 +201,12 @@ export function UnifiedTrackView() {
             onSelectMast: (sector) => actions.evaluate.mutate({ target: { marshal_sector: sector }, speed }),
             story,
             onCinematic: setCinematic,
+            demo: { running: demoRunning, available: webgl !== false, onStart: startDemo },
           }}
           overlay={
             <>
               <DriverHud warning={rc.warning} />
-              <ReplayBar replay={rc.replay} incident={replayingSummary} />
+              {rc.replay?.demo || demo.phase !== "idle" ? <DemoHud /> : <ReplayBar replay={rc.replay} incident={replayingSummary} />}
             </>
           }
         />
@@ -212,7 +223,7 @@ export function UnifiedTrackView() {
               <span className={cn("size-2 rounded-full", connection === "live" ? "bg-risk-low" : connection === "connecting" ? "animate-pulse bg-risk-med" : "bg-risk-crit")} />
               {connection === "live" ? "Live" : connection === "connecting" ? "Connecting" : "Offline"}
               {(rc.replay || rc.incident) && (
-                <Button size="sm" variant="ghost" onClick={() => actions.reset.mutate()}>Reset</Button>
+                <Button size="sm" variant="ghost" onClick={() => { useDemoStore.getState().stop(); actions.reset.mutate(); }}>Reset</Button>
               )}
             </span>
           </div>

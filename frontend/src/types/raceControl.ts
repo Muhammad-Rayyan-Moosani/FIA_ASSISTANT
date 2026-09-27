@@ -96,7 +96,7 @@ export interface InsuranceImpact {
   zone_name: string;
   barrier_type: string | null;
   impact_speed_kph: number;
-  impact_speed_source: "telemetry" | "assumed";
+  impact_speed_source: "telemetry" | "assumed" | "simulated";
   energy_mj: number;
   estimated_cost_eur: number;
   zone_mean_cost_eur: number | null;
@@ -165,6 +165,8 @@ export interface ActiveIncident extends IncidentSummary {
   insurance: InsuranceImpact;
   rules: RuleCitation[];
   detected_at: string;
+  /** Produced by the wet-hairpin demo (simulated physics), not a real incident. */
+  demo?: boolean;
 }
 
 export interface VoiceLeg {
@@ -213,6 +215,8 @@ export interface DriverWarning {
   distance_m: number;
   sector: number | null;
   kind: string;
+  /** Sent by the wet-hairpin demo (simulated physics). */
+  demo?: boolean;
 }
 
 export interface LogEntry {
@@ -229,6 +233,8 @@ export interface ReplayState {
   t_end: number;
   speed: number;
   running: boolean;
+  /** The wet-hairpin demo (simulated physics) rather than a real replay. */
+  demo?: boolean;
 }
 
 export interface GripHazard {
@@ -275,6 +281,8 @@ export type RaceControlEvent =
   | { type: "cars"; data: CarsFrame }
   | { type: "masts"; data: { masts: Mast[] } }
   | { type: "incident"; data: ActiveIncident }
+  /** The same incident, updated in place (the demo's slip becoming a crash): no new camera story. */
+  | { type: "incident_update"; data: ActiveIncident }
   | { type: "rules"; data: { incident_id: string; rules: RuleCitation[] } }
   | { type: "advisory"; data: { incident_id: string; advisory: StewardAdvisory } }
   | { type: "escalation"; data: LiveEscalation }
@@ -298,4 +306,29 @@ export interface StoryInput {
   warning: DriverWarning | null;
   deployment: Deployment;
   masts: Mast[];
+  /** Set only by the demo: its shot order (crash, car behind, race control); true holds the car-behind shot until it is through. */
+  holdDrivers?: boolean;
+}
+
+/** A physics event of the wet-hairpin demo, posted to race control (backend/api/race_control.py DemoEvent). */
+export interface DemoEventPayload {
+  kind: "tick" | "slip" | "spin" | "off" | "impact" | "stopped" | "reacted" | "passed" | "end";
+  t: number;
+  speed_kph?: number;
+  distance_m?: number;
+  b_speed_kph?: number;
+  measured_g?: number;
+  expected_g?: number;
+  impact_speed_kph?: number;
+  entry_speed_kph?: number;
+  peak_g?: number;
+  min_speed_kph?: number;
+  slide_deg?: number;
+}
+
+export interface DemoStartPayload {
+  zone_id: string;
+  x: number;
+  y: number;
+  lap_frac: number;
 }

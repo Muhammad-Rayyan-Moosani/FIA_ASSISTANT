@@ -44,7 +44,7 @@ export function DriverHud({ warning }: { warning: DriverWarning | null }) {
             {warning.distance_m > 0 ? <>{warning.distance_m.toLocaleString()} m<br />to incident</> : warning.sector ? <>S{warning.sector}</> : null}
           </span>
         </div>
-        <p className="mt-1.5 text-center text-[10px] uppercase tracking-[0.14em] text-white/40">Driver display · simulated from real positions</p>
+        <p className="mt-1.5 text-center text-[10px] uppercase tracking-[0.14em] text-white/40">{warning.demo ? "Driver display · demo, simulated physics" : "Driver display · simulated from real positions"}</p>
       </div>
     </div>
   );
