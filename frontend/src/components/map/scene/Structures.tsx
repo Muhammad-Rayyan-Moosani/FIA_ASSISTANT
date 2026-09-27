@@ -156,7 +156,7 @@ const Structure = memo(function Structure({ asset, track, scale, riskOverlay, hi
       vertexColors={raked}
       roughness={0.85}
       metalness={asset.category === "tower" ? 0.4 : 0.05}
-      emissive={highlighted ? "#d97757" : "#000000"}
+      emissive={highlighted ? "#e10600" : "#000000"}
       emissiveIntensity={highlighted ? 0.55 : 0}
       side={DoubleSide}
     />
