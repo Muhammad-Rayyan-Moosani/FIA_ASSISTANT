@@ -68,7 +68,7 @@ export default function TrackScene3D(p: TrackSceneProps) {
       speedKph: p.speedKph,
       lengthM: p.lengthM,
       scale: { u, trackHalf, h: (m: number) => m * u * VERTICAL_EXAGGERATION },
-      maxPremium: Math.max(0, ...p.zones.map((z) => z.risk?.premium_eur ?? 0)),
+      maxWeight: Math.max(0, ...p.zones.map((z) => z.risk?.weight ?? 0)),
       zones: p.zones.map((view) => {
         const range = zoneIndexRange(view.zone.start_frac, view.zone.end_frac, n);
         let apex = range[0];
@@ -111,7 +111,7 @@ export default function TrackScene3D(p: TrackSceneProps) {
         dpr={[1, 2]}
         camera={{ fov: 38, near: 0.3, far: 3000, position: [150, 120, 110] }}
         style={{ cursor, touchAction: "none" }}
-        aria-label="3D model of the circuit with its structures, coloured by insurance risk"
+        aria-label="3D model of the circuit with its structures, coloured by serious incidents"
       >
         <SceneEnvironment />
         {p.assets && <Terrain context={p.assets.context} scene={scene} />}

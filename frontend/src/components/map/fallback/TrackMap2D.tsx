@@ -24,7 +24,7 @@ const toPath = (pts: [number, number][]) => pts.map(([x, y], i) => `${i ? "L" : 
 export function TrackMap2D({ outline, zones, assets, selectedZoneId, onSelectZone, reducedMotion }: TrackMap2DProps) {
   const effectsRef = useRef<SVGGElement>(null);
   const trackPath = useMemo(() => `${toPath(outline)}Z`, [outline]);
-  const maxPremium = Math.max(0, ...zones.map((z) => z.risk?.premium_eur ?? 0));
+  const maxWeight = Math.max(0, ...zones.map((z) => z.risk?.weight ?? 0));
 
   useEffect(
     () =>
@@ -49,7 +49,7 @@ export function TrackMap2D({ outline, zones, assets, selectedZoneId, onSelectZon
   );
 
   return (
-    <svg viewBox="-0.56 -0.56 1.12 1.12" preserveAspectRatio="xMidYMid meet" className="absolute inset-0 h-full w-full" role="img" aria-label="Map of the circuit coloured by insurance risk">
+    <svg viewBox="-0.56 -0.56 1.12 1.12" preserveAspectRatio="xMidYMid meet" className="absolute inset-0 h-full w-full" role="img" aria-label="Map of the circuit coloured by serious incidents">
       {assets?.context.woods.map((w, i) => <path key={`w${i}`} d={`${toPath(w)}Z`} fill="#1b2a1c" />)}
       {assets?.context.water.map((w, i) => <path key={`h${i}`} d={`${toPath(w)}Z`} fill="#16303f" />)}
       {assets?.assets.map((a) =>
@@ -67,13 +67,13 @@ export function TrackMap2D({ outline, zones, assets, selectedZoneId, onSelectZon
         const mid = outline[Math.floor((a + b) / 2)]!;
         const color = risk ? riskHex(risk.risk_score) : NEUTRAL_ZONE;
         const selected = zone.zone_id === selectedZoneId;
-        const r = risk && maxPremium > 0 ? 0.008 + 0.028 * Math.sqrt(risk.premium_eur / maxPremium) : 0.006;
+        const r = risk && maxWeight > 0 ? 0.008 + 0.028 * Math.sqrt(risk.weight / maxWeight) : 0.006;
         return (
           <g
             key={zone.zone_id}
             role="button"
             tabIndex={0}
-            aria-label={`${zone.name}${risk ? `, risk ${risk.risk_score}` : ""}`}
+            aria-label={`${zone.name}${risk ? `, ${risk.label}` : ""}`}
             aria-pressed={selected}
             className="cursor-pointer outline-none"
             onClick={() => onSelectZone(zone.zone_id)}

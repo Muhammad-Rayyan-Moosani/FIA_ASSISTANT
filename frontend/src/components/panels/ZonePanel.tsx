@@ -7,15 +7,15 @@ import { TierBadge } from "@/components/ui/TierBadge";
 import { formatEur, formatFraction, formatNumber, formatPercent } from "@/lib/format";
 import { ZONE_TYPE_LABEL } from "@/lib/labels";
 import { riskHex } from "@/lib/riskColor";
-import type { ZoneView } from "@/lib/zoneView";
-import type { RiskMap, ZoneChanges } from "@/types/risk";
-import type { TrackGeometry } from "@/types/track";
+import type { RiskMap, ZoneChanges, ZoneRisk } from "@/types/risk";
+import type { TrackGeometry, TrackZone } from "@/types/track";
 import { IncidentHistory } from "./IncidentHistory";
 import { SafetyInventory } from "./SafetyInventory";
 
+/** Step 2 (euro) zone view. Not on the main page any more; kept for the pricing model. */
 interface ZonePanelProps {
   circuitId: string;
-  view: ZoneView | undefined;
+  view: { zone: TrackZone; risk: ZoneRisk | null } | undefined;
   track: TrackGeometry | undefined;
   riskMap: RiskMap | undefined;
   upgrade: ZoneChanges | undefined;

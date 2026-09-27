@@ -4,7 +4,6 @@ import dynamic from "next/dynamic";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { StateMessage } from "@/components/ui/StateMessage";
 import { Button } from "@/components/ui/Button";
-import { SAMPLE_SEASONS, type SimulationState } from "@/hooks/insurance/useSimulationStream";
 import type { ZoneView } from "@/lib/zoneView";
 import type { MapView } from "@/store/uiStore";
 import type { AssetMap } from "@/types/assets";
@@ -13,7 +12,6 @@ import { cn } from "@/lib/cn";
 import { TrackMap2D } from "./fallback/TrackMap2D";
 import { MapOverlay } from "./MapOverlay";
 import { RiskLegend } from "./RiskLegend";
-import { SimulationHud } from "./SimulationHud";
 import { ZoneStrip } from "./ZoneStrip";
 
 const TrackScene3D = dynamic(() => import("./scene/TrackScene3D"), {
@@ -27,12 +25,10 @@ interface InsuranceMapProps {
   onRetryTrack: () => void;
   zones: ZoneView[];
   riskError: string | null;
-  isRepricing: boolean;
   selectedZoneId: string | null;
   onSelectZone: (zoneId: string) => void;
   view: MapView;
   reducedMotion: boolean;
-  sim: SimulationState;
   assets: AssetMap | undefined;
   selectedAssetId: string | null;
   onSelectAsset: (assetId: string) => void;
@@ -61,12 +57,13 @@ function Toggle({ on, onChange, children }: { on: boolean; onChange: (on: boolea
 /** The map column: 3D twin or 2D fallback, overlays, and the zone strip. */
 export function InsuranceMap(p: InsuranceMapProps) {
   return (
-    <section className="grid min-h-0 min-w-0 grid-cols-1 grid-rows-[1fr_auto] bg-bg max-lg:h-[min(68vh,580px)] max-lg:min-h-[420px]" aria-label="Circuit risk map">
+    <section className="grid min-h-0 min-w-0 grid-cols-1 grid-rows-[1fr_auto] bg-bg max-lg:h-[min(68vh,580px)] max-lg:min-h-[420px]" aria-label="Circuit incident map">
       <div className="relative min-h-0 min-w-0 overflow-hidden">
         {p.track ? (
           <>
             {p.view === "3d" ? (
               <TrackScene3D
+                key={p.track.circuit}
                 circuitId={p.track.circuit}
                 outline={p.track.outline}
                 speedKph={p.track.speed_kph}
@@ -87,20 +84,14 @@ export function InsuranceMap(p: InsuranceMapProps) {
             )}
             <MapOverlay track={p.track} />
             <RiskLegend />
-            <SimulationHud sim={p.sim} sampleSeasons={SAMPLE_SEASONS} />
-            {p.isRepricing && p.sim.status !== "running" && (
-              <div className="absolute right-4 top-4 rounded-full border border-line bg-panel/90 px-3 py-1 text-xs text-muted backdrop-blur" role="status">
-                Repricing 10,000 seasons…
-              </div>
-            )}
             {p.riskError && (
-              <StateMessage tone="error" title="Risk data unavailable" className="absolute bottom-16 right-4 max-w-sm">
+              <StateMessage tone="error" title="Incident data unavailable" className="absolute bottom-16 right-4 max-w-sm">
                 {p.riskError}
               </StateMessage>
             )}
             <div className="absolute bottom-3.5 right-4 flex flex-col items-end gap-2">
               <div className="flex gap-1.5">
-                <Toggle on={p.riskOverlay} onChange={p.onRiskOverlay}>Risk view</Toggle>
+                <Toggle on={p.riskOverlay} onChange={p.onRiskOverlay}>Incident view</Toggle>
                 {p.view === "3d" && <Toggle on={p.showTraffic} onChange={p.onShowTraffic}>Live cars</Toggle>}
               </div>
               <p className="pointer-events-none hidden text-right text-[11px] leading-snug text-white/80 [text-shadow:0_1px_2px_rgba(0,0,0,0.6)] lg:block">

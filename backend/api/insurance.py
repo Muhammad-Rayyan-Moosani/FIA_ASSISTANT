@@ -14,7 +14,7 @@ from pydantic import TypeAdapter, ValidationError
 
 from api import schemas as s
 from config.settings import settings
-from services import actuarial, ingest_jobs, report, repository
+from services import actuarial, exposure, ingest_jobs, report, repository, safety_plan
 
 router = APIRouter(prefix="/api/insurance", tags=["insurance"])
 
@@ -82,6 +82,19 @@ async def stream_ingestion(job_id: str) -> StreamingResponse:
             await asyncio.sleep(0.1)
 
     return StreamingResponse(events(), media_type="text/event-stream", headers=SSE_HEADERS)
+
+
+# ----------------------------------------------------------------------------- third-party exposure
+@router.get("/exposure/{circuit}", response_model=s.ExposureMap)
+def get_exposure(circuit: str) -> dict:
+    """How often people are exposed, where, and whether it repeats: the evidence for a liability insurer."""
+    return exposure.exposure(circuit)
+
+
+@router.get("/safety-plan/{circuit}", response_model=s.SafetyPlan)
+def get_safety_plan(circuit: str) -> dict:
+    """For the corners where incidents happen next to the crowd: ways to protect spectators, with estimated prices."""
+    return safety_plan.safety_plan(circuit)
 
 
 # ----------------------------------------------------------------------------- Step 3 · insurance

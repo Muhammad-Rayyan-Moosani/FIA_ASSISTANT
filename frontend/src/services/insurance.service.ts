@@ -8,6 +8,8 @@
  */
 import { serializeUpgrades } from "@/lib/upgrades";
 import type { AssetMap } from "@/types/assets";
+import type { ExposureMap } from "@/types/exposure";
+import type { SafetyPlan } from "@/types/safetyPlan";
 import type {
   ReportQuery,
   RiskMap,
@@ -22,6 +24,8 @@ import { apiClient } from "./http/apiClient";
 import { openEventStream, type StreamHandlers, type StreamSubscription } from "./http/eventStream";
 
 export const INSURANCE_ENDPOINTS = {
+  exposure: (circuit: string) => `/api/insurance/exposure/${encodeURIComponent(circuit)}`,
+  safetyPlan: (circuit: string) => `/api/insurance/safety-plan/${encodeURIComponent(circuit)}`,
   riskMap: "/api/insurance/risk-map",
   assets: (circuit: string) => `/api/insurance/assets/${encodeURIComponent(circuit)}`,
   whatIf: "/api/insurance/what-if",
@@ -38,6 +42,16 @@ const MODEL_TIMEOUT_MS = 30_000;
 const REPORT_TIMEOUT_MS = 60_000;
 
 export const insuranceService = {
+  /** GET /api/insurance/exposure/{circuit} → how often people are exposed, where, and whether it repeats. */
+  getExposure(circuit: string, signal?: AbortSignal): Promise<ExposureMap> {
+    return apiClient.get<ExposureMap>(INSURANCE_ENDPOINTS.exposure(circuit), { signal });
+  },
+
+  /** GET /api/insurance/safety-plan/{circuit} → options to protect spectators at the busiest crowd corners, with estimated CAD prices. */
+  getSafetyPlan(circuit: string, signal?: AbortSignal): Promise<SafetyPlan> {
+    return apiClient.get<SafetyPlan>(INSURANCE_ENDPOINTS.safetyPlan(circuit), { signal });
+  },
+
   /** GET /api/insurance/risk-map?circuit&series&upgrades → zone risk, premiums and totals. */
   getRiskMap({ circuit, series, upgrades }: RiskMapQuery, signal?: AbortSignal): Promise<RiskMap> {
     return apiClient.get<RiskMap>(INSURANCE_ENDPOINTS.riskMap, {
