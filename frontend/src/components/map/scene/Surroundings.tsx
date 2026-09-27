@@ -45,8 +45,8 @@ function windowTexture(): CanvasTexture {
   return tex;
 }
 
-/** Soft round glow for lamp sprites. */
-function glowTexture(): CanvasTexture {
+/** Soft round glow for lamp and mast sprites. */
+export function glowTexture(): CanvasTexture {
   const c = document.createElement("canvas");
   c.width = c.height = 64;
   const g = c.getContext("2d")!;

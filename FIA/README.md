@@ -1,5 +1,7 @@
 # μMap & FIA Assist — Backend
 
+> **Merged into `backend/`.** Race control now runs in the main API (`backend/api/race_control.py`, `backend/services/race_control/`) on real OpenF1 replays, and the frontend shows it on the unified map. This folder is kept for reference; the frontend no longer calls it.
+
 FastAPI service for the μMap real-time grip-anomaly engine, the actuarial track-risk model and the FIA rulebook / team-radio assistant.
 
 ```

@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/Button";
 import type { ZoneView } from "@/lib/zoneView";
 import { useThemeStore } from "@/store/themeStore";
 import type { MapView } from "@/store/uiStore";
+import type { ReactNode } from "react";
 import type { AssetMap } from "@/types/assets";
+import type { Deployment, Mast } from "@/types/raceControl";
 import type { TrackGeometry } from "@/types/track";
 import { cn } from "@/lib/cn";
 import { TrackMap2D } from "./fallback/TrackMap2D";
@@ -37,6 +39,16 @@ interface InsuranceMapProps {
   onRiskOverlay: (on: boolean) => void;
   showTraffic: boolean;
   onShowTraffic: (on: boolean) => void;
+  /** Race control on the same map: marshal masts, neutralisation, replay state, crash focus. */
+  raceControl: {
+    masts: Mast[];
+    deployment: Deployment;
+    replayActive: boolean;
+    focusPoint: { x: number; y: number } | null;
+    onSelectMast: (sector: number) => void;
+  };
+  /** Overlays drawn over the map (cockpit warning, replay bar). */
+  overlay?: ReactNode;
 }
 
 function Toggle({ on, onChange, children }: { on: boolean; onChange: (on: boolean) => void; children: string }) {
@@ -81,10 +93,25 @@ export function InsuranceMap(p: InsuranceMapProps) {
                 showTraffic={p.showTraffic}
                 reducedMotion={p.reducedMotion}
                 theme={theme}
+                masts={p.raceControl.masts}
+                onSelectMast={p.raceControl.onSelectMast}
+                deployment={p.raceControl.deployment}
+                replayActive={p.raceControl.replayActive}
+                focusPoint={p.raceControl.focusPoint}
               />
             ) : (
-              <TrackMap2D outline={p.track.outline} zones={p.zones} assets={p.assets} selectedZoneId={p.selectedZoneId} onSelectZone={p.onSelectZone} reducedMotion={p.reducedMotion} />
+              <TrackMap2D
+                outline={p.track.outline}
+                zones={p.zones}
+                assets={p.assets}
+                selectedZoneId={p.selectedZoneId}
+                onSelectZone={p.onSelectZone}
+                reducedMotion={p.reducedMotion}
+                masts={p.raceControl.masts}
+                onSelectMast={p.raceControl.onSelectMast}
+              />
             )}
+            {p.overlay}
             <MapOverlay track={p.track} />
             <RiskLegend />
             {p.riskError && (
@@ -98,7 +125,7 @@ export function InsuranceMap(p: InsuranceMapProps) {
                 {p.view === "3d" && <Toggle on={p.showTraffic} onChange={p.onShowTraffic}>Live cars</Toggle>}
               </div>
               <p className="pointer-events-none hidden text-right text-[11px] leading-snug text-white/80 [text-shadow:0_1px_2px_rgba(0,0,0,0.6)] lg:block">
-                {p.view === "3d" ? "Drag to orbit · scroll to zoom · click a zone or building" : "Click a zone"}
+                {p.view === "3d" ? "Drag to orbit · scroll to zoom · click a zone, building or marshal mast" : "Click a zone or marshal mast"}
                 <br />
                 {p.view === "3d" && "True-scale plan · track drawn 3× wide · heights ×2 · cars ×6 · "}
                 {p.assets?.attribution ?? ""}

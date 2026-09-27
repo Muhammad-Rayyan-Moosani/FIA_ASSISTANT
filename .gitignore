@@ -33,3 +33,8 @@ pnpm-debug.log*
 
 # --- OpenF1 response cache used by backend/openf1_extract.py ---
 .openf1_cache/
+
+# --- Race control: re-creatable caches (OpenF1 responses, F1 radio clips, rulebook embeddings) ---
+data/replay/openf1_cache/
+data/replay/radio/
+data/race_control/rulebook_index/

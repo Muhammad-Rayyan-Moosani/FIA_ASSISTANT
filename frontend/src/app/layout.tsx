@@ -1,7 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Barlow_Condensed, IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
 import type { ReactNode } from "react";
-import { THEME_BOOT_SCRIPT } from "@/store/themeStore";
+import { cookies } from "next/headers";
+import { THEME_COOKIE } from "@/store/themeStore";
 import { Providers } from "./providers";
 import "./globals.css";
 
@@ -22,12 +23,11 @@ export const viewport: Viewport = {
   colorScheme: "dark light",
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  // The theme is a cookie so the server renders the right one: no flash, no inline script.
+  const theme = (await cookies()).get(THEME_COOKIE)?.value === "day" ? "light" : "dark";
   return (
-    <html lang="en" className={`${display.variable} ${sans.variable} ${mono.variable}`} suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
-      </head>
+    <html lang="en" data-theme={theme} className={`${display.variable} ${sans.variable} ${mono.variable}`}>
       <body>
         <Providers>{children}</Providers>
       </body>
