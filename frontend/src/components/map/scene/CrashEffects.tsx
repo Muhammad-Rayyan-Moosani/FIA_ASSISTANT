@@ -6,7 +6,7 @@ import { BufferAttribute, BufferGeometry, CylinderGeometry, Group, Mesh, MeshSta
 import { nearestIndex, sampleAlong } from "@/lib/trackGeometry";
 import { mapEffects, type MapEffect } from "@/store/crashBus";
 import type { RunoffType } from "@/types/track";
-import { createCar, disposeCar, LIVERIES } from "./carModel";
+import { carParts, createCar, disposeCar, LIVERIES, WHEEL_RADIUS_M } from "./carModel";
 import { CAR_SCALE, type FlashMap, type FlashRef, type PlacedZone, type SceneData } from "./sceneTypes";
 
 const CAR_POOL = 24;
@@ -29,6 +29,7 @@ interface CrashCar {
   stopped: boolean;
   zone: PlacedZone;
   severe: boolean;
+  wheel: number;   // wheel spin angle
 }
 
 interface Particle {
@@ -60,7 +61,7 @@ class CrashSim {
     this.zoneById = new Map(scene.zones.map((z) => [z.view.zone.zone_id, z]));
     this.cars = Array.from({ length: CAR_POOL }, (_, i) => ({
       car: createCar(LIVERIES[(i + 2) % LIVERIES.length]!, u * CAR_SCALE), active: false, t: 0, f: 0, w: 0, v: 0,
-      yaw: 0, spin: 0, stopped: false, zone: scene.zones[0]!, severe: false,
+      yaw: 0, spin: 0, stopped: false, zone: scene.zones[0]!, severe: false, wheel: 0,
     }));
     this.cars.forEach((c) => {
       c.car.visible = false;
@@ -146,7 +147,7 @@ class CrashSim {
     colors.needsUpdate = true;
   }
 
-  tick(rawDt: number, reducedMotion: boolean): void {
+  tick(rawDt: number, reducedMotion: boolean, night: boolean): void {
     const { u, trackHalf } = this.scene.scale;
     const dt = Math.min(rawDt, 0.05) * (reducedMotion ? 4 : 1);
     const offTrackM = trackHalf / u;
@@ -164,6 +165,7 @@ class CrashSim {
         c.w += c.v * Math.sin(drift) * dt;
         const pos = sampleAlong(this.scene.frame, c.f, c.zone.side * c.w * u);
         if (c.w > offTrackM && Math.random() < 0.6) this.emit(pos.x, 0.05, pos.z, 3, DUST[zone.runoff_type], 4.2 * u, -0.5 * u);
+        else if (slip > 0.3 && Math.random() < 0.5) this.emit(pos.x, 0.1, pos.z, 2, [0.86, 0.86, 0.88], 2.6 * u, 0.4 * u);   // tyre smoke
         if (c.w >= barrierM) {
           c.stopped = true;
           c.w = barrierM - 1.2;
@@ -177,6 +179,14 @@ class CrashSim {
       const pos = sampleAlong(this.scene.frame, c.f, c.zone.side * c.w * u);
       c.car.position.set(pos.x, 0.02, pos.z);
       c.car.rotation.y = pos.heading + c.yaw * c.zone.side;
+      const parts = carParts(c.car);
+      c.wheel = (c.wheel + Math.min(28, c.v / WHEEL_RADIUS_M) * dt) % (Math.PI * 2);
+      parts.wheels.forEach((w) => (w.rotation.x = c.wheel));
+      parts.front.forEach((w) => (w.rotation.y = c.stopped ? 0 : -Math.sign(c.spin) * c.zone.side * 0.45));   // opposite lock
+      parts.body.rotation.z = c.stopped ? 0 : Math.sign(c.spin) * c.zone.side * -0.06;
+      const flash = Math.sin(c.t * 26) > 0 ? 4 : 0.5;
+      parts.rainLight.color.setRGB(flash, flash * 0.08, flash * 0.1);
+      parts.paint.emissiveIntensity = night ? 0.28 : 0;
       if (c.t > 4.2) {
         c.active = false;
         c.car.visible = false;
@@ -228,7 +238,7 @@ class CrashSim {
 }
 
 /** Replays simulated crashes and ingested incidents from the map-effects bus. */
-export function CrashEffects({ scene, flash, reducedMotion }: { scene: SceneData; flash: FlashRef; reducedMotion: boolean }) {
+export function CrashEffects({ scene, flash, reducedMotion, night }: { scene: SceneData; flash: FlashRef; reducedMotion: boolean; night: boolean }) {
   const root = useRef<Group>(null);
   const simRef = useRef<CrashSim | null>(null);
 
@@ -244,7 +254,7 @@ export function CrashEffects({ scene, flash, reducedMotion }: { scene: SceneData
     };
   }, [scene, flash]);
 
-  useFrame((_, dt) => simRef.current?.tick(dt, reducedMotion));
+  useFrame((_, dt) => simRef.current?.tick(dt, reducedMotion, night));
 
   return <group ref={root} />;
 }

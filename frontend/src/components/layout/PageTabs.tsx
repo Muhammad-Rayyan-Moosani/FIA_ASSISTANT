@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { cn } from "@/lib/cn";
+import { ThemeToggle } from "./ThemeToggle";
 
 export type AppPage = "insurance" | "fia";
 
@@ -8,9 +9,10 @@ const PAGES: { id: AppPage; href: string; label: string; title: string }[] = [
   { id: "fia", href: "/fia", label: "FIA", title: "Race control: μMap grip alerts, camera checks, rulebook" },
 ];
 
-/** Switches between the app's pages; styled like SegmentedControl. */
+/** Switches between the app's pages (and holds the day / night switch); styled like SegmentedControl. */
 export function PageTabs({ active }: { active: AppPage }) {
   return (
+    <div className="flex items-center gap-2.5">
     <nav aria-label="Pages" className="inline-flex rounded-lg border border-line bg-bg p-0.5">
       {PAGES.map((p) => {
         const current = p.id === active;
@@ -30,5 +32,7 @@ export function PageTabs({ active }: { active: AppPage }) {
         );
       })}
     </nav>
+    <ThemeToggle />
+    </div>
   );
 }

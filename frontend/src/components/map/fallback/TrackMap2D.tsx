@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { riskHex } from "@/lib/riskColor";
 import { zoneIndexRange } from "@/lib/trackGeometry";
 import type { ZoneView } from "@/lib/zoneView";
-import type { AssetMap } from "@/types/assets";
+import type { AssetMap, GroundKind } from "@/types/assets";
 import { mapEffects } from "@/store/crashBus";
 import { NEUTRAL_ZONE } from "../scene/sceneTypes";
 
@@ -18,6 +18,10 @@ interface TrackMap2DProps {
 }
 
 const SVG_NS = "http://www.w3.org/2000/svg";
+/** Dark-theme ground colours; layers are drawn in the backend's painter's order. */
+const GROUND_2D: Record<GroundKind, string> = {
+  water: "#16303f", land: "#141c17", wood: "#1b2a1c", grass: "#18241a", beach: "#35301f", parking: "#20252a", pitch: "#1a2a1c",
+};
 const toPath = (pts: [number, number][]) => pts.map(([x, y], i) => `${i ? "L" : "M"}${x.toFixed(4)} ${(-y).toFixed(4)}`).join("");
 
 /** Flat SVG map with the same props as the 3D scene. Used without WebGL or on request. */
@@ -50,8 +54,7 @@ export function TrackMap2D({ outline, zones, assets, selectedZoneId, onSelectZon
 
   return (
     <svg viewBox="-0.56 -0.56 1.12 1.12" preserveAspectRatio="xMidYMid meet" className="absolute inset-0 h-full w-full" role="img" aria-label="Map of the circuit coloured by insurance risk">
-      {assets?.context.woods.map((w, i) => <path key={`w${i}`} d={`${toPath(w)}Z`} fill="#1b2a1c" />)}
-      {assets?.context.water.map((w, i) => <path key={`h${i}`} d={`${toPath(w)}Z`} fill="#16303f" />)}
+      {assets?.context.ground.map((g, i) => <path key={`g${i}`} d={`${toPath(g.points)}Z`} fill={GROUND_2D[g.kind]} />)}
       {assets?.assets.map((a) =>
         a.geometry === "polygon" ? (
           <path key={a.asset_id} d={`${toPath(a.points)}Z`} fill={a.category === "grandstand" ? "#5b6875" : "#3d4854"} stroke="#0b1117" strokeWidth={0.0008}>

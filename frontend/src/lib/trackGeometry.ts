@@ -220,3 +220,105 @@ export function sampleAlong(frame: TrackFrame, f: number, lateral = 0): { x: num
     heading: Math.atan2(tg.x, tg.z),
   };
 }
+
+/**
+ * Open polyline -> ribbon of a given width (roads, pit lane, old raceways). `y` may vary per vertex
+ * (bridge decks ramping up from the banks).
+ */
+export function polylineRibbon(points: readonly Vec2[], width: number, y: number | ((i: number, n: number) => number)): MeshData {
+  const n = points.length;
+  const positions = new Float32Array(n * 6);
+  const indices: number[] = [];
+  points.forEach((p, i) => {
+    const a = points[Math.max(0, i - 1)]!;
+    const b = points[Math.min(n - 1, i + 1)]!;
+    const len = Math.hypot(b.x - a.x, b.z - a.z) || 1;
+    const nx = -(b.z - a.z) / len;
+    const nz = (b.x - a.x) / len;
+    const yy = typeof y === "number" ? y : y(i, n);
+    positions.set([p.x + (nx * width) / 2, yy, p.z + (nz * width) / 2, p.x - (nx * width) / 2, yy, p.z - (nz * width) / 2], i * 6);
+    if (i < n - 1) indices.push(i * 2, i * 2 + 1, i * 2 + 2, i * 2 + 1, i * 2 + 3, i * 2 + 2);
+  });
+  return { positions, indices };
+}
+
+/** Cumulative length along a polyline, normalised to 0..1 (for ramps and spacing along it). */
+export function polylineFractions(points: readonly Vec2[]): number[] {
+  const d = [0];
+  for (let i = 1; i < points.length; i++) d.push(d[i - 1]! + Math.hypot(points[i]!.x - points[i - 1]!.x, points[i]!.z - points[i - 1]!.z));
+  const total = d[d.length - 1] || 1;
+  return d.map((v) => v / total);
+}
+
+/**
+ * A ribbon across several lateral offsets (along the left normal) with a per-row alpha: RGBA vertex colours
+ * (white, alpha from `alphas`) for glow bands tinted by the material colour. Alpha tapers to 0 over `taper`
+ * points at each end so neighbouring zones blend instead of cutting hard.
+ */
+export function gradientStrip(frame: TrackFrame, a: number, b: number, offsets: readonly number[], alphas: readonly number[], y: number, taper = 3): MeshData & { colors: Float32Array } {
+  const list = indexList(a, b, frame.points.length, false);
+  const rows = offsets.length;
+  const positions = new Float32Array(list.length * rows * 3);
+  const colors = new Float32Array(list.length * rows * 4);
+  const indices: number[] = [];
+  list.forEach((i, k) => {
+    const p = frame.points[i]!;
+    const q = frame.normals[i]!;
+    const end = Math.min(1, (Math.min(k, list.length - 1 - k) + 0.5) / Math.max(1, taper));
+    offsets.forEach((off, r) => {
+      const v = k * rows + r;
+      positions.set([p.x + q.x * off, y, p.z + q.z * off], v * 3);
+      colors.set([1, 1, 1, alphas[r]! * end], v * 4);
+    });
+    if (k < list.length - 1) {
+      for (let r = 0; r < rows - 1; r++) {
+        const o = k * rows + r;
+        indices.push(o, o + 1, o + rows, o + 1, o + rows + 1, o + rows);
+      }
+    }
+  });
+  return { positions, indices, colors };
+}
+
+/** A thin flat line straight across the track at outline index `i`, from lateral offset `from` to `to`. */
+export function crossLine(frame: TrackFrame, i: number, from: number, to: number, width: number, y: number): MeshData {
+  const p = frame.points[i]!;
+  const q = frame.normals[i]!;
+  const t = frame.tangents[i]!;
+  const w = width / 2;
+  const at = (off: number, s: number) => [p.x + q.x * off + t.x * s, y, p.z + q.z * off + t.z * s];
+  return { positions: new Float32Array([...at(from, -w), ...at(from, w), ...at(to, -w), ...at(to, w)]), indices: [0, 2, 1, 1, 2, 3] };
+}
+
+/**
+ * A vertical curtain of light standing on the track at a lateral offset, with per-vertex attributes for a shader:
+ * `aH` 0 at the ground → 1 at the top, `aT` 0 → 1 along the zone, `aS` distance along the zone (world units).
+ */
+export function lightCurtain(frame: TrackFrame, a: number, b: number, offset: number, height: number): MeshData & { aH: Float32Array; aT: Float32Array; aS: Float32Array } {
+  const list = indexList(a, b, frame.points.length, false);
+  const positions = new Float32Array(list.length * 6);
+  const aH = new Float32Array(list.length * 2);
+  const aT = new Float32Array(list.length * 2);
+  const aS = new Float32Array(list.length * 2);
+  const indices: number[] = [];
+  let s = 0;
+  list.forEach((i, k) => {
+    const p = frame.points[i]!;
+    const q = frame.normals[i]!;
+    if (k > 0) {
+      const prev = frame.points[list[k - 1]!]!;
+      s += Math.hypot(p.x - prev.x, p.z - prev.z);
+    }
+    const x = p.x + q.x * offset;
+    const z = p.z + q.z * offset;
+    positions.set([x, 0.02, z, x, height, z], k * 6);
+    aH.set([0, 1], k * 2);
+    aT.set([k / Math.max(1, list.length - 1), k / Math.max(1, list.length - 1)], k * 2);
+    aS.set([s, s], k * 2);
+    if (k < list.length - 1) {
+      const o = k * 2;
+      indices.push(o, o + 2, o + 1, o + 1, o + 2, o + 3);
+    }
+  });
+  return { positions, indices, aH, aT, aS };
+}

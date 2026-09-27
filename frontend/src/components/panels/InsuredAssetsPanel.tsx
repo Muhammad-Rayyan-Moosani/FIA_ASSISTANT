@@ -59,7 +59,10 @@ export function InsuredAssetsPanel({ assets, selectedZoneId, zoneName, selectedA
           <div className="flex items-start justify-between gap-2">
             <div>
               <b className="display text-lg font-semibold leading-tight">{selected.name ?? ASSET_CATEGORY_LABEL[selected.category]}</b>
-              <div className="text-xs text-muted">{ASSET_CATEGORY_LABEL[selected.category]} · OSM {selected.osm_tag}</div>
+              <div className="text-xs text-muted">
+                {ASSET_CATEGORY_LABEL[selected.category]} ·{" "}
+                {selected.position_source === "official_list" ? "placed from the official grandstand list" : `OSM ${selected.osm_tag}`}
+              </div>
             </div>
             <ExposurePill asset={selected} />
           </div>
@@ -69,7 +72,11 @@ export function InsuredAssetsPanel({ assets, selectedZoneId, zoneName, selectedA
             ))}
           </div>
           <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-[12.5px]">
-            <dt className="text-muted">From the track</dt><dd className="num">{formatNumber(selected.distance_to_track_m)} m</dd>
+            <dt className="text-muted">From the track</dt>
+            <dd className="num">
+              {formatNumber(selected.distance_to_track_m)} m
+              {selected.position_source === "official_list" && <span className="font-sans text-[11px] text-faint"> (corner official, offset and footprint assumed)</span>}
+            </dd>
             <dt className="text-muted">Height</dt>
             <dd className="num">{formatNumber(selected.height_m, 1)} m <span className="font-sans text-[11px] text-faint">{selected.height_source === "assumed" ? "(assumed by type)" : "(OpenStreetMap)"}</span></dd>
             <dt className="text-muted">Faces zone</dt><dd>{selected.nearest_zone_id === selectedZoneId ? zoneName : selected.nearest_zone_id}</dd>

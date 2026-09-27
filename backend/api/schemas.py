@@ -299,6 +299,7 @@ CoverageLine = Literal["property", "spectator_liability", "business_interruption
 
 class Asset(Contract):
     asset_id: str
+    position_source: Literal["osm", "official_list"]
     name: str | None
     category: AssetCategory
     osm_tag: str
@@ -322,11 +323,34 @@ class CoverageSummary(Contract):
     high_exposure: int
 
 
+GroundKind = Literal["water", "land", "wood", "grass", "beach", "parking", "pitch"]
+
+
+class GroundArea(Contract):
+    kind: GroundKind
+    points: list[tuple[float, float]]
+
+
+class ContextRoad(Contract):
+    kind: Literal["major", "minor", "service", "path", "rail"]
+    width_m: float
+    bridge: bool
+    points: list[tuple[float, float]]
+
+
+class ContextBuilding(Contract):
+    height_m: float
+    points: list[tuple[float, float]]
+
+
 class AssetContext(Contract):
+    """Surroundings from OpenStreetMap (not insured): drawn for a true picture of the site."""
     woods: list[list[tuple[float, float]]]
-    water: list[list[tuple[float, float]]]
     pit_lane: list[list[tuple[float, float]]]
     other_raceways: list[list[tuple[float, float]]]
+    ground: list[GroundArea] = Field(description="Painter's order: draw first to last (largest areas first).")
+    roads: list[ContextRoad]
+    buildings: list[ContextBuilding]
 
 
 AssetSourceKey = Literal["structures", "coverage", "exposure"]

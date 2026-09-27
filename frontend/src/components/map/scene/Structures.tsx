@@ -2,7 +2,7 @@
 
 import type { ThreeEvent } from "@react-three/fiber";
 import { memo, useEffect, useMemo } from "react";
-import { BoxGeometry, BufferGeometry, Color, DoubleSide, ExtrudeGeometry, Shape, Vector2 } from "three";
+import { BoxGeometry, BufferAttribute, BufferGeometry, Color, DoubleSide, ExtrudeGeometry, Shape, ShapeUtils, Vector2 } from "three";
 import { riskHex } from "@/lib/riskColor";
 import { toWorld, WORLD_SCALE, type MeshData, type Vec2 } from "@/lib/trackGeometry";
 import type { Asset, AssetCategory } from "@/types/assets";
@@ -45,6 +45,45 @@ function extrude(asset: Asset, height: number): BufferGeometry {
   return g;
 }
 
+const SEAT_COLOR = new Color("#cdd1d6");
+const STAND_FRAME_COLOR = new Color("#8e959c");
+
+/**
+ * A grandstand as a raked seating bowl: the roof line rises from the edge nearest the track (30% of the height)
+ * to the back (full height), with vertical walls around the footprint. Works for any OSM footprint.
+ */
+function rakedStand(pts: Vec2[], height: number, track: readonly Vec2[]): BufferGeometry {
+  const ring = pts.length > 1 && pts[0]!.x === pts[pts.length - 1]!.x && pts[0]!.z === pts[pts.length - 1]!.z ? pts.slice(0, -1) : pts;
+  const dist = ring.map((p) => {
+    let best = Infinity;
+    for (let i = 0; i < track.length; i += 2) best = Math.min(best, Math.hypot(track[i]!.x - p.x, track[i]!.z - p.z));
+    return best;
+  });
+  const lo = Math.min(...dist);
+  const hi = Math.max(...dist);
+  const top = dist.map((d) => height * (0.3 + 0.7 * (hi > lo ? (d - lo) / (hi - lo) : 1)));
+  const pos: number[] = [];
+  const col: number[] = [];
+  const put = (x: number, y: number, z: number, c: Color) => {
+    pos.push(x, y, z);
+    col.push(c.r, c.g, c.b);
+  };
+  for (const f of ShapeUtils.triangulateShape(ring.map((p) => new Vector2(p.x, -p.z)), [])) {
+    for (const k of f) put(ring[k]!.x, top[k]!, ring[k]!.z, SEAT_COLOR);
+  }
+  ring.forEach((a, i) => {
+    const j = (i + 1) % ring.length;
+    const b = ring[j]!;
+    put(a.x, 0, a.z, STAND_FRAME_COLOR); put(b.x, 0, b.z, STAND_FRAME_COLOR); put(b.x, top[j]!, b.z, STAND_FRAME_COLOR);
+    put(a.x, 0, a.z, STAND_FRAME_COLOR); put(b.x, top[j]!, b.z, STAND_FRAME_COLOR); put(a.x, top[i]!, a.z, STAND_FRAME_COLOR);
+  });
+  const g = new BufferGeometry();
+  g.setAttribute("position", new BufferAttribute(new Float32Array(pos), 3));
+  g.setAttribute("color", new BufferAttribute(new Float32Array(col), 3));
+  g.computeVertexNormals();
+  return g;
+}
+
 function lineWall(points: Vec2[], height: number, y0 = 0, thickness = 0): MeshData {
   const n = points.length;
   const positions = new Float32Array(n * 6);
@@ -63,17 +102,22 @@ function lineWall(points: Vec2[], height: number, y0 = 0, thickness = 0): MeshDa
 
 interface StructureProps {
   asset: Asset;
+  track: readonly Vec2[];
   scale: SceneScale;
   riskOverlay: boolean;
   highlighted: boolean;
   events: StructureEvents;
 }
 
-const Structure = memo(function Structure({ asset, scale, riskOverlay, highlighted, events }: StructureProps) {
+const Structure = memo(function Structure({ asset, track, scale, riskOverlay, highlighted, events }: StructureProps) {
   const height = scale.h(asset.height_m);
   const pts = useMemo(() => worldPoints(asset), [asset]);
+  const raked = asset.category === "grandstand" && asset.geometry === "polygon";
 
-  const polyGeo = useMemo(() => (asset.geometry === "polygon" && asset.category !== "tower" ? extrude(asset, height) : null), [asset, height]);
+  const polyGeo = useMemo(() => {
+    if (asset.geometry !== "polygon" || asset.category === "tower") return null;
+    return raked ? rakedStand(pts, height, track) : extrude(asset, height);
+  }, [asset, height, raked, pts, track]);
   const towerGeo = useMemo(() => {
     if (asset.category !== "tower") return null;
     const side = TOWER_SIDE_M * scale.u;
@@ -90,9 +134,9 @@ const Structure = memo(function Structure({ asset, scale, riskOverlay, highlight
   const wallGeo = useMeshGeometry(wallData);
 
   const color = useMemo(() => {
-    const base = new Color(CATEGORY_COLOR[asset.category]);
+    const base = new Color(raked ? "#ffffff" : CATEGORY_COLOR[asset.category]);
     return riskOverlay && asset.exposure_score > 0 ? base.lerp(new Color(riskHex(asset.exposure_score)), 0.25 + (asset.exposure_score / 100) * 0.5) : base;
-  }, [asset, riskOverlay]);
+  }, [asset, riskOverlay, raked]);
 
   const handlers = {
     onPointerOver: (e: ThreeEvent<PointerEvent>) => {
@@ -109,6 +153,7 @@ const Structure = memo(function Structure({ asset, scale, riskOverlay, highlight
   const material = (
     <meshStandardMaterial
       color={color}
+      vertexColors={raked}
       roughness={0.85}
       metalness={asset.category === "tower" ? 0.4 : 0.05}
       emissive={highlighted ? "#86b7e8" : "#000000"}
@@ -126,9 +171,13 @@ const Structure = memo(function Structure({ asset, scale, riskOverlay, highlight
   return null;
 });
 
-/** Every insured structure from OpenStreetMap, at its real position and footprint. */
-export function Structures({ assets, scale, riskOverlay, selectedAssetId, hoveredAssetId, events }: {
+/**
+ * Every insured structure at its real position and footprint (OpenStreetMap); temporary F1 grandstands missing
+ * from OSM are placed by the corner the official list names (footprint assumed).
+ */
+export function Structures({ assets, track, scale, riskOverlay, selectedAssetId, hoveredAssetId, events }: {
   assets: Asset[];
+  track: readonly Vec2[];
   scale: SceneScale;
   riskOverlay: boolean;
   selectedAssetId: string | null;
@@ -141,6 +190,7 @@ export function Structures({ assets, scale, riskOverlay, selectedAssetId, hovere
         <Structure
           key={a.asset_id}
           asset={a}
+          track={track}
           scale={scale}
           riskOverlay={riskOverlay}
           highlighted={a.asset_id === selectedAssetId || a.asset_id === hoveredAssetId}
