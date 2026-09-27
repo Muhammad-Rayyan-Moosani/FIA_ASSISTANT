@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { UPLOADS, checkUpload, parseCsv } from "./uploadFiles";
+import { UPLOADS, checkUpload, parseCsv, sortUploads } from "./uploadFiles";
 
 const spec = (key: string) => UPLOADS.find((u) => u.key === key)!;
 
@@ -31,5 +31,21 @@ describe("checkUpload", () => {
     expect(r.summary).toContain("speed trace included");
     expect(r.lengthM).toBe(240);
     expect(checkUpload(spec("track"), "x_m,y_m\n1,2\n").ok).toBe(false);
+  });
+});
+
+describe("sortUploads", () => {
+  it("puts each file in the right slot by its columns, then by its name", () => {
+    const { matched, unmatched } = sortUploads([
+      { name: "a.csv", text: "post,distance_m\n1,100\n" },
+      { name: "b.csv", text: "number,name,distance_m\n1,Hairpin,300\n" },
+      { name: "my_incident_log.csv", text: "when,where\nx,y\n" },
+      { name: "notes.csv", text: "foo\nbar\n" },
+    ]);
+    expect(matched.marshals?.fileName).toBe("a.csv");
+    expect(matched.corners?.fileName).toBe("b.csv");
+    expect(matched.incidents?.fileName).toBe("my_incident_log.csv");
+    expect(matched.incidents?.result.ok).toBe(false);
+    expect(unmatched).toEqual(["notes.csv"]);
   });
 });
