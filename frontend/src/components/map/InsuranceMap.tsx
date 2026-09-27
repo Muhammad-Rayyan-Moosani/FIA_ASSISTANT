@@ -106,7 +106,7 @@ export function InsuranceMap(p: InsuranceMapProps) {
               <p className="pointer-events-none hidden text-right text-[11px] leading-snug text-white/80 [text-shadow:0_1px_2px_rgba(0,0,0,0.6)] lg:block">
                 {p.view === "3d" ? "Drag to orbit · scroll to zoom · click a zone or building" : "Click a zone"}
                 <br />
-                {p.view === "3d" && "True-scale plan · heights ×2 · cars ×3 · "}
+                {p.view === "3d" && "True-scale plan · track width 14 m (assumed) · heights ×2 · cars ×3 · "}
                 {p.assets?.attribution ?? ""}
               </p>
             </div>

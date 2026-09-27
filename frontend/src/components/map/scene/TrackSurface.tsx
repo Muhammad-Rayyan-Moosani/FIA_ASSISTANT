@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo } from "react";
 import { BufferAttribute, BufferGeometry, DoubleSide } from "three";
-import { stripedStrip, stripMesh, toWorld, type MeshData, type Vec2 } from "@/lib/trackGeometry";
+import { polylineRibbon, stripedStrip, stripMesh, toWorld, type MeshData } from "@/lib/trackGeometry";
 import type { AssetContext } from "@/types/assets";
 import type { SceneData } from "./sceneTypes";
 import { useMeshGeometry } from "./useMeshGeometry";
@@ -13,23 +13,6 @@ const LINE_WIDTH_M = 0.8;
 const PIT_LANE_WIDTH_M = 12;
 const OLD_RACEWAY_WIDTH_M = 12;
 const KERB_COLORS = [[0.78, 0.1, 0.12], [0.94, 0.94, 0.94]] as const;
-
-/** Open polyline -> flat ribbon of a given width (pit lane, old raceways from OpenStreetMap). */
-function polylineRibbon(points: Vec2[], width: number, y: number): MeshData {
-  const n = points.length;
-  const positions = new Float32Array(n * 6);
-  const indices: number[] = [];
-  points.forEach((p, i) => {
-    const a = points[Math.max(0, i - 1)]!;
-    const b = points[Math.min(n - 1, i + 1)]!;
-    const len = Math.hypot(b.x - a.x, b.z - a.z) || 1;
-    const nx = -(b.z - a.z) / len;
-    const nz = (b.x - a.x) / len;
-    positions.set([p.x + nx * width / 2, y, p.z + nz * width / 2, p.x - nx * width / 2, y, p.z - nz * width / 2], i * 6);
-    if (i < n - 1) indices.push(i * 2, i * 2 + 1, i * 2 + 2, i * 2 + 1, i * 2 + 3, i * 2 + 2);
-  });
-  return { positions, indices };
-}
 
 function Ribbon({ data, color, roughness = 0.9 }: { data: MeshData; color: string; roughness?: number }) {
   const g = useMeshGeometry(data);

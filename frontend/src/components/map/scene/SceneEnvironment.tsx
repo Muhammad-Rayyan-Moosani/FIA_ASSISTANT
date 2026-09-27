@@ -24,7 +24,7 @@ export function SceneEnvironment() {
         shadow-camera-near={10}
         shadow-camera-far={400}
       />
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.04, 0]} receiveShadow raycast={() => null}>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.04, 0]} renderOrder={-2} receiveShadow raycast={() => null}>
         <circleGeometry args={[900, 72]} />
         <meshStandardMaterial color="#5f7d45" roughness={1} />
       </mesh>

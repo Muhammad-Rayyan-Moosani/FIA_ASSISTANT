@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import warnings
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -14,6 +15,8 @@ from fastapi.testclient import TestClient
 from api import schemas as s
 from config.settings import settings
 from main import app
+
+ROOT = Path(__file__).resolve().parents[2]
 
 warnings.filterwarnings("ignore", module="insurance_model")
 settings.sim_stream_delay_s = 0
@@ -145,6 +148,19 @@ def test_assets_are_real_structures_with_exposure(circuit):
     assert all(a.nearest_zone_id in zones for a in am.assets)
     far = [a for a in am.assets if a.distance_to_track_m >= 200]
     assert all(a.exposure_score == 0 for a in far)
+
+
+def test_montreal_surroundings_and_official_grandstands():
+    am = s.AssetMap.model_validate(client.get(f"{API}/assets/montreal").json())
+    assert {"water", "land", "wood"} <= {g.kind for g in am.context.ground}
+    assert am.context.roads and am.context.buildings
+    stands = [a for a in am.assets if a.position_source == "official_list"]
+    official = json.loads((ROOT / "data/tracks/montreal_inventory.json").read_text())["grandstands"]["stands"]
+    assert {a.name for a in stands} <= {st["name"] for st in official} and len(stands) >= 10
+    assert all(a.category == "grandstand" and a.height_source == "assumed" and a.distance_to_track_m >= 10 for a in stands)
+    assert "official grandstand list" in am.sources["structures"].detail
+    monza = s.AssetMap.model_validate(client.get(f"{API}/assets/monza").json())
+    assert all(a.position_source == "osm" for a in monza.assets)   # Monza's stands are all mapped in OSM
 
 
 def test_track_has_real_speed_profile():

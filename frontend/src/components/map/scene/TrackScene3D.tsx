@@ -12,6 +12,7 @@ import { CrashEffects } from "./CrashEffects";
 import { SceneEnvironment } from "./SceneEnvironment";
 import { TRACK_WIDTH_M, VERTICAL_EXAGGERATION, type FlashMap, type SceneData } from "./sceneTypes";
 import { Structures, type StructureEvents } from "./Structures";
+import { Surroundings } from "./Surroundings";
 import { Terrain } from "./Terrain";
 import { TrackSurface } from "./TrackSurface";
 import { Traffic } from "./Traffic";
@@ -115,6 +116,7 @@ export default function TrackScene3D(p: TrackSceneProps) {
       >
         <SceneEnvironment />
         {p.assets && <Terrain context={p.assets.context} scene={scene} />}
+        {p.assets && <Surroundings context={p.assets.context} scene={scene} />}
         <TrackSurface scene={scene} context={p.assets?.context} />
         {scene.zones.map((placed) => (
           <ZoneSafety
@@ -122,6 +124,7 @@ export default function TrackScene3D(p: TrackSceneProps) {
             scene={scene}
             placed={placed}
             selected={placed.view.zone.zone_id === p.selectedZoneId}
+            hovered={placed.view.zone.zone_id === hoveredZone}
             riskOverlay={p.riskOverlay}
             flash={flash}
             onSelect={p.onSelectZone}
@@ -131,6 +134,7 @@ export default function TrackScene3D(p: TrackSceneProps) {
         {p.assets && (
           <Structures
             assets={p.assets.assets}
+            track={frame.points}
             scale={scene.scale}
             riskOverlay={p.riskOverlay}
             selectedAssetId={p.selectedAssetId}
@@ -153,6 +157,9 @@ export default function TrackScene3D(p: TrackSceneProps) {
           <span className="text-muted">
             {ASSET_CATEGORY_LABEL[hover.asset.category]} · {Math.round(hover.asset.distance_to_track_m)} m from track · exposure {hover.asset.exposure_tier.toLowerCase()}
           </span>
+          {hover.asset.position_source === "official_list" && (
+            <span className="block text-[11px] text-faint">Corner from the official grandstand list · footprint assumed</span>
+          )}
         </div>
       )}
     </div>
