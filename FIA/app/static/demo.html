@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>μMap Race Control</title>
+<style>
+  :root {
+    --bg: #0b0e13; --panel: #131821; --panel-2: #1a2130; --line: #263045; --text: #e6ebf3; --muted: #8a96ab;
+    --accent: #e10600; --green: #22c55e; --amber: #f5b301; --red: #ff3b3b; --cyan: #22d3ee; --magenta: #e879f9;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header { display: flex; align-items: center; gap: 16px; padding: 12px 20px; border-bottom: 1px solid var(--line); background: #0e1219; position: sticky; top: 0; z-index: 5; flex-wrap: wrap; }
+  header h1 { margin: 0; font-size: 18px; letter-spacing: .02em; }
+  header h1 span { color: var(--accent); }
+  .sub { color: var(--muted); font-size: 12px; }
+  .spacer { flex: 1; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--red); display: inline-block; margin-right: 6px; }
+  .dot.on { background: var(--green); box-shadow: 0 0 8px var(--green); }
+  button { background: var(--panel-2); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 7px 12px; font: inherit; cursor: pointer; }
+  button:hover { border-color: #3b4a66; }
+  button.primary { background: var(--accent); border-color: var(--accent); font-weight: 600; }
+  button.on { background: #24324b; border-color: #4b6aa3; }
+  button:disabled { opacity: .5; cursor: default; }
+  main { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(320px, 1fr); gap: 16px; padding: 16px 20px 40px; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; min-width: 0; }
+  .panel h2 { margin: 0 0 10px; font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+  .panel h2 .n { color: var(--text); background: var(--panel-2); border-radius: 6px; padding: 1px 7px; font-size: 11px; }
+  .full { grid-column: 1 / -1; }
+  #map { width: 100%; height: auto; display: block; background: #0f1520; border-radius: 8px; }
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; color: var(--muted); font-size: 12px; margin-top: 8px; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+  .cars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+  .car { background: var(--panel-2); border-radius: 8px; padding: 8px 10px; font-family: var(--mono); font-size: 12px; }
+  .car b { font-size: 14px; }
+  .bar { height: 5px; background: #0b0e13; border-radius: 3px; overflow: hidden; margin: 3px 0 5px; }
+  .bar > div { height: 100%; background: var(--red); width: 0; transition: width .08s; }
+  #narration { margin-top: 10px; padding: 8px 12px; border-left: 3px solid var(--accent); background: var(--panel-2); border-radius: 0 8px 8px 0; min-height: 36px; }
+  #feed { display: flex; flex-direction: column; gap: 8px; max-height: 640px; overflow: auto; }
+  .card { border: 1px solid var(--line); border-left-width: 4px; border-radius: 8px; padding: 8px 10px; background: var(--panel-2); animation: pop .35s ease-out; }
+  .card.ALERT { border-left-color: var(--red); } .card.WATCH { border-left-color: var(--amber); } .card.NONE { border-left-color: var(--green); }
+  @keyframes pop { from { transform: translateY(-6px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .badge { font: 700 11px var(--mono); padding: 2px 7px; border-radius: 4px; color: #000; }
+  .badge.ALERT { background: var(--red); color: #fff; } .badge.WATCH { background: var(--amber); } .badge.NONE { background: var(--green); }
+  .card .meta { color: var(--muted); font: 12px var(--mono); margin-top: 4px; }
+  details summary { cursor: pointer; color: var(--muted); font-size: 12px; margin-top: 4px; }
+  pre { background: #0b0e13; border-radius: 6px; padding: 8px; overflow: auto; font: 11px/1.4 var(--mono); max-height: 260px; margin: 6px 0 0; }
+  .empty { color: var(--muted); font-style: italic; }
+  #director { border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; background: var(--panel-2); border: 1px solid var(--line); border-left: 6px solid #5b667a; }
+  #director.red { border-left-color: var(--red); background: linear-gradient(90deg, rgba(255,59,59,.16), var(--panel-2) 60%); }
+  #director.amber { border-left-color: var(--amber); background: linear-gradient(90deg, rgba(245,179,1,.14), var(--panel-2) 60%); }
+  #director.green { border-left-color: var(--green); }
+  #director .lbl { font: 700 11px var(--mono); letter-spacing: .1em; color: var(--muted); }
+  #director .hl { font-size: 22px; font-weight: 800; margin: 2px 0 4px; letter-spacing: .01em; }
+  #director .act { font-size: 15px; font-weight: 600; margin-top: 6px; }
+  .flag { display: inline-block; font: 700 11px var(--mono); padding: 2px 8px; border-radius: 4px; margin-left: 6px; vertical-align: 3px; }
+  .flag.YELLOW, .flag.YELLOW_READY { background: #facc15; color: #000; } .flag.DOUBLE_YELLOW { background: repeating-linear-gradient(90deg,#facc15 0 8px,#000 8px 10px); color: #000; }
+  .flag.VSC, .flag.SC { background: #fff; color: #000; } .flag.RED { background: var(--red); color: #fff; } .flag.CLEAR { background: var(--green); color: #000; }
+  .card .hl { font-weight: 700; } .card .act { margin-top: 3px; }
+  .card.CRASH { border-left-color: var(--red); background: rgba(255,59,59,.12); }
+  .imgs { display: grid; grid-template-columns: 1.6fr 1fr; gap: 10px; }
+  .imgs figure { margin: 0; } .imgs img { width: 100%; border-radius: 8px; display: block; background: #000; }
+  .imgs figcaption { color: var(--muted); font-size: 12px; margin-top: 4px; }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  th, td { text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; }
+  th { color: var(--muted); font-weight: 500; font-size: 12px; }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 10px 0; }
+  .kpi { background: var(--panel-2); border-radius: 8px; padding: 10px; }
+  .kpi .v { font: 700 20px var(--mono); } .kpi .l { color: var(--muted); font-size: 12px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  input[type=text] { flex: 1; min-width: 200px; background: #0b0e13; border: 1px solid var(--line); color: var(--text); border-radius: 8px; padding: 8px 10px; font: inherit; }
+  .chip { font-size: 12px; padding: 4px 9px; border-radius: 999px; }
+  .cite { background: var(--panel-2); border-radius: 8px; padding: 8px 10px; margin-top: 8px; }
+  .cite b { color: var(--cyan); font-family: var(--mono); }
+  .seg { font-family: var(--mono); font-size: 12px; color: var(--muted); } .seg span { color: var(--text); }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .good { color: var(--green); }
+  .note { color: var(--muted); font-size: 12px; margin-top: 8px; }
+  @media (max-width: 1000px) { main, .two, .imgs { grid-template-columns: 1fr; } .kpis { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1><span>μ</span>Map Race Control</h1>
+    <div class="sub" id="trackName">loading…</div>
+  </div>
+  <div class="spacer"></div>
+  <div class="sub"><span class="dot" id="wsDot"></span><span id="wsText">connecting to /ws/alerts…</span></div>
+  <button id="btnReset">Reset demo</button>
+  <select id="speed" style="background:var(--panel-2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:7px">
+    <option value="0.5">0.5×</option><option value="1" selected>1× real time</option><option value="3">3×</option>
+  </select>
+  <button class="primary" id="btnRun">▶ Run trajectory</button>
+  <button id="btnCrash" title="Simulated impact in the OpenF1 detector format">💥 Simulate crash</button>
+</header>
+
+<main>
+  <section class="panel">
+    <h2>① Track map — Turn 1 braking zone</h2>
+    <svg id="map" viewBox="0 0 100 40" aria-label="Track map"></svg>
+    <div class="legend">
+      <span><i style="background:var(--green)"></i>residual ≥ 0.9</span>
+      <span><i style="background:var(--amber)"></i>0.75–0.9</span>
+      <span><i style="background:var(--red)"></i>&lt; 0.75 (grip cliff)</span>
+      <span><i style="background:rgba(245,179,1,.35);border:1px solid var(--amber)"></i>WATCH cell (25 m)</span>
+      <span><i style="background:rgba(255,59,59,.35);border:1px solid var(--red)"></i>ALERT cell</span>
+      <span><i style="background:var(--cyan)"></i>camera detection</span>
+    </div>
+    <div class="cars" id="cars"></div>
+    <div id="narration" class="sub">Press <b>▶ Run trajectory</b> to stream the scenario.</div>
+  </section>
+
+  <section class="panel">
+    <h2>Race director <span class="spacer"></span><button id="btnVoice" class="chip" title="Read ALERTs aloud">🔇 Voice off</button></h2>
+    <div id="director"><div class="lbl">NO ACTIVE HAZARD</div><div class="sub">Plain-language suggestions appear here. Race control decides.</div></div>
+    <h2>Live alert feed <span class="n" id="feedCount">0</span></h2>
+    <div id="feed"><div class="empty">Waiting for hazard events on /ws/alerts…</div></div>
+  </section>
+
+  <section class="panel full">
+    <h2>② Computer vision — marshal-post camera → homography → segmentation</h2>
+    <div class="row"><button id="btnVision">Run camera check</button><span class="sub" id="visionMeta"></span></div>
+    <div class="imgs" id="visionImgs" style="margin-top:10px"></div>
+    <div id="visionList"></div>
+  </section>
+
+  <section class="panel full">
+    <h2>③ Insurance — Bayesian Poisson-Gamma + Monte Carlo</h2>
+    <div class="row">
+      <span class="sub">Series:</span>
+      <button class="series on" data-s="F1">F1</button><button class="series" data-s="F2">F2</button><button class="series" data-s="F3">F3</button>
+      <button class="primary" id="btnMC">Run 10,000 seasons</button>
+      <button id="btnWhatIf">What-if: Parabolica → TecPro</button>
+      <span class="sub" id="mcMeta"></span>
+    </div>
+    <div class="kpis" id="kpis"></div>
+    <div id="mcTable"></div>
+    <div id="whatIf"></div>
+    <div class="note">Corner statistics are illustrative, not official incident data.</div>
+  </section>
+
+  <section class="panel full two">
+    <div>
+      <h2>④ FIA assistant — rulebook search</h2>
+      <div class="row"><input type="text" id="q" placeholder="Describe an incident…"><button class="primary" id="btnQ">Search rules</button></div>
+      <div class="row" id="chips" style="margin-top:8px"></div>
+      <div id="cites"></div>
+    </div>
+    <div>
+      <h2>Team radio → transcript → rules</h2>
+      <div class="row"><button id="btnRadio">🎙 Process sample radio clip</button></div>
+      <div id="radio"></div>
+      <div class="note">Transcript is a mock fixture in the faster-whisper output format; rule matching is live.</div>
+    </div>
+  </section>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const fmt$ = (v) => "$" + Math.round(v).toLocaleString("en-US");
+const fmtM = (v) => "$" + (v / 1e6).toFixed(2) + "M";
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const SVGNS = "http://www.w3.org/2000/svg";
+const COLORS = { water_sheen: "var(--cyan)", oil_streak: "var(--magenta)", debris: "var(--amber)" };
+let S = null, series = "F1", feedN = 0;
+const cars = {};
+
+async function api(path, opts = {}) {
+  const r = await fetch(path, { headers: { "Content-Type": "application/json" }, ...opts });
+  if (!r.ok) throw new Error(`${r.status} ${await r.text()}`);
+  return r.json();
+}
+function el(tag, attrs = {}, parent) {
+  const n = document.createElementNS(SVGNS, tag);
+  for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+  if (parent) parent.appendChild(n);
+  return n;
+}
+function resColor(r) { return r == null ? "#5b667a" : r >= 0.9 ? "var(--green)" : r >= 0.75 ? "var(--amber)" : "var(--red)"; }
+
+// ---------------------------------------------------------------- map
+let gCells, gTrails, gCars, gVision;
+function drawMap() {
+  const svg = $("map");
+  const pts = S.centerline.filter(([x]) => x >= 480 && x <= 730);
+  const xs = pts.map((p) => p[0]), ys = pts.map((p) => -p[1]);
+  const pad = 12, minX = Math.min(...xs) - pad, w = Math.max(...xs) - minX + pad;
+  const cy = (Math.min(...ys) + Math.max(...ys)) / 2, h = Math.max(Math.max(...ys) - Math.min(...ys) + 2 * pad, w * 0.36);
+  svg.setAttribute("viewBox", `${minX} ${cy - h / 2} ${w} ${h}`);
+  const d = pts.map((p, i) => `${i ? "L" : "M"}${p[0]},${-p[1]}`).join(" ");
+  el("path", { d, stroke: "#2a3346", "stroke-width": S.track_half_width_m * 2 + 1.2, fill: "none", "stroke-linejoin": "round" }, svg);
+  el("path", { d, stroke: "#3a4458", "stroke-width": S.track_half_width_m * 2, fill: "none", "stroke-linejoin": "round" }, svg);
+  el("path", { d, stroke: "#556079", "stroke-width": 0.3, fill: "none", "stroke-dasharray": "3 3" }, svg);
+  const cq = S.camera_quad_m.map(([x, y]) => `${x},${-y}`).join(" ");
+  el("polygon", { points: cq, fill: "none", stroke: "#7c8aa5", "stroke-width": 0.4, "stroke-dasharray": "1.5 1.5" }, svg);
+  const lbl = el("text", { x: S.camera_quad_m[0][0], y: -S.camera_quad_m[3][1] - 2, fill: "#7c8aa5", "font-size": 4.5 }, svg);
+  lbl.textContent = "camera field of view";
+  const bp = S.brake_point;
+  el("line", { x1: bp[0], x2: bp[0], y1: -bp[1] - 7, y2: -bp[1] + 7, stroke: "#fff", "stroke-width": 0.6 }, svg);
+  const t = el("text", { x: bp[0], y: -bp[1] - 8.5, fill: "#cfd6e4", "font-size": 5, "text-anchor": "middle" }, svg);
+  t.textContent = "brake";
+  const t1 = el("text", { x: 668, y: -S.brake_point[1] - 14, fill: "#cfd6e4", "font-size": 6, "font-weight": 700, "text-anchor": "middle" }, svg);
+  t1.textContent = "T1 Rettifilo";
+  gCells = el("g", {}, svg); gTrails = el("g", {}, svg); gVision = el("g", {}, svg); gCars = el("g", {}, svg);
+}
+function cellRect(sector) {
+  const m = /^grid_(-?\d+)_(-?\d+)$/.exec(sector);
+  if (!m) return null;
+  const L = S.segment_length_m, ix = +m[1], iy = +m[2];
+  return { x: ix * L, y: -(iy + 1) * L, w: L, h: L };
+}
+function setCell(ev) {
+  const id = "cell-" + ev.sector_id;
+  document.getElementById(id)?.remove();
+  if (ev.severity_level === "NONE") return;
+  const r = cellRect(ev.sector_id);
+  if (!r) return;
+  const col = ev.severity_level === "ALERT" ? "255,59,59" : "245,179,1";
+  const g = el("g", { id }, gCells);
+  el("rect", { x: r.x, y: r.y, width: r.w, height: r.h, fill: `rgba(${col},.22)`, stroke: `rgb(${col})`, "stroke-width": 0.5 }, g);
+  const tx = el("text", { x: r.x + 1, y: r.y + 5, fill: `rgb(${col})`, "font-size": 4.5, "font-weight": 700 }, g);
+  tx.textContent = ev.severity_level;
+}
+
+// ---------------------------------------------------------------- cars
+function ensureCar(id) {
+  if (cars[id]) return cars[id];
+  const box = document.createElement("div");
+  box.className = "car";
+  box.innerHTML = `<b>#${esc(id)}</b> <span class="sub" data-k="state">—</span>
+    <div>speed <span data-k="v">—</span> km/h</div><div class="bar"><div data-k="brake"></div></div>
+    <div>residual <span data-k="r">—</span></div>`;
+  $("cars").appendChild(box);
+  const g = el("g", {}, gCars);
+  el("circle", { r: 2.6, fill: "#fff", stroke: "#000", "stroke-width": 0.4 }, g);
+  const t = el("text", { y: -4, "font-size": 5, fill: "#fff", "text-anchor": "middle", "font-weight": 700 }, g);
+  t.textContent = id;
+  return (cars[id] = { box, g, trail: el("g", {}, gTrails) });
+}
+function onPosition(m) {
+  const c = ensureCar(m.car_id);
+  c.g.setAttribute("transform", `translate(${m.x},${-m.y})`);
+  el("circle", { cx: m.x, cy: -m.y, r: m.residual != null && m.residual < 0.75 ? 1.1 : 0.7, fill: resColor(m.residual) }, c.trail);
+  const q = (k) => c.box.querySelector(`[data-k=${k}]`);
+  q("v").textContent = m.speed_kph.toFixed(0);
+  q("brake").style.width = m.brake + "%";
+  q("r").textContent = m.residual == null ? "—" : m.residual.toFixed(2);
+  q("r").style.color = resColor(m.residual);
+  q("state").textContent = m.brake > 0 ? "BRAKING" : m.throttle > 50 ? "FULL THROTTLE" : "CORNER";
+}
+
+// ---------------------------------------------------------------- feed
+let voice = false;
+function speak(text) {
+  if (!voice || !("speechSynthesis" in window)) return;
+  speechSynthesis.cancel();
+  speechSynthesis.speak(new SpeechSynthesisUtterance(text));
+}
+function showDirector(pl) {
+  const d = $("director");
+  d.className = pl.colour || "";
+  d.innerHTML = `<div class="lbl">${esc(pl.level === "NONE" ? "CLEAR" : pl.level)} · SUGGESTED FLAG <span class="flag ${esc(pl.flag)}">${esc(pl.flag.replace("_", " "))}</span></div>
+    <div class="hl">${esc(pl.headline)}</div><div>${esc(pl.why)}</div>
+    <div class="act">→ ${esc(pl.action)}</div><div class="sub" style="margin-top:6px">${esc(pl.note)}</div>`;
+  if (pl.level === "ALERT") speak(pl.say);
+}
+function addCard(cls, pl, meta, raw) {
+  const feed = $("feed");
+  if (!feedN) feed.innerHTML = "";
+  feedN++; $("feedCount").textContent = feedN;
+  const card = document.createElement("div");
+  card.className = `card ${cls}`;
+  const badge = cls === "CRASH" ? "ALERT" : (pl.level || cls);
+  card.innerHTML = `<div class="row"><span class="badge ${badge}">${esc(cls === "CRASH" ? "CRASH" : badge)}</span>
+      <span class="hl">${esc(pl.headline)}</span><span class="flag ${esc(pl.flag)}">${esc(pl.flag.replace("_", " "))}</span></div>
+    <div style="margin-top:4px">${esc(pl.why)}</div><div class="act">→ ${esc(pl.action)}</div>
+    <div class="meta">${meta}</div>
+    <details><summary>WebSocket payload</summary><pre>${esc(JSON.stringify(raw, null, 2))}</pre></details>`;
+  feed.prepend(card);
+}
+function onHazard(ev) {
+  setCell(ev);
+  const c = ev.evidence_card_data, p = ev.coordinates;
+  const pl = ev.plain || { level: ev.severity_level, headline: ev.sector_id, why: c.narrative, action: "", flag: "", note: "" };
+  const update = ev.previous_level === ev.severity_level ? " · camera update" : "";
+  addCard(ev.severity_level, pl,
+    `${esc(ev.sector_id)} · ${esc(ev.previous_level)} → ${esc(ev.severity_level)}${update} · x=${p.x.toFixed(1)} m y=${p.y.toFixed(1)} m · min residual ${c.min_residual ?? "—"} · ${esc(c.hazard_types.join(", "))}`, ev);
+  showDirector(pl);
+}
+function onCrash(m) {
+  const pl = m.plain;
+  addCard("CRASH", pl, `impact ${Math.round(m.impact_speed_kph)} km/h · ${m.peak_decel_g} g · ${esc(m.kind)} · detector: openf1_extract.detect_impacts format`, m);
+  showDirector(pl);
+  if (m.coordinates) {
+    const g = el("g", { transform: `translate(${m.coordinates.x},${-m.coordinates.y})` }, gVision);
+    el("path", { d: "M-3,-3L3,3M-3,3L3,-3", stroke: "var(--red)", "stroke-width": 1.4 }, g);
+    const t = el("text", { y: 7.5, fill: "var(--red)", "font-size": 4.5, "text-anchor": "middle", "font-weight": 700 }, g);
+    t.textContent = "CRASH";
+  }
+}
+function onVisionDetections(dets) {
+  gVision.innerHTML = "";
+  for (const d of dets) {
+    const p = d.map_coordinates, col = COLORS[d.hazard_type] || "#fff";
+    el("circle", { cx: p.x, cy: -p.y, r: Math.max(1.5, Math.sqrt(d.area_m2 / Math.PI)), fill: "none", stroke: col, "stroke-width": 0.6, "stroke-dasharray": "1 0.8" }, gVision);
+    const t = el("text", { x: p.x, y: -p.y + 8, fill: col, "font-size": 4.2, "text-anchor": "middle" }, gVision);
+    t.textContent = d.hazard_type.replace("_", " ");
+  }
+}
+function resetUI() {
+  for (const k of Object.keys(cars)) { cars[k].g.remove(); cars[k].trail.remove(); delete cars[k]; }
+  $("cars").innerHTML = ""; gCells.innerHTML = ""; gVision.innerHTML = "";
+  feedN = 0; $("feedCount").textContent = 0;
+  $("feed").innerHTML = '<div class="empty">Waiting for hazard events on /ws/alerts…</div>';
+  $("director").className = "";
+  $("director").innerHTML = '<div class="lbl">NO ACTIVE HAZARD</div><div class="sub">Plain-language suggestions appear here. Race control decides.</div>';
+}
+
+// ---------------------------------------------------------------- websocket
+function connect() {
+  const ws = new WebSocket(`${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/ws/alerts`);
+  ws.onopen = () => { $("wsDot").classList.add("on"); $("wsText").textContent = "live · /ws/alerts"; };
+  ws.onclose = () => { $("wsDot").classList.remove("on"); $("wsText").textContent = "disconnected — retrying…"; setTimeout(connect, 1500); };
+  ws.onmessage = (e) => {
+    const m = JSON.parse(e.data);
+    if (m.type === "hazard") onHazard(m);
+    else if (m.type === "crash") onCrash(m);
+    else if (m.type === "car_position") onPosition(m);
+    else if (m.type === "vision_detections") onVisionDetections(m.detections);
+    else if (m.type === "demo_narration") $("narration").textContent = m.text;
+    else if (m.type === "demo_reset") resetUI();
+  };
+}
+
+// ---------------------------------------------------------------- vision
+$("btnVision").onclick = async () => {
+  $("btnVision").disabled = true;
+  try {
+    const t0 = performance.now();
+    const r = await api("/api/v1/umap/demo-vision", { method: "POST" });
+    $("visionMeta").textContent = `detector=${r.detector} · camera ${r.camera_size_px.join("×")} → overhead ${r.overhead_size_px.join("×")} px · ${(performance.now() - t0).toFixed(0)} ms`;
+    $("visionImgs").innerHTML = `<figure><img src="data:image/png;base64,${r.camera_png_b64}" alt="camera frame"><figcaption>Camera frame — white = homography quad, boxes projected back from the overhead map</figcaption></figure>
+      <figure><img src="data:image/png;base64,${r.overhead_png_b64}" alt="overhead"><figcaption>Flattened overhead map (north-up) with segmentation boxes</figcaption></figure>`;
+    $("visionList").innerHTML = `<table><tr><th>Hazard</th><th>Confidence</th><th>Track x, y (m)</th><th>Area</th><th>Overhead bbox px</th></tr>` +
+      r.detections.map((d) => `<tr><td style="color:${COLORS[d.hazard_type]}">${d.hazard_type}</td><td>${d.confidence.toFixed(2)}</td><td>${d.map_coordinates.x.toFixed(1)}, ${d.map_coordinates.y.toFixed(1)}</td><td>${d.area_m2.toFixed(1)} m²</td><td>[${d.bbox_px.join(", ")}]</td></tr>`).join("") + "</table>";
+  } catch (e) { $("visionMeta").textContent = e.message; }
+  $("btnVision").disabled = false;
+};
+
+// ---------------------------------------------------------------- insurance
+document.querySelectorAll(".series").forEach((b) => b.onclick = () => {
+  document.querySelectorAll(".series").forEach((x) => x.classList.toggle("on", x === b));
+  series = b.dataset.s; runMC();
+});
+async function runMC() {
+  $("btnMC").disabled = true;
+  try {
+    const t0 = performance.now();
+    const r = await api("/api/insurance/risk-map", { method: "POST", body: JSON.stringify({ zones: S.zones, series, track_name: "Monza (illustrative)" }) });
+    const p = r.portfolio;
+    $("mcMeta").textContent = `${r.n_seasons.toLocaleString()} simulated ${series} seasons in ${(performance.now() - t0).toFixed(0)} ms`;
+    $("kpis").innerHTML = [["Expected annual loss", p.expected_annual_loss], ["99% VaR", p.var_99], ["99% TVaR", p.tvar_99], ["Recommended premium", p.recommended_premium]]
+      .map(([l, v]) => `<div class="kpi"><div class="v">${fmtM(v)}</div><div class="l">${l}</div></div>`).join("");
+    $("mcTable").innerHTML = `<table><tr><th>Zone</th><th>Risk score</th><th>λ / season</th><th>P(crash)</th><th>Mean severity</th><th>EAL</th><th>VaR 99%</th><th>Premium</th></tr>` +
+      r.zones.map((z) => `<tr><td>${z.zone_id} · ${esc(z.name)}</td><td>${Math.round(z.risk_score).toLocaleString()}</td><td>${z.posterior_mean_rate.toFixed(2)}</td><td>${(z.crash_probability * 100).toFixed(0)}%</td><td>${fmt$(z.mean_severity_usd)}</td><td>${fmt$(z.loss.expected_annual_loss)}</td><td>${fmt$(z.loss.var_99)}</td><td>${fmt$(z.loss.recommended_premium)}</td></tr>`).join("") + "</table>";
+  } catch (e) { $("mcMeta").textContent = e.message; }
+  $("btnMC").disabled = false;
+}
+$("btnMC").onclick = runMC;
+$("btnWhatIf").onclick = async () => {
+  try {
+    const r = await api("/api/insurance/what-if", { method: "POST", body: JSON.stringify({ zones: S.zones, series, modifications: S.what_if }) });
+    const z = r.zones[0];
+    $("whatIf").innerHTML = `<div class="kpis" style="margin-top:14px">
+      <div class="kpi"><div class="v">${fmt$(r.total_upgrade_cost_usd)}</div><div class="l">Upgrade cost (${esc(z.changes.join(", "))})</div></div>
+      <div class="kpi"><div class="v good">−${fmt$(r.annual_eal_reduction)}</div><div class="l">Expected annual loss / yr</div></div>
+      <div class="kpi"><div class="v good">−${fmt$(r.annual_premium_saving)}</div><div class="l">Premium / yr</div></div>
+      <div class="kpi"><div class="v">${r.payback_years ?? "∞"} yr</div><div class="l">Payback · VaR99 ${fmtM(r.baseline.var_99)} → ${fmtM(r.modified.var_99)}</div></div></div>`;
+  } catch (e) { $("whatIf").textContent = e.message; }
+};
+
+// ---------------------------------------------------------------- FIA
+async function query(text) {
+  $("q").value = text;
+  try {
+    const r = await api("/api/v1/fia-assistant/query-rules", { method: "POST", body: JSON.stringify({ incident_description: text, top_k: 3 }) });
+    $("cites").innerHTML = r.citations.map((c, i) => `<div class="cite" style="opacity:${i ? .6 : 1}"><b>${esc(c.citation)}</b> <span class="sub">score ${c.score.toFixed(2)}</span><div>${esc(c.text)}</div></div>`).join("");
+  } catch (e) { $("cites").innerHTML = `<div class="cite">${esc(e.message)} — press “Reset demo” to load the rulebook.</div>`; }
+}
+$("btnQ").onclick = () => query($("q").value);
+$("q").onkeydown = (e) => { if (e.key === "Enter") query($("q").value); };
+$("btnRadio").onclick = async () => {
+  const r = await api("/api/v1/fia-assistant/demo-transcribe", { method: "POST" });
+  $("radio").innerHTML = `<div class="cite">${r.segments.map((s) => `<div class="seg">[${s.start.toFixed(1)}–${s.end.toFixed(1)}s] <span>${esc(s.text)}</span></div>`).join("")}
+    <div class="sub" style="margin-top:6px">${esc(r.model)} · ${r.duration_s}s · lang=${r.language}</div></div>` +
+    r.related_rules.map((c) => `<div class="cite"><b>${esc(c.citation)}</b> <span class="sub">score ${c.score.toFixed(2)}</span><div>${esc(c.text)}</div></div>`).join("");
+};
+
+// ---------------------------------------------------------------- boot
+$("btnRun").onclick = async () => {
+  $("btnRun").disabled = true;
+  try { await api(`/api/v1/demo/run-trajectory?speedup=${$("speed").value}`, { method: "POST" }); }
+  catch (e) { $("narration").textContent = e.message; }
+  setTimeout(() => ($("btnRun").disabled = false), 2000);
+};
+$("btnReset").onclick = () => api("/api/v1/demo/reset", { method: "POST" });
+$("btnCrash").onclick = () => api("/api/v1/demo/crash", { method: "POST" });
+$("btnVoice").onclick = () => {
+  voice = !voice;
+  $("btnVoice").textContent = voice ? "🔊 Voice on" : "🔇 Voice off";
+  if (voice) speak("Voice alerts on.");
+};
+
+(async () => {
+  S = await api("/api/v1/demo/scenario");
+  $("trackName").textContent = S.track + " · synthetic demo data";
+  drawMap();
+  for (const q of S.sample_queries) {
+    const b = document.createElement("button"); b.className = "chip"; b.textContent = q; b.onclick = () => query(q);
+    $("chips").appendChild(b);
+  }
+  connect();
+  await api("/api/v1/demo/reset", { method: "POST" });
+})();
+</script>
+</body>
+</html>

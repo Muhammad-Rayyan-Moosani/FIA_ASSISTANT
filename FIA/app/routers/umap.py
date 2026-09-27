@@ -17,29 +17,47 @@ from app.schemas.umap import (
     VisionCheckResponse,
 )
 from app.services import openf1
+from app.services.plain_alerts import plain_alert
 from app.services.vision import decode_frames
 
 router = APIRouter(prefix="/api/v1/umap", tags=["μMap"])
 ws_router = APIRouter(tags=["μMap"])
 
 
-async def _publish(request_or_ws, events: list[HazardEvent]) -> None:
-    broadcaster = request_or_ws.app.state.broadcaster
+def hazard_message(app, payload: dict) -> dict:
+    """Feed payload + a plain-language ``plain`` block for race control.
+
+    ``app.state.locate`` (optional) turns coordinates into a place name such as "Turn 1".
+    """
+    locate = getattr(app.state, "locate", None)
+    where = locate(payload.get("coordinates") or {}) if locate else None
+    return {**payload, "plain": plain_alert(payload, where)}
+
+
+async def publish_events(app, events: list[HazardEvent]) -> None:
     for ev in events:
-        await broadcaster.broadcast(ev.model_dump(mode="json"))
+        await app.state.broadcaster.broadcast(hazard_message(app, ev.model_dump(mode="json")))
 
 
-async def _ingest(request: Request, batch: TelemetryBatch) -> TelemetryIngestResponse:
-    engine = request.app.state.engine
-    residuals, events, evaluated = await run_in_threadpool(engine.ingest, batch.samples)
-    await _publish(request, events)
+async def _publish(request_or_ws, events: list[HazardEvent]) -> None:
+    await publish_events(request_or_ws.app, events)
+
+
+async def ingest_and_publish(app, samples) -> TelemetryIngestResponse:
+    """Score samples on the app's engine and broadcast resulting level changes."""
+    residuals, events, evaluated = await run_in_threadpool(app.state.engine.ingest, samples)
+    await publish_events(app, events)
     return TelemetryIngestResponse(
-        processed=len(batch.samples),
+        processed=len(samples),
         evaluated=evaluated,
         flagged=sum(r.below_threshold for r in residuals),
         residuals=residuals,
         events=events,
     )
+
+
+async def _ingest(request: Request, batch: TelemetryBatch) -> TelemetryIngestResponse:
+    return await ingest_and_publish(request.app, batch.samples)
 
 
 @router.post("/telemetry", response_model=TelemetryIngestResponse, summary="Ingest a telemetry batch")

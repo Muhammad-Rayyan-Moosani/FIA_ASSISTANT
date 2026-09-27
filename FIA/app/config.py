@@ -56,9 +56,14 @@ class VisionConfig:
     max_overhead_px: int = 2048
 
 
+_PROJECT_DIR = Path(__file__).resolve().parent.parent
+
+
 @dataclass(frozen=True)
 class RagConfig:
-    index_dir: Path = field(default_factory=lambda: Path(_env_str("UMAP_RAG_INDEX_DIR", "./data/rag_index")))
+    index_dir: Path = field(default_factory=lambda: Path(_env_str("UMAP_RAG_INDEX_DIR", str(_PROJECT_DIR / "data" / "rag_index"))))
+    # Every PDF in this folder is ingested at start-up if it is not already in the index.
+    rulebook_dir: Path = field(default_factory=lambda: Path(_env_str("UMAP_RULEBOOK_DIR", str(_PROJECT_DIR / "data" / "rulebooks"))))
     embedding_model: str = field(default_factory=lambda: _env_str("UMAP_EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2"))
     # "auto" -> sentence-transformers if installed, else hashing fallback.
     embedding_backend: str = field(default_factory=lambda: _env_str("UMAP_EMBEDDING_BACKEND", "auto"))
@@ -89,6 +94,8 @@ class Settings:
     rag: RagConfig = field(default_factory=RagConfig)
     audio: AudioConfig = field(default_factory=AudioConfig)
     data_dir: Path = Path(__file__).parent / "data"
+    # Demo dashboard + synthetic-scenario endpoints (/demo, /api/v1/demo/*, */demo-*).
+    demo_endpoints: bool = field(default_factory=lambda: _env_str("UMAP_DEMO_ENDPOINTS", "1") not in ("0", "false", "no"))
 
 
 def get_settings() -> Settings:

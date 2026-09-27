@@ -126,7 +126,10 @@ class GripAnomalyEngine:
             dt = g["timestamp"].diff().to_numpy(float)
             v_prev = v - np.nan_to_num(dv)
             v_mid = 0.5 * (v + v_prev)
-            brake_frac = df["brake"].to_numpy(float) / 100.0
+            # Score an interval on the brake level held across it: at brake onset/release the
+            # deceleration lags the pedal, so the lower of the two endpoints avoids false flags.
+            brake_prev = g["brake"].shift().to_numpy(float)
+            brake_frac = np.fmin(df["brake"].to_numpy(float), brake_prev) / 100.0
 
             with np.errstate(divide="ignore", invalid="ignore"):
                 actual = -dv / dt
@@ -185,9 +188,15 @@ class GripAnomalyEngine:
             return residuals, events, int(valid.sum())
 
     def register_vision(self, detections: list[VisionDetection]) -> list[HazardEvent]:
-        """Attach vision detections to the nearest known segment (or a new grid cell)."""
+        """Attach vision detections to the nearest known segment (or a new grid cell).
+
+        Besides level changes, a segment that is already WATCH/ALERT re-emits its event when
+        the camera adds a hazard type it did not have (e.g. telemetry "grip cliff" confirmed
+        as "oil"), so race control learns *what* is on the track.
+        """
         cfg = self.cfg
         with self._lock:
+            new_types: set[str] = set()
             for det in detections:
                 seg = self._nearest_segment(det.map_coordinates)
                 if seg is None:
@@ -196,8 +205,16 @@ class GripAnomalyEngine:
                     seg = self._segment(sid)
                     if seg.n == 0:
                         seg.sum_x, seg.sum_y, seg.n = p.x, p.y, 1
+                if det.hazard_type not in {v.detection.hazard_type for v in seg.vision}:
+                    new_types.add(seg.sector_id)
                 seg.vision.append(_VisionEvidence(det, self._clock))
-            return self._reevaluate()
+            events = self._reevaluate()
+            changed = {e.sector_id for e in events}
+            for sid in sorted(new_types - changed):
+                seg = self._segments[sid]
+                if seg.level != Severity.NONE:
+                    events.append(self._event(seg, seg.level))
+            return events
 
     def snapshot(self) -> list[SegmentState]:
         with self._lock:

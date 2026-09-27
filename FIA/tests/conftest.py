@@ -11,7 +11,7 @@ from app.services.telemetry import expected_deceleration
 
 @pytest.fixture()
 def settings(tmp_path) -> Settings:
-    return Settings(rag=RagConfig(index_dir=tmp_path / "rag", embedding_backend="hashing"))
+    return Settings(rag=RagConfig(index_dir=tmp_path / "rag", rulebook_dir=tmp_path / "rulebooks", embedding_backend="hashing"))
 
 
 @pytest.fixture()

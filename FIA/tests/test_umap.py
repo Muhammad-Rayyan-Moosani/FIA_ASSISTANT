@@ -100,3 +100,19 @@ def test_reset(client):
 def test_validation_rejects_bad_sample(client):
     s = braking_run("44", grip=1.0)[0] | {"brake": 150}
     assert client.post(URL, json={"samples": [s]}).status_code == 422
+
+
+def test_camera_confirmation_reemits_active_alert(app, client):
+    client.post(URL, json={"samples": braking_run("44", grip=0.5, n=4)})
+    body = client.post(URL, json={"samples": braking_run("1", grip=0.5, n=4, t0=5)}).json()
+    ev = next(e for e in body["events"] if e["severity_level"] == "ALERT")
+    det = VisionDetection(
+        hazard_type=HazardType.OIL_STREAK, confidence=0.9,
+        map_coordinates=Point2D(**ev["coordinates"]), area_m2=3.0,
+        bbox_px=(0, 0, 10, 10), detector="test",
+    )
+    events = app.state.engine.register_vision([det])
+    same = [e for e in events if e.sector_id == ev["sector_id"]]
+    assert len(same) == 1 and same[0].previous_level == same[0].severity_level == Severity.ALERT
+    assert HazardType.OIL_STREAK in same[0].evidence_card_data.hazard_types
+    assert app.state.engine.register_vision([det]) == []  # same hazard again: nothing new to say

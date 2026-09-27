@@ -30,12 +30,70 @@ python -m venv .venv
 .venv\Scripts\activate            # macOS/Linux: source .venv/bin/activate
 pip install -r requirements.txt   # core: API + all tests
 pip install -r requirements-ml.txt  # optional: OpenCV, YOLOv8, FAISS, sentence-transformers, whisper
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8100
 ```
 
-Interactive docs: http://localhost:8000/docs · Health: `GET /health`
+Interactive docs: http://localhost:8100/docs · Health: `GET /health`
 
-Production: `uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 1`. The μMap engine and WebSocket clients live in-process, so run **one worker per race feed**. Put Redis pub/sub behind `AlertBroadcaster` if you need to scale horizontally.
+Production: `uvicorn app.main:app --host 0.0.0.0 --port 8100 --workers 1`. The μMap engine and WebSocket clients live in-process, so run **one worker per race feed**. Put Redis pub/sub behind `AlertBroadcaster` if you need to scale horizontally.
+
+Port **8100** is used so this service runs side by side with the insurance backend (`backend/`, port 8000).
+
+## In the web app: page 2 "FIA"
+
+The Next.js app in `frontend/` has two pages, switched with the **Insurance | FIA** tabs at the top-left:
+
+1. **Insurance** (`/insurance`): the zone-based insurance work, served by `backend/` on port 8000.
+2. **FIA** (`/fia`): this service. It has the μMap live grip map, Race director messages, the alert feed, a camera check, FIA rulebook search and team radio.
+
+To run the whole app locally, use three terminals:
+
+```bash
+cd backend && uvicorn main:app --port 8000
+cd FIA && .venv\Scripts\python -m uvicorn app.main:app --port 8100
+cd frontend && npm run dev
+```
+
+Then open http://localhost:3000/fia. The page reads `NEXT_PUBLIC_FIA_API_URL` (default `http://localhost:8100`). If the FIA service is down, the page says so and the Insurance page is unaffected.
+
+## FIA rulebook (RAG)
+
+Put official FIA regulation PDFs in `data/rulebooks/`. At start-up the server indexes any PDF it hasn't seen before in the background (`/health` → `rulebook.status`). The index is cached in `data/rag_index/`, so later starts are instant. To build it ahead of time or add a PDF:
+
+```bash
+python scripts/ingest_rulebook.py "path/to/FIA 2026 F1 Regulations - Section B [Sporting].pdf" --query "pit lane speed limit"
+python scripts/ingest_rulebook.py --rebuild     # re-index everything (e.g. after changing the embedding model)
+```
+
+The parser is tuned to the FIA layout:
+
+- lettered article numbers (`ARTICLE B1`, `B2.4`, `B2.4.1`)
+- breadcrumb headings (`ARTICLE B1 › B1.8 Driving`)
+- appendices (`Appendix B2`)
+- repeated page headers and footers removed
+- contents pages skipped
+- the PDF's broken "ff" ligature (``o`icial`` → official) repaired
+- article numbers must run in order, so a wrapped line that starts with a cross-reference isn't taken as a new article
+
+Citations look like `… Section B [Sporting] - Iss 08 - 2026-08-05 Art. B1.8.6 (p. 12)`, where the page is the PDF page.
+
+Retrieval quality depends on the embedder. With `sentence-transformers` (all-MiniLM-L6-v2) plus FAISS, 10 of 12 test incident queries return the correct article family at rank 1. The hashing fallback is keyword-only and noticeably weaker. Install the ML stack with CPU-only PyTorch:
+
+```bash
+pip install --index-url https://download.pytorch.org/whl/cpu torch
+pip install sentence-transformers faiss-cpu pdfplumber
+```
+
+## Live demo
+
+```bash
+uvicorn app.main:app --port 8100               # then open http://localhost:8100/demo
+python scripts/demo_runner.py --pause           # scripted 4-act walkthrough
+```
+
+`/demo` is a live race-control dashboard (track map, WebSocket alert feed, vision overlay, Monte Carlo, rules).
+The talk track is in [DEMO.md](DEMO.md). Demo routes use synthetic data from `app/services/demo_data.py`
+and can be switched off with `UMAP_DEMO_ENDPOINTS=0`.
 
 ## Tests
 
@@ -66,18 +124,18 @@ pytest -k umap    # one module
 ### Examples
 
 ```bash
-curl -X POST localhost:8000/api/insurance/risk-map -H "Content-Type: application/json" -d '{"series":"F2"}'
+curl -X POST localhost:8100/api/insurance/risk-map -H "Content-Type: application/json" -d '{"series":"F2"}'
 
-curl -X POST localhost:8000/api/insurance/what-if -H "Content-Type: application/json" \
+curl -X POST localhost:8100/api/insurance/what-if -H "Content-Type: application/json" \
   -d '{"modifications":[{"zone_id":"T8","barrier_upgrade":"tecpro","grandstand_shift_m":20}]}'
 
-curl -X POST localhost:8000/api/v1/umap/vision-check \
+curl -X POST localhost:8100/api/v1/umap/vision-check \
   -F file=@frame.jpg \
   -F 'src_points=[[102,540],[1810,560],[1300,300],[640,295]]' \
   -F 'dst_points=[[0,0],[14,0],[14,60],[0,60]]'
 
-curl -X POST localhost:8000/api/v1/fia-assistant/ingest-rulebook -F files=@2026_F1_Sporting_Regulations.pdf
-curl -X POST localhost:8000/api/v1/fia-assistant/query-rules -H "Content-Type: application/json" \
+curl -X POST localhost:8100/api/v1/fia-assistant/ingest-rulebook -F files=@2026_F1_Sporting_Regulations.pdf
+curl -X POST localhost:8100/api/v1/fia-assistant/query-rules -H "Content-Type: application/json" \
   -d '{"incident_description":"Car 16 left the track at Turn 4 and gained a lasting advantage"}'
 ```
 

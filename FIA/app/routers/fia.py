@@ -28,18 +28,40 @@ def _index(request: Request) -> RulebookIndex:
     return request.app.state.rulebook
 
 
+def _cite(chunk, score: float) -> RuleCitation:
+    label = "" if not chunk.article else (
+        f" {chunk.article}" if chunk.article.startswith("Appendix") else f" Art. {chunk.article}"
+    )
+    return RuleCitation(
+        citation=f"{chunk.document}{label} (p. {chunk.page})", document=chunk.document,
+        article=chunk.article, page=chunk.page, score=round(float(score), 4), text=chunk.text,
+    )
+
+
 def _citations(index: RulebookIndex, q: RuleQuery) -> list[RuleCitation]:
-    hits = index.search(q.incident_description, q.top_k, q.document)
-    out = []
-    for chunk, score in hits:
-        if score < q.min_score:
+    return [_cite(c, s) for c, s in index.search(q.incident_description, q.top_k, q.document) if s >= q.min_score]
+
+
+def transcript_citations(index: RulebookIndex, segments: list[str], top_k: int, keep_ratio: float = 0.85) -> list[RuleCitation]:
+    """Rules for a radio transcript.
+
+    Radio mixes topics ("Box box… oil at Turn 1… safety car"), so each segment is searched
+    on its own and every article keeps its best score. Only hits within ``keep_ratio`` of
+    the best score survive, which drops matches driven by chatter.
+    """
+    best: dict[tuple, tuple] = {}
+    for text in segments:
+        if len(text.split()) < 3:
             continue
-        ref = f"{chunk.document}" + (f" Art. {chunk.article}" if chunk.article else "") + f" (p. {chunk.page})"
-        out.append(RuleCitation(
-            citation=ref, document=chunk.document, article=chunk.article,
-            page=chunk.page, score=round(float(score), 4), text=chunk.text,
-        ))
-    return out
+        for chunk, score in index.search(text, 3):
+            key = (chunk.document, chunk.article)
+            if key not in best or score > best[key][1]:
+                best[key] = (chunk, score)
+    ranked = sorted(best.values(), key=lambda cs: -cs[1])
+    if not ranked:
+        return []
+    floor = ranked[0][1] * keep_ratio
+    return [_cite(c, s) for c, s in ranked[:top_k] if s >= floor]
 
 
 @router.post("/ingest-rulebook", response_model=IngestResponse, summary="Parse & index FIA rulebook PDFs")
@@ -104,7 +126,9 @@ async def _transcribe(request: Request, data: bytes, fmt: str | None, language: 
     related: list[RuleCitation] = []
     index = _index(request)
     if match_rules and tr.text and index.chunks:
-        related = await run_in_threadpool(_citations, index, RuleQuery(incident_description=tr.text, top_k=top_k))
+        related = await run_in_threadpool(
+            transcript_citations, index, [s["text"] for s in tr.segments] or [tr.text], top_k
+        )
     return TranscriptionResponse(
         text=tr.text, language=tr.language, duration_s=tr.duration_s,
         segments=[TranscriptSegment(**s) for s in tr.segments],

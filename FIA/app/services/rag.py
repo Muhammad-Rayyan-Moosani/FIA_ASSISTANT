@@ -15,6 +15,7 @@ import json
 import logging
 import re
 import threading
+import unicodedata
 import zlib
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -46,7 +47,8 @@ class SentenceTransformerEmbedder:  # pragma: no cover - heavy dependency
 
         self.model = SentenceTransformer(model_name)
         self.name = f"sentence-transformers:{model_name}"
-        self.dim = int(self.model.get_sentence_embedding_dimension())
+        get_dim = getattr(self.model, "get_embedding_dimension", None) or self.model.get_sentence_embedding_dimension
+        self.dim = int(get_dim())
 
     def encode(self, texts: list[str]) -> np.ndarray:
         return self.model.encode(texts, batch_size=64, normalize_embeddings=True,
@@ -103,14 +105,21 @@ class Chunk:
     article: str | None
     page: int
     text: str
-    heading: str | None = None  # enclosing "ARTICLE N  Title" line, used as retrieval context
+    heading: str | None = None  # enclosing article / section titles, used as retrieval context
 
 
+# "ARTICLE 33" / "ARTICLE B1: ORGANISATION ..." and "33.3 Drivers must..." / "B2.4.1 The starting grid..."
 _ARTICLE_HDR = re.compile(
-    r"^\s*(?:ARTICLE|Article)\s+(\d{1,3}[A-Za-z]?)\b"          # "ARTICLE 33"
-    r"|^\s*(\d{1,3}(?:\.\d{1,3}){1,3})\)?\s+(?=[A-Z(\"'a-z])"   # "33.3 Drivers must..."
+    r"^\s*(?:ARTICLE|Article)\s+([A-Z]?\d{1,3}[A-Za-z]?)(?![.\d\w])"   # not "Article B2.3.4c ..." references
+    r"|^\s*([A-Z]?\d{1,3}(?:\.\d{1,3}){1,3})\)?\s+(?=[A-Z(\"'a-z])"
 )
+_APPENDIX_HDR = re.compile(r"^\s*APPENDIX\s+([A-Z]?\d{1,3})\b")
 _MAX_HEADING_CHARS = 120
+_TOC_PAGE_NO = re.compile(r"\s+\d{1,3}$")
+_TOC_LINE = re.compile(r"^(?:ARTICLE\s+)?[A-Z]?\d{1,3}(?:\.\d{1,3})*:?\s.*\s\d{1,3}$")
+# FIA PDFs encode the "ff" ligature as a backtick (body font) or "=" (contents font):
+# "o`icial" -> "official", "e`ort" -> "effort", "sta`" -> "staff", "O=icials" -> "Officials".
+_LIGATURE_FF = re.compile(r"(?<=[A-Za-z])`|(?<=[A-Za-z])=(?=[a-z])")
 
 
 def extract_pdf_pages(data: bytes) -> list[str]:
@@ -120,35 +129,100 @@ def extract_pdf_pages(data: bytes) -> list[str]:
         return [(p.extract_text() or "") for p in pdf.pages]
 
 
-def chunk_pages(document: str, pages: list[str], max_chars: int, overlap: int) -> list[Chunk]:
-    """Split on article headings, then window long articles with overlap.
+def clean_pages(pages: list[str], boilerplate_share: float = 0.3) -> list[str]:
+    """Normalise PDF text: fix ligatures and drop running headers/footers.
 
-    A short top-level "ARTICLE N  Title" line is not indexed on its own; it becomes
-    the ``heading`` of the numbered sub-articles beneath it.
+    A line is boilerplate if (with digits masked, so "B2 1" == "B2 7") it appears on at
+    least ``boilerplate_share`` of the pages — page headers, footers, copyright lines.
     """
-    sections: list[tuple[str | None, int, list[str], str | None]] = []
-    heading: str | None = None
+    norm = [[_LIGATURE_FF.sub("ff", unicodedata.normalize("NFKC", ln)).strip() for ln in p.splitlines()] for p in pages]
+    if len(pages) >= 5:
+        counts: dict[str, int] = {}
+        for lines in norm:
+            for key in {re.sub(r"\d+", "#", ln) for ln in lines if ln}:
+                counts[key] = counts.get(key, 0) + 1
+        limit = boilerplate_share * len(pages)
+        norm = [[ln for ln in lines if counts.get(re.sub(r"\d+", "#", ln), 0) < limit] for lines in norm]
+    return ["\n".join(ln for ln in lines if ln) for lines in norm]
+
+
+def _is_title(line: str) -> bool:
+    """Short heading line ("B2.4 Race Qualifying Session") rather than a rule sentence."""
+    text = _TOC_PAGE_NO.sub("", line)
+    return len(text) <= 90 and not text.rstrip().endswith((".", ";", ":", ",")) and len(text.split()) <= 12
+
+
+def _sort_key(number: str) -> tuple[str, tuple[int, ...]]:
+    """"B2.10.3" -> ("B", (2, 10, 3)); "33A" -> ("", (33,))."""
+    letter = number[0] if number[0].isalpha() else ""
+    return letter, tuple(int(re.match(r"\d+", p).group()) for p in number[len(letter):].split("."))
+
+
+def _is_toc_page(text: str) -> bool:
+    lines = [ln for ln in text.splitlines() if ln.strip()]
+    return len(lines) >= 5 and sum(bool(_TOC_LINE.match(ln)) for ln in lines) / len(lines) >= 0.5
+
+
+def _ancestors(number: str) -> list[str]:
+    parts = number.split(".")
+    return [".".join(parts[:i]) for i in range(1, len(parts))]
+
+
+def chunk_pages(document: str, pages: list[str], max_chars: int, overlap: int) -> list[Chunk]:
+    """Split on article numbers, then window long articles with overlap.
+
+    Title-only lines ("ARTICLE B1: ORGANISATION…", "B2.4 Race Qualifying Session") are
+    not indexed on their own; they become the ``heading`` breadcrumb of the numbered
+    rules beneath them. Contents pages are skipped.
+
+    Article numbers must increase through the document and keep the same section
+    letter, so a wrapped line that happens to start with a reference ("B5.9 will be
+    followed.") or a locally numbered list inside an article stays in the article body.
+    """
+    pages = clean_pages(pages)
+    sections: list[tuple[str | None, int, list[str]]] = []
+    titles: dict[str, str] = {}
+    last: tuple[str, tuple[int, ...]] | None = None
+    last_appendix: tuple[str, tuple[int, ...]] | None = None
     for pno, text in enumerate(pages, start=1):
+        if _is_toc_page(text):
+            continue
         for line in text.splitlines():
-            line = line.strip()
-            if not line:
+            am = _APPENDIX_HDR.match(line)
+            if am and (last_appendix is None or _sort_key(am.group(1)) > last_appendix):
+                last_appendix = _sort_key(am.group(1))
+                label = f"Appendix {am.group(1)}"
+                titles[label] = line[:_MAX_HEADING_CHARS]
+                sections.append((label, pno, [line]))
                 continue
-            m = _ARTICLE_HDR.match(line)
-            if m and m.group(1):
-                heading = line[:_MAX_HEADING_CHARS]
-                sections.append((m.group(1), pno, [line], heading))
-            elif m:
-                sections.append((m.group(2), pno, [line], heading))
+            # Inside appendices, numbered lines are list items / quoted excerpts, not articles.
+            m = None if last_appendix else _ARTICLE_HDR.match(line)
+            if m:
+                number = m.group(1) or m.group(2)
+                key = _sort_key(number)
+                if last is not None and (key[0] != last[0] or key[1] <= last[1]):
+                    m = None  # out-of-sequence number: a reference or list item, not a new article
+                else:
+                    last = key
+            if m:
+                if _is_title(line):
+                    titles[number] = _TOC_PAGE_NO.sub("", line)[:_MAX_HEADING_CHARS]
+                sections.append((number, pno, [line]))
             elif sections:
                 sections[-1][2].append(line)
             else:
-                sections.append((None, pno, [line], None))
+                sections.append((None, pno, [line]))
 
     chunks: list[Chunk] = []
     step = max(max_chars - overlap, 1)
-    for art, pno, lines, head in sections:
-        if len(lines) == 1 and lines[0] == head:
-            continue  # bare title line; carried as context by the sub-articles
+    for art, pno, lines in sections:
+        if len(lines) == 1 and art is not None and _is_title(lines[0]):
+            continue  # bare title or contents entry; carried as context by the rules beneath it
+        if art and art.startswith("Appendix"):
+            crumbs = [titles[art]]
+        else:
+            crumbs = [titles.get(a) for a in _ancestors(art)] if art else []
+        head = " › ".join(c for c in crumbs if c) or None
         body = " ".join(lines)
         for start in range(0, max(len(body) - overlap, 1), step):
             piece = body[start:start + max_chars].strip()
@@ -176,6 +250,14 @@ class RulebookIndex:
             self._faiss = faiss.IndexFlatIP(self.embedder.dim)
             if len(self._vectors):
                 self._faiss.add(self._vectors)
+
+    def remove_document(self, document: str) -> None:
+        """Drop a document's chunks in memory (the on-disk index is untouched until ``save``)."""
+        with self._lock:
+            keep = [i for i, c in enumerate(self.chunks) if c.document != document]
+            self.chunks = [self.chunks[i] for i in keep]
+            self._vectors = self._vectors[keep]
+            self._rebuild_faiss()
 
     def add_document(self, document: str, pages: list[str]) -> int:
         chunks = chunk_pages(document, pages, self.cfg.chunk_chars, self.cfg.chunk_overlap)
@@ -250,3 +332,25 @@ class RulebookIndex:
             self.chunks, self._vectors = chunks, vecs.reshape(-1, self.embedder.dim)
             self._rebuild_faiss()
         return True
+
+
+# ----------------------------------------------------------------------------- folder ingestion
+def pending_rulebooks(index: RulebookIndex, folder: Path) -> list[Path]:
+    """PDFs in ``folder`` whose file stem is not yet a document in ``index``."""
+    if not folder.is_dir():
+        return []
+    have = set(index.stats()["documents"])
+    return [pdf for pdf in sorted(folder.glob("*.pdf")) if pdf.stem not in have]
+
+
+def ingest_rulebook_dir(index: RulebookIndex, folder: Path) -> list[str]:
+    """Index every PDF in ``folder`` that is not already in ``index`` (by file stem); persist if any added."""
+    added = []
+    for pdf in pending_rulebooks(index, folder):
+        log.info("indexing rulebook %s", pdf.name)
+        n = index.add_document(pdf.stem, extract_pdf_pages(pdf.read_bytes()))
+        log.info("indexed %s: %d chunks", pdf.stem, n)
+        added.append(pdf.stem)
+    if added:
+        index.save()
+    return added
