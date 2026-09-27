@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { InsuranceMap } from "@/components/map/InsuranceMap";
-import { CoverageSavings } from "@/components/panels/CoverageSavings";
 import { EvidencePanel } from "@/components/panels/EvidencePanel";
 import { ExposureSummary } from "@/components/panels/ExposureSummary";
 import { TopCorners } from "@/components/panels/TopCorners";
@@ -25,7 +24,6 @@ import { useCircuits } from "@/hooks/ingestion/useCircuits";
 import { useTrack } from "@/hooks/ingestion/useTrack";
 import { useAssets } from "@/hooks/insurance/useAssets";
 import { useExposure } from "@/hooks/insurance/useExposure";
-import { useRiskMap } from "@/hooks/insurance/useRiskMap";
 import { useSafetyPlan } from "@/hooks/insurance/useSafetyPlan";
 import { useRaceControlActions, useReplayableIncidents, useRuleSearch } from "@/hooks/raceControl/useRaceControlData";
 import { useRaceControlStream } from "@/hooks/raceControl/useRaceControlStream";
@@ -72,7 +70,6 @@ export function UnifiedTrackView() {
   const exposure = useExposure(circuitId);
   const rawAssets = useAssets(circuitId, "f1", NO_UPGRADES);
   const [planOpen, setPlanOpen] = useState(false);
-  const riskMap = useRiskMap(circuitId, "f1", NO_UPGRADES);
 
   const { state: rc, connection } = useRaceControlStream(circuitId);
   const incidents = useReplayableIncidents(circuitId);
@@ -82,7 +79,7 @@ export function UnifiedTrackView() {
   const [tabChoice, setTabChoice] = useState<{ tab: SideTab; seq: number }>({ tab: "race", seq: 0 });
   const tab: SideTab = rc.incidentSeq > tabChoice.seq ? "race" : tabChoice.tab;
   const setTab = (t: SideTab) => setTabChoice({ tab: t, seq: rc.incidentSeq });
-  const plan = useSafetyPlan(circuitId, planOpen || tab === "insurance");
+  const plan = useSafetyPlan(circuitId, planOpen);
   const [speed, setSpeed] = useState<ReplaySpeed>(2);
 
   useEffect(() => {
@@ -163,6 +160,7 @@ export function UnifiedTrackView() {
         webgl={webgl}
         onOpenPlan={() => setPlanOpen(true)}
         planDisabled={!exposure.data}
+        showPlan={tab === "insurance"}
       />
 
       <main className="grid min-h-0 grid-cols-[minmax(0,1fr)_420px] max-lg:grid-cols-1">
@@ -250,7 +248,6 @@ export function UnifiedTrackView() {
             </>
           ) : (
             <>
-              <CoverageSavings riskMap={riskMap.data} plan={plan.data} onOpenPlan={() => setPlanOpen(true)} />
               <ExposureSummary exposure={exposure.data} />
               <TopCorners exposure={exposure.data} track={track.data} selectedZoneId={selectedZoneId} onSelect={selectZone} />
               <ZoneExposurePanel zone={selected?.zone} exposure={exposure.data} />
@@ -262,7 +259,7 @@ export function UnifiedTrackView() {
       </main>
 
       <SafetyPlanDrawer
-        open={planOpen}
+        open={planOpen && tab === "insurance"}
         onClose={() => setPlanOpen(false)}
         circuitName={track.data?.name}
         plan={plan.data}
