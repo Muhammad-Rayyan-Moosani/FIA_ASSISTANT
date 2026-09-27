@@ -104,8 +104,13 @@ export function Landing() {
         <Brand size="lg" />
         <div className="flex items-center gap-2.5">
           <ReplayIntro />
+          <Button variant="primary" onClick={() => router.push("/circuit")} title="Open the live map: race control and insurance">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true">
+              <path d="M3 3h8v8H3zM13 3h8v5h-8zM13 10h8v11h-8zM3 13h8v8H3z" />
+            </svg>
+            Dashboard
+          </Button>
           <ThemeToggle />
-          <Button onClick={() => router.push("/circuit")}>Open the live map</Button>
         </div>
       </header>
 
