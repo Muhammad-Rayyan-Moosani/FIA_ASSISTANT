@@ -3,7 +3,7 @@
  * GET /api/insurance/safety-plan/{circuit} · mirrors backend/api/schemas.py (SafetyPlan).
  */
 
-export type SafetyOptionKey = "close_rows" | "tecpro" | "debris_fence" | "guardrail";
+export type SafetyOptionKey = "crews" | "marshal_training" | "move_crowd" | "cameras" | "guardrail";
 
 export interface CostRange {
   low: number;
@@ -24,7 +24,7 @@ export interface SafetyOption {
   provenance: string;
   source: string | null;
   note: string | null;
-  recommended: boolean;
+  recommended?: boolean;
 }
 
 export interface SafetyCorner {
