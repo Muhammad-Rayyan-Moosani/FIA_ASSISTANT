@@ -1,195 +1,153 @@
 <div align="center">
 
-# 🏁 FIA Assistant
+# 🛡️ Circuit Guard
 
-### AI Race Control + Track-Zone Insurance Intelligence for Motorsport
+### One safety system for everyone at the track: drivers, marshals and fans
 
-**Spot the crash. Advise the stewards in under 2 seconds. Insure only the zones that actually need it.**
+**Spot danger during the race. Find the corners that keep putting people at risk. Give insurers evidence instead of a guess.**
 
-![Status](https://img.shields.io/badge/status-hackathon%20build-e10600?style=for-the-badge)
-![Python](https://img.shields.io/badge/FastAPI-Python%203.12+-009688?style=for-the-badge&logo=fastapi&logoColor=white)
-![Next.js](https://img.shields.io/badge/Next.js-Tailwind-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)
-![Claude](https://img.shields.io/badge/AI-Claude-d97757?style=for-the-badge&logo=anthropic&logoColor=white)
-![Data](https://img.shields.io/badge/data-OpenF1%20%7C%20FastF1-15151e?style=for-the-badge)
+🏆 **Winner of the Ampere Track (AI for Motorsport Safety) at FormulaTechHacks**
+
+![Python](https://img.shields.io/badge/FastAPI-Python%203.12-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js%2016-React%2019-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)
+![Three.js](https://img.shields.io/badge/3D-React%20Three%20Fiber-15151e?style=for-the-badge&logo=threedotjs&logoColor=white)
+![Claude](https://img.shields.io/badge/AI-Claude%20%7C%20Hugging%20Face-d97757?style=for-the-badge&logo=anthropic&logoColor=white)
+![Data](https://img.shields.io/badge/data-OpenF1%20%7C%20OpenStreetMap-e10600?style=for-the-badge)
 
 </div>
 
 ---
 
-## ⚡ The 10-Second Pitch
+## The challenge
 
-> A car slams into the barrier at Parabolica. Speed falls from **290 km/h to 0 in 1.4 seconds**.
->
-> 🟡 **FIA Assistant** has already spotted it, checked it against the Sporting Regulations and put a steward card on screen:
-> **"Double-yellow Sector 3 → recommend VSC → marshal post 26 → investigate car #16 after the session."**
->
-> 🛡️ Meanwhile, the risk engine records one more high-severity impact in that zone and **re-prices its insurance cover**.
+The **Ampere Track** asked teams to *develop an AI-powered solution that detects, predicts or prevents safety risks in motorsport*. Circuit Guard does all three:
 
-Two products, one platform: **faster safety decisions today, and cheaper, smarter cover tomorrow.**
-
----
-
-## 🚨 The Problem
-
-| | Today | With FIA Assistant |
-|---|---|---|
-| **Race Control** | Stewards watch dozens of feeds and piece the evidence together by hand. Deciding on a VSC or Safety Car costs **precious seconds** while marshals and drivers are exposed. | Telemetry anomalies are detected automatically and turned into **structured advisory cards in under 2 s**, each citing the relevant regulation. |
-| **Insurance (F2 / F3)** | Circuits and junior series buy **blanket cover**, paying the same for a quiet grandstand as for the braking zone where cars keep crashing. Budgets are tight and the premiums hurt. | A **spatial risk model** scores every zone (barriers, catch fencing, stands) from historical impact data, so cover goes where the crashes actually happen. |
-
----
-
-## 🧩 What It Does
-
-### 🟡 Module 1: Race Control AI Assistant
-- **Replays** real or historical sessions (OpenF1 / FastF1) frame by frame
-- **Detects anomalies**: sudden deceleration, stopped cars, yellow flags, VSC/SC triggers, pit-lane speeding, track limits
-- **Reasons over the FIA rulebook**: a deterministic rule engine matches each anomaly to a regulation, then Claude writes the advisory
-- **Outputs steward cards** with severity, recommended action, the relevant rule and confidence, in under 2 seconds. If the AI misses the latency budget, the rule engine's card is shown instead.
-
-### 🛡️ Module 2: Track-Zone Risk & Insurance Engine
-- Maps **historical crash and impact data** onto circuit zones across F1, F2 and F3
-- Scores each zone's **incident probability × severity × exposure** (spectators, assets)
-- Renders a **3D digital twin** of the circuit (glowing risk barriers, grandstands, loss columns) plus a **premium plan**: where to add cover, where to cut it, and how much the series saves
-
----
-
-## 🏗️ Architecture
-
-> 📐 Insurance module deep-dive (data pipeline, actuarial maths, API contracts, 3D twin, 4-person team split): **[ARCHITECTURE.md](ARCHITECTURE.md)**
-
-```text
-┌─ MODULE 1 · RACE CONTROL ────────────────────────────────────────────────────┐
-│                                                                              │
-│ OpenF1 telemetry ──► spot anomaly ──► match FIA rule ──► Claude ──► card     │
-│ (replay / live)      (hard braking,    (instant,           (< 2 s)   on the  │
-│                       stopped car,      always works)                steward │
-│                       flags, pit speed)                              screen  │
-│                                                                              │
-└──────────────────────────────────────────────────────────────────────────────┘
-
-┌─ MODULE 2 · INSURANCE ───────────────────────────────────────────────────────┐
-│                                                                              │
-│ Past incidents ──► risk per zone ──► simulate 10,000 ──► premium ──► 3D map  │
-│ + GPS position     (how often?       seasons             per zone    what-if │
-│ + corner speed      how bad?)        (EAL, VaR99)        vs blanket  report  │
-│                                                                              │
-└──────────────────────────────────────────────────────────────────────────────┘
-```
-
-### API at a glance
-
-| Endpoint | What it does |
+| | How |
 |---|---|
-| `GET  /api/replay/step` | Advance the replay; returns car positions, flags and any detected anomalies |
-| `POST /api/steward/advise` | Anomaly payload in → structured FIA steward advisory card out |
-| `GET  /api/insurance/risk-map` | Zone-by-zone risk scores and premium recommendations for a circuit and series |
+| **Detects** | Spots crashes, stopped cars and slippery track during a race, and suggests the flag or safety car to race control |
+| **Predicts** | Finds the corners where serious incidents keep happening, tested against the following years' real incidents |
+| **Prevents** | Turns that into low-cost fixes at those corners, and an evidence report the circuit can take to its insurer |
 
----
+## Why we built it
 
-## 📁 Project Structure
+In 2013, at the Canadian Grand Prix in Montreal, volunteer marshal Mark Robinson was clearing a crashed car when a recovery vehicle ran him over. He died.
+
+Every crash puts more than the driver at risk: it puts the marshals who clean it up and the fans a few metres away at risk too. Driver safety and crowd safety go hand in hand, but today they're handled separately:
+
+- **Race control** reacts to each crash on its own, under time pressure.
+- **Circuits** can't say which corners keep putting people in danger.
+- **Insurers** can't either, so they guess and charge for the uncertainty. Premiums have climbed so fast that in September 2025 the FIA set up a global task force on "escalating premiums, restricted coverage and reduced access" to motorsport insurance.
+
+## What it does
+
+Circuit Guard runs on one thing every circuit already has: its **race-control incident log**.
+
+### 🟡 During the race: the live safety loop
+- Replays **real incidents** from OpenF1 on a live 2D/3D map of the circuit.
+- Spots danger (cars stopping, contact, slippery track) and shows **marshal light panels** changing sector by sector.
+- A **Claude steward agent** turns each incident into a steward card: it suggests the response (yellow, double yellow, VSC, safety car or red flag) and cites the matching articles of the **FIA 2026 Sporting Regulations**, retrieved from the real rulebook. It only sees facts computed from real data, and if Claude is unavailable, a rule engine produces the card instead. Race control always makes the decision.
+- A **driver cockpit warning** shows what the next car through the sector would see.
+- A **wet-hairpin demo** sends a simulated aquaplaning crash through the real safety loop.
+- **Severity estimate** from collision physics plus driver team radio, using local Hugging Face models (Whisper plus an emotion classifier).
+
+### 🛡️ Between races: evidence for the circuit and its insurer
+- **Risk map:** every incident is placed on the track, which is split into zones. The map shows which corners have the most serious incidents and marshal call-outs, and which of those are **right next to a grandstand**.
+- **Proof that it repeats:** for each year, the 3 busiest corners from earlier years are compared with where that year's serious incidents actually happened.
+- **Low-cost safety plan:** for the riskiest corners next to the crowd, cheap fixes with a sourced price for each paid item:
+
+  | Fix | Rough cost (CAD) |
+  |---|---|
+  | Station medical, fire and recovery crews at the corner | Free (moves crews you already have) |
+  | Refresher training for the marshals there | Free (training days are run free by licensed trainers) |
+  | Move standing areas back with hired fence panels | ~300 per race weekend |
+  | Two cameras on the corner | ~600, one-off |
+  | A second guardrail line | ~10,000, one-off |
+
+- **Insurer report:** where the risk is, what has been done about it, and the year-by-year count, ready to hand over at renewal.
+- **Upload your own circuit:** a club uploads its track layout, corners and incident log (plus spectator areas and marshal posts, if it has them) as CSV files. Each file is checked in the browser, and the analysis runs live on screen.
+
+## The key result
+
+Tested on **four seasons (2023–2026) of real Formula 1 race-control data from Monza**, the 3 riskiest corners from earlier years caught **35 of the next years' 75 serious incidents (47%)**. Picking 3 of the 11 zones at random would catch about 27%. That's **1.7× better than chance**.
+
+| Year | Caught by the top 3 from earlier years | Share |
+|---|---|---|
+| 2024 | 5 of 8 | 63% |
+| 2025 | 6 of 27 | 22% (a miss year, shown honestly) |
+| 2026 | 24 of 40 | 60% |
+
+This shows *where* trouble keeps happening, not how bad each incident will be.
+
+## Data
+
+Everything in the demo is real data or a clearly labelled, sourced estimate.
+
+| Data | Source |
+|---|---|
+| Race-control messages, 2023–2026, 20 sessions per circuit (Monza: 268 incidents, Montreal: 335) | [OpenF1](https://openf1.org) |
+| Track shape and speed | OpenF1 fastest-lap telemetry |
+| Turn and marshal-sector positions | MultiViewer circuit data |
+| Grandstands, buildings, bridges and barriers | [OpenStreetMap](https://www.openstreetmap.org) |
+| Rules cited on steward cards | FIA 2026 F1 Sporting Regulations |
+| Safety-plan prices | Public price lists (linked in the app), Bank of Canada 2025 exchange rates |
+| Insurance context | Research notes in [`reports/`](reports/): Monza's 2015 accounts, F1 promoter cover limits (US$75–100M per race), the FIA task force |
+
+## Tech
+
+| Part | Stack |
+|---|---|
+| Backend | Python 3.12, FastAPI, Pydantic v2, NumPy/SciPy, server-sent events for the live loop and ingestion |
+| Frontend | Next.js 16 (App Router), React 19, TypeScript, Tailwind 4, TanStack Query, Zustand |
+| 3D map | three.js with React Three Fiber and drei, with an SVG fallback |
+| AI | Claude (Anthropic SDK, structured outputs) for steward cards; local Hugging Face models (Whisper plus an emotion classifier) for radio severity |
+| Tests | pytest (backend), vitest (frontend) |
 
 ```
-FIA_ASSISTANT/
-├── ARCHITECTURE.md          # 📐 insurance module design, maths, API contracts, team split
-├── backend/                 # Python · FastAPI
-│   ├── main.py              # FastAPI app
-│   ├── api/                 # routes (insurance.py, schemas.py)
-│   ├── services/            # openf1_client · data_loader · zones · actuarial · underwriter
-│   ├── config/              # settings + actuarial_params.yaml
-│   ├── scripts/             # fetch_openf1.py (✅) · ingest.py
-│   ├── tests/
-│   ├── requirements.txt
-│   └── requirements-fastf1.txt   # optional heavier FastF1 install
-├── frontend/                # Next.js 16 · React 19 · TypeScript · Tailwind · React Three Fiber
-│   └── src/                 # types (API contract) · services (Step 1 + Step 3) · hooks · components
-├── data/
-│   ├── openf1/              # raw OpenF1 cache, generated locally by scripts/fetch_openf1.py (not committed)
-│   ├── tracks/              # circuit outlines + zones + safety inventory
-│   ├── incidents/           # geolocated historical incidents for the risk model
-│   └── replay/              # demo replay sessions (steward module)
-├── docs/
-├── .env.example
-└── README.md
+backend/
+  api/            insurance.py (risk map, exposure, safety plan, upload/ingest), race_control.py (live loop)
+  services/       exposure · safety_plan · zones · geolocate · ingest_jobs · race_control/ (alerts, steward agent, demo…)
+  scripts/        fetch and ingest OpenF1 data
+  tests/
+frontend/src/
+  components/     landing · workspace (unified track view) · map · panels · raceControl · plan · report
+  lib/ hooks/ types/ store/
+data/             OpenF1 cache, tracks, incidents, OpenStreetMap context, replays, rulebook
 ```
 
----
+The original design document is in [ARCHITECTURE.md](ARCHITECTURE.md). The project moved on from parts of it, like the per-zone premium pricing, towards the exposure evidence and low-cost safety plan described above.
 
-## 🚀 Quick Start
+## Run it locally
 
-**Prerequisites:** Python 3.12+, Node 20+, and an [Anthropic API key](https://console.anthropic.com/). Without a key the rule engine still produces cards.
-
-```bash
-git clone https://github.com/Muhammad-Rayyan-Moosani/FIA_ASSISTANT.git
-cd FIA_ASSISTANT
-cp .env.example .env        # add your ANTHROPIC_API_KEY
-```
-
-**Backend**
+**Backend** (runs offline from the cached data in `data/`)
 
 ```bash
 cd backend
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-python -m pytest -q                  # Step 1 + API contract tests
-uvicorn main:app --reload --port 8000   # → http://localhost:8000/docs
+python -m venv .venv
+.venv/Scripts/pip install -r requirements.txt   # on macOS/Linux: .venv/bin/pip
+.venv/Scripts/uvicorn main:app --port 8000        # API docs at http://localhost:8000/docs
 ```
 
-**Frontend** (details in [frontend/README.md](frontend/README.md))
+**Frontend**
 
 ```bash
 cd frontend
 npm install
-cp .env.example .env.local           # points at the backend (default http://localhost:8000)
-npm run dev                          # → http://localhost:3000
+npm run dev                                       # http://localhost:3000
 ```
 
----
+To try the upload flow, use the Monza demo files in `frontend/public/demo/monza/`. Blank templates are in `frontend/public/templates/`.
 
-## 🎤 Judge Demo Flow (3 minutes)
+**Tests**
 
-| ⏱️ | Screen | What judges see |
-|---|---|---|
-| **0:00** | Landing | The problem in one line: *"Race control decides in seconds. Insurance is priced in blankets."* |
-| **0:30** | 🟡 Steward Portal | Hit **Play** on the Monza replay. Cars circle a live 2D map built from real OpenF1 telemetry. |
-| **1:00** | 💥 Incident | A car brakes hard and stops at Parabolica. The map flashes and a **steward card slides in with its latency badge (under 2 s)**: severity, VSC recommendation, regulation reference. |
-| **1:45** | 🟡 Follow-ups | A pit-lane speeding event and a track-limits strike each raise their own card. |
-| **2:15** | 🛡️ Risk Map | Switch to the Insurance view. The same circuit is now a **heat map** of high-risk zones. Toggle **F1 → F2 → F3**. |
-| **2:45** | 💰 The money shot | Blanket premium vs. optimised premium: **"Same protection, lower spend."** |
+```bash
+cd backend && .venv/Scripts/python -m pytest -q
+cd frontend && npx vitest run
+```
 
----
+## Honest notes
 
-## 🗺️ Hackathon Roadmap
-
-**🛡️ Insurance module (building first — see [ARCHITECTURE.md](ARCHITECTURE.md))**
-- [x] Repo, structure & docs
-- [x] OpenF1 client + fetch script (`python -m scripts.fetch_openf1`)
-- [x] Incident ingestion + geolocation + zones (Monza, Montreal)
-- [x] Actuarial engine (Poisson-Gamma · severity · Monte Carlo · pricing)
-- [x] Insurance API (risk map · simulate · what-if · report), wired to the frontend
-- [x] Frontend app: 3D digital twin, panels, API + streaming service layer
-- [x] Real structures from OpenStreetMap (grandstands, pit building, bridges, towers, barriers) mapped to insurance coverage lines
-- [x] Unified map: race control and insurance together. Real OpenF1 incident replays, marshal light panels, driver cockpit warning, steward card with SC / VSC / red flag, FIA regulation citations
-- [x] Multimodal severity: collision physics + real team radio through local Hugging Face models (Whisper + emotion classifier)
-- [x] Crash counting limited to physical events (double yellows, confirmed collisions)
-- [x] Underwriter report (template + PDF) · [ ] Claude-written narrative
-
-**🟡 Race Control module (next)**
-- [ ] Replay engine + anomaly detector
-- [ ] FIA rule evaluator + Claude steward agent
-- [ ] Steward Portal UI (live map + cards)
-- [ ] Demo polish 🏆
-
----
-
-## ⚠️ Honest Notes
-
-- **Advisory only.** FIA Assistant supports human stewards and never replaces them.
-- **Regulations** are summarised for the prototype. A production build must load the current official FIA Sporting Regulations text.
-- **Risk figures** in the demo come from sample data and illustrate the method. They are not actuarial advice.
-- Telemetry via [OpenF1](https://openf1.org) and [FastF1](https://github.com/theOehrly/Fast-F1). Not affiliated with the FIA or Formula 1.
-
-<div align="center">
-
-**Built in 48 hours for FormulaHacks 🏎️💨**
-
-</div>
+- **Decision support only.** Circuit Guard suggests; race control and the stewards decide.
+- **The insurance saving isn't promised.** Insurers don't publish discounts. The evidence gives a circuit a stronger case at renewal. Monza's 2015 accounts show race insurance can move 10–15% when a circuit pushes back.
+- **Safety-plan prices are rough, low-end figures** for comparing options, not quotes.
+- **The upload flow** checks a club's files in the browser. The full analysis currently runs for circuits already set up (Monza and Montreal).
+- Not affiliated with the FIA or Formula 1. Race data from [OpenF1](https://openf1.org).
