@@ -53,16 +53,7 @@ Circuit Guard runs on one thing every circuit already has: its **race-control in
 ### 🛡️ Between races: evidence for the circuit and its insurer
 - **Risk map:** every incident is placed on the track, which is split into zones. The map shows which corners have the most serious incidents and marshal call-outs, and which of those are **right next to a grandstand**.
 - **Proof that it repeats:** for each year, the 3 busiest corners from earlier years are compared with where that year's serious incidents actually happened.
-- **Low-cost safety plan:** for the riskiest corners next to the crowd, cheap fixes with a sourced price for each paid item:
-
-  | Fix | Rough cost (CAD) |
-  |---|---|
-  | Station medical, fire and recovery crews at the corner | Free (moves crews you already have) |
-  | Refresher training for the marshals there | Free (training days are run free by licensed trainers) |
-  | Move standing areas back with hired fence panels | ~300 per race weekend |
-  | Two cameras on the corner | ~600, one-off |
-  | A second guardrail line | ~10,000, one-off |
-
+- **Low-cost safety plan:** for the riskiest corners next to the crowd, cheap fixes such as moving crews closer, marshal refresher training, moving standing areas back and adding cameras, each with a sourced price.
 - **Insurer report:** where the risk is, what has been done about it, and the year-by-year count, ready to hand over at renewal.
 - **Upload your own circuit:** a club uploads its track layout, corners and incident log (plus spectator areas and marshal posts, if it has them) as CSV files. Each file is checked in the browser, and the analysis runs live on screen.
 
