@@ -143,11 +143,3 @@ To try the upload flow, use the Monza demo files in `frontend/public/demo/monza/
 cd backend && .venv/Scripts/python -m pytest -q
 cd frontend && npx vitest run
 ```
-
-## Honest notes
-
-- **Decision support only.** Circuit Guard suggests; race control and the stewards decide.
-- **The insurance saving isn't promised.** Insurers don't publish discounts. The evidence gives a circuit a stronger case at renewal. Monza's 2015 accounts show race insurance can move 10–15% when a circuit pushes back.
-- **Safety-plan prices are rough, low-end figures** for comparing options, not quotes.
-- **The upload flow** checks a club's files in the browser. The full analysis currently runs for circuits already set up (Monza and Montreal).
-- Not affiliated with the FIA or Formula 1. Race data from [OpenF1](https://openf1.org).
